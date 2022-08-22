@@ -2,7 +2,8 @@ package comm
 
 // JsonKV as meta values
 type JsonKV map[string]any // @name JsonKV
-type Meta = JsonKV
+// Meta alias of map
+type Meta = JsonKV // @name Meta
 
 // IsEmpty ...
 func (m JsonKV) IsEmpty() bool {
@@ -92,7 +93,7 @@ type KV struct {
 
 type KVs []KV
 
-type MetaUp struct {
+type MetaDiff struct {
 	Add    KVs      `json:"add"` // 批量添加/更新
 	Delete []string `json:"del"` // 批量删除
 }
@@ -126,7 +127,7 @@ func (mf *MetaField) MetaUnset(key string) {
 	}
 }
 
-func (mf *MetaField) UpMeta(up *MetaUp) (ok bool) {
+func (mf *MetaField) UpMeta(up *MetaDiff) (ok bool) {
 	if up == nil {
 		return false
 	}
@@ -148,9 +149,9 @@ func (mf *MetaField) UpMeta(up *MetaUp) (ok bool) {
 	return
 }
 
-func (mu *MetaUp) AddKV(k string, v any) {
+func (mu *MetaDiff) AddKV(k string, v any) {
 	if mu == nil {
-		mu = &MetaUp{}
+		mu = &MetaDiff{}
 	}
 	if mu.Add == nil {
 		mu.Add = KVs{}
