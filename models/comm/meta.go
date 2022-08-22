@@ -97,6 +97,7 @@ type MetaDiff struct {
 	Add    KVs      `json:"add"` // 批量添加/更新
 	Delete []string `json:"del"` // 批量删除
 }
+type MetaUp = MetaDiff // patch of migrate only, will delete soon
 
 type MetaField struct {
 	// Meta 元信息
