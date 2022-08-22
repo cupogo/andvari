@@ -128,7 +128,7 @@ func (mf *MetaField) MetaUnset(key string) {
 	}
 }
 
-func (mf *MetaField) UpMeta(up *MetaDiff) (ok bool) {
+func (mf *MetaField) MetaUp(up *MetaDiff) (ok bool) {
 	if up == nil {
 		return false
 	}
@@ -149,6 +149,9 @@ func (mf *MetaField) UpMeta(up *MetaDiff) (ok bool) {
 
 	return
 }
+
+// UpMeta deprecated
+func (mf *MetaField) UpMeta(up *MetaDiff) (ok bool) { return mf.MetaUp(up) }
 
 func (mu *MetaDiff) AddKV(k string, v any) {
 	if mu == nil {

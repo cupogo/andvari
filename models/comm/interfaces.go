@@ -35,7 +35,7 @@ type ModelMetaMerger interface {
 }
 
 type ModelMetaUp interface {
-	UpMeta(up *MetaDiff) bool
+	MetaUp(up *MetaDiff) bool
 }
 
 type ModelMeta interface {
