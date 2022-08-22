@@ -89,12 +89,30 @@ func (f *DateFields) GetUpdated() time.Time {
 	return f.UpdatedAt
 }
 
+type CreatorField struct {
+	// 创建者ID
+	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" form:"creatorID" pg:"creator_id,notnull,use_zero" extensions:"x-order=m"`
+}
+
+// GetCreatorID 返回创建者ID
+func (f *CreatorField) GetCreatorID() OID {
+	return f.CreatorID
+}
+
+// SetCreatorID 设置创建者ID
+func (f *CreatorField) SetCreatorID(id any) bool {
+	if v := oid.Cast(id); v.Valid() {
+		f.CreatorID = v
+		return true
+	}
+	return false
+}
+
 // DefaultModel struct contain model's default fields.
 type DefaultModel struct {
-	IDField    `bson:",inline"`
-	DateFields `bson:",inline"`
-	// 创建者ID
-	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" pg:"creator_id,notnull,use_zero" extensions:"x-order=m"`
+	IDField      `bson:",inline"`
+	DateFields   `bson:",inline"`
+	CreatorField `bson:",inline"`
 	ChangeMod
 }
 
@@ -106,19 +124,6 @@ func (model *DefaultModel) Creating() error {
 // Saving function call to it's inner fields defined hooks
 func (model *DefaultModel) Saving() error {
 	return model.DateFields.Saving()
-}
-
-// GetCreatorID ...
-func (model *DefaultModel) GetCreatorID() OID {
-	return model.CreatorID
-}
-
-func (model *DefaultModel) SetCreatorID(id any) bool {
-	if v, err := oid.CheckID(id); err == nil {
-		model.CreatorID = v
-		return true
-	}
-	return false
 }
 
 type IDFieldStr struct {
@@ -159,10 +164,9 @@ func (f *IDFieldStr) StringID() string {
 
 // DunceModel struct contain model's default fields with string pk.
 type DunceModel struct {
-	IDFieldStr `bson:",inline"`
-	DateFields `bson:",inline"`
-	// 创建者ID
-	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" pg:"creator_id,notnull,use_zero" extensions:"x-order=m"`
+	IDFieldStr   `bson:",inline"`
+	DateFields   `bson:",inline"`
+	CreatorField `bson:",inline"`
 	ChangeMod
 }
 
@@ -210,10 +214,9 @@ func (f *SerialField) StringID() string {
 
 // SerialModel struct contain model's default fields.
 type SerialModel struct {
-	SerialField `bson:",inline"`
-	DateFields  `bson:",inline"`
-	// 创建者ID
-	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" pg:"creator_id,notnull,use_zero" extensions:"x-order=m"`
+	SerialField  `bson:",inline"`
+	DateFields   `bson:",inline"`
+	CreatorField `bson:",inline"`
 	ChangeMod
 }
 
@@ -227,19 +230,7 @@ func (model *SerialModel) Saving() error {
 	return model.DateFields.Saving()
 }
 
-// GetCreatorID ...
-func (model *SerialModel) GetCreatorID() OID {
-	return model.CreatorID
-}
-
-func (model *SerialModel) SetCreatorID(id any) bool {
-	if v := oid.Cast(id); v.Valid() {
-		model.CreatorID = v
-		return true
-	}
-	return false
-}
-
+// StringsDiff deprecated
 type StringsDiff struct {
 	Newest  []string `json:"newest" validate:"dive"`  // 新增的字串集
 	Removed []string `json:"removed" validate:"dive"` // 删除的字串集
@@ -252,6 +243,7 @@ type TextSearchField struct {
 	TsVector string `bson:"textKeyword" json:"-" pg:"ts_vec,type:tsvector"`
 } // @name TextSearchField
 
+// GenSlug deprecated
 func GenSlug() string {
 	return oid.NewID(oid.OtDefault).String()
 }

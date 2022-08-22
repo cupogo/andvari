@@ -2,13 +2,6 @@ package comm
 
 import "daxv.cn/gopak/lib/utils/array"
 
-type Changeable interface {
-	SetChange(cs ...string)
-	GetChanges() []string
-	CountChange() int
-	HasChange(name string) bool
-}
-
 type ChangeMod struct {
 	cs array.String
 }
