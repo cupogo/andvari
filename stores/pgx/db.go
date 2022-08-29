@@ -16,6 +16,19 @@ const (
 	defaultLimit = 20
 )
 
+var (
+	lastSchema     string
+	lastSchemaCrap string
+)
+
+func LastSchema() string {
+	return lastSchema
+}
+
+func LastSchemaCrap() string {
+	return lastSchemaCrap
+}
+
 type DB struct {
 	*pg.DB
 
@@ -35,11 +48,13 @@ func Open(dsn string, ftscfg string, debug bool) (*DB, error) {
 
 	logger().Debugw("parsed", "addr", pgOption.Addr, "db", pgOption.Database, "user", pgOption.User)
 	w.scDft = pgOption.User
+	lastSchema = w.scDft
 	if w.scDft == "" {
 		logger().Fatalw("pg.user is empty in DSN")
 		return nil, err
 	}
 	w.scCrap = w.scDft + crapSuffix
+	lastSchemaCrap = w.scCrap
 
 	db := pg.Connect(pgOption)
 	if debug {
