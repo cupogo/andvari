@@ -21,8 +21,8 @@ type IDField struct {
 // DateFields struct contain `createdAt` and `updatedAt`
 // fields that autofill on insert/update model.
 type DateFields struct {
-	CreatedAt time.Time `bson:"createdAt" json:"createdAt" form:"createdAt" pg:"created,notnull,default:now()" extensions:"x-order=k"` // 创建时间
-	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt" form:"updatedAt" pg:"updated,notnull" extensions:"x-order=l"`               // 变更时间
+	CreatedAt time.Time `bson:"createdAt" json:"createdAt" form:"createdAt" pg:"created,notnull,default:now()" extensions:"x-order=["` // 创建时间
+	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt" form:"updatedAt" pg:"updated,notnull" extensions:"x-order=]"`               // 变更时间
 }
 
 // PrepareID method prepare id value to using it as id in filtering,...
@@ -91,7 +91,7 @@ func (f *DateFields) GetUpdated() time.Time {
 
 type CreatorField struct {
 	// 创建者ID
-	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" form:"creatorID" pg:"creator_id,notnull,use_zero" extensions:"x-order=m"`
+	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" form:"creatorID" pg:"creator_id,notnull,use_zero" extensions:"x-order=_"`
 }
 
 // GetCreatorID 返回创建者ID
