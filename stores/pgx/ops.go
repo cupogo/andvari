@@ -264,6 +264,10 @@ func DoUpdate(ctx context.Context, db ormDB, obj Model, columns ...string) error
 	return callToAfterUpdateHooks(obj)
 }
 
+func DoDelete(ctx context.Context, db ormDB, table string, _id any) error {
+	return DoDeleteT(ctx, db, LastSchema(), LastSchemaCrap(), table, _id)
+}
+
 func OpDeleteInTrans(ctx context.Context, db *pgDB, scDft, scCrap string, table string, _id any) error {
 	return db.RunInTransaction(ctx, func(tx *pgTx) error {
 		return DoDeleteT(ctx, db, scDft, scCrap, table, _id)
