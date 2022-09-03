@@ -12,13 +12,13 @@ type Pager interface {
 // PageSpec ...
 type PageSpec struct {
 	// 分页大小，默认20
-	Limit int `json:"limit,omitempty" form:"limit" extensions:"x-order=l"`
+	Limit int `json:"limit,omitempty" form:"limit" extensions:"x-order=x"`
 	// 第几页
-	Page int `json:"page,omitempty" form:"page" extensions:"x-order=m"`
+	Page int `json:"page,omitempty" form:"page" extensions:"x-order=y"`
 	// 跳过多少条记录，如果提供 page 此项跳过
-	Skip int `json:"skip,omitempty" form:"skip" extensions:"x-order=n"`
+	Skip int `json:"skip,omitempty" form:"skip" extensions:"x-order=z"`
 	// 排序 field desc | [asc]
-	Sort string `json:"sort,omitempty" form:"sort" extensions:"x-order=o"`
+	Sort string `json:"sort,omitempty" form:"sort" extensions:"x-order=|"`
 
 	Total int `json:"total,omitempty" swaggerignore:"true"`
 }
