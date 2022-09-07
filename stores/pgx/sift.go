@@ -70,7 +70,7 @@ func SiftEquel(q *ormQuery, field string, v any, isOr bool) (*ormQuery, bool) {
 }
 
 func SiftILike(q *ormQuery, field string, v string, isOr bool) (*ormQuery, bool) {
-	return Sift(q, field, "ILIKE", sqlutil.CleanWildcard(v), isOr)
+	return Sift(q, field, "ILIKE", sqlutil.MendValue(v), isOr)
 }
 
 func SiftGreat(q *ormQuery, field string, v any, isOr bool) (*ormQuery, bool) {
