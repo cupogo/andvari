@@ -16,9 +16,9 @@ type MDftSpec struct {
 	IDs oid.OIDs `form:"-" json:"ids"  extensions:"x-order=1" `
 	// 创建者ID
 	CreatorID string `form:"creatorID" json:"creatorID"  extensions:"x-order=2"`
-	// 创建时间
+	// 创建时间 形式： yyyy-mm-dd, 1_day, 2_weeks, 3_months
 	Created string `form:"created" json:"created"  extensions:"x-order=3"`
-	// 更新时间
+	// 更新时间 形式： yyyy-mm-dd, 1_day, 2_weeks, 3_months
 	Updated string `form:"updated" json:"updated"  extensions:"x-order=4"`
 } // @name DefaultSpec
 
@@ -65,21 +65,35 @@ func SiftOID(q *ormQuery, field string, s string, isOr bool) (*ormQuery, bool) {
 	return q, false
 }
 
+// SiftEquel 完全相等
 func SiftEquel(q *ormQuery, field string, v any, isOr bool) (*ormQuery, bool) {
 	return Sift(q, field, "=", v, isOr)
 }
 
-func SiftILike(q *ormQuery, field string, v string, isOr bool) (*ormQuery, bool) {
+// SiftICE 忽略大小写相等
+func SiftICE(q *ormQuery, field string, v string, isOr bool) (*ormQuery, bool) {
+	if utils.IsZero(v) {
+		return q, false
+	}
+	return Sift(q, field, "ILIKE", sqlutil.CleanWildcard(v), isOr)
+}
+
+// SiftMatch 忽略大小写并匹配前缀
+func SiftMatch(q *ormQuery, field string, v string, isOr bool) (*ormQuery, bool) {
 	if utils.IsZero(v) {
 		return q, false
 	}
 	return Sift(q, field, "ILIKE", sqlutil.MendValue(v), isOr)
 }
 
+var SiftILike = SiftMatch // Deprecated
+
+// SiftGreat 大于
 func SiftGreat(q *ormQuery, field string, v any, isOr bool) (*ormQuery, bool) {
 	return Sift(q, field, ">", v, isOr)
 }
 
+// SiftLess 小于
 func SiftLess(q *ormQuery, field string, v any, isOr bool) (*ormQuery, bool) {
 	return Sift(q, field, "<", v, isOr)
 }
