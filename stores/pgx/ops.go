@@ -212,19 +212,25 @@ func DoInsert(ctx context.Context, db ormDB, obj Model, args ...any) error {
 	}
 
 	q := db.ModelContext(ctx, obj)
-	if len(args) > 0 {
-		if b, ok := args[0].(bool); ok && b {
-			if v, ok := obj.(updatable); ok {
-				q.OnConflict("(?) DO UPDATE", pgIdent(field.ID)).Set(
-					"? = ?", pgIdent(field.Updated), v.GetUpdated(),
-				)
+	argc := len(args)
+	if argc > 0 {
+		q.OnConflict("(?) DO UPDATE", pgIdent(field.ID))
+		var foundUpd bool
+		for i, arg := range args {
+			if b, ok := arg.(bool); ok && b && i == 0 {
+				q.Set("?0 = EXCLUDED.?0", pgIdent(field.Updated))
+				foundUpd = true
+				break
 			}
-		} else if utils.EnsureArgs(2, args...) {
-			if _f, ok := args[0].(string); ok {
-				q.OnConflict("(?) DO UPDATE", pgIdent(field.ID)).Set(
-					"? = ?", pgIdent(_f), args[1])
+			if a, ok := arg.(string); ok {
+				q.Set("?0 = EXCLUDED.?0", pgIdent(a))
+				if a == field.Updated {
+					foundUpd = true
+				}
 			}
-
+		}
+		if !foundUpd {
+			q.Set("?0 = EXCLUDED.?0", pgIdent(field.Updated))
 		}
 
 	}
