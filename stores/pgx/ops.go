@@ -173,7 +173,7 @@ func CreateModel(db *pg.DB, model any, dropIt bool) (err error) {
 	return
 }
 
-func StoreSimple(ctx context.Context, db ormDB, obj Model, columns ...string) error {
+func StoreSimple(ctx context.Context, db ormDB, obj ModelChangeable, columns ...string) error {
 	if obj.IsZeroID() {
 		return DoInsert(ctx, db, obj)
 	}
@@ -183,7 +183,7 @@ func StoreSimple(ctx context.Context, db ormDB, obj Model, columns ...string) er
 
 type columnsFn func() []string
 
-func StoreWithCall(ctx context.Context, db ormDB, exist, obj Model, csfn columnsFn, args ...string) (isn bool, err error) {
+func StoreWithCall(ctx context.Context, db ormDB, exist, obj ModelChangeable, csfn columnsFn, args ...string) (isn bool, err error) {
 	if !obj.IsZeroID() {
 		exist.SetID(obj.GetID())
 		err = ModelWherePK(ctx, db, exist)
@@ -245,7 +245,7 @@ func DoInsert(ctx context.Context, db ormDB, obj Model, args ...any) error {
 	return callToAfterCreateHooks(obj)
 }
 
-func DoUpdate(ctx context.Context, db ormDB, obj Model, columns ...string) error {
+func DoUpdate(ctx context.Context, db ormDB, obj ModelChangeable, columns ...string) error {
 	if len(columns) > 0 {
 		obj.SetChange(columns...)
 	}

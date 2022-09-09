@@ -13,6 +13,10 @@ type Model interface {
 	GetID() any
 	SetID(id any) bool
 	IsZeroID() bool
+}
+
+type ModelChangeable interface {
+	Model
 	Changeable
 }
 
