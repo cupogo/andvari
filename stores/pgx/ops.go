@@ -239,7 +239,8 @@ func DoInsert(ctx context.Context, db ormDB, obj Model, args ...any) error {
 		logger().Infow("insert model fail", "obj", obj, "err", err)
 		return err
 	} else {
-		logger().Debugw("insert model ok", "id", obj.GetID(), "name", q.TableModel().Table().SQLName)
+		logger().Debugw("insert model ok", "id", obj.GetID(),
+			"name", q.TableModel().Table().SQLName)
 	}
 
 	return callToAfterCreateHooks(obj)
@@ -262,9 +263,14 @@ func DoUpdate(ctx context.Context, db ormDB, obj ModelChangeable, columns ...str
 	obj.SetChange(field.Updated)
 	columns = obj.GetChanges()
 
-	if _, err := db.ModelContext(ctx, obj).Column(columns...).WherePK().Update(); err != nil {
+	q := db.ModelContext(ctx, obj)
+	if _, err := q.Column(columns...).WherePK().Update(); err != nil {
 		logger().Infow("update model fail", "obj", obj, "columns", columns, "err", err)
 		return err
+	} else {
+		logger().Debugw("update model ok", "id", obj.GetID(),
+			"name", q.TableModel().Table().SQLName,
+			"columns", columns)
 	}
 
 	return callToAfterUpdateHooks(obj)
