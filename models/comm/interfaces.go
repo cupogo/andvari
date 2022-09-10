@@ -31,7 +31,7 @@ var (
 )
 
 type ModelMetaMerger interface {
-	MergeMeta(other JsonKV)
+	MergeMeta(other Meta)
 }
 
 type ModelMetaUp interface {
@@ -39,11 +39,11 @@ type ModelMetaUp interface {
 }
 
 type ModelMeta interface {
-	ModelMetaMerger
-
 	MetaGet(key string) (v any, ok bool)
 	MetaSet(key string, value any)
 	MetaUnset(key string)
+	MetaCopy() Meta
 
+	ModelMetaMerger
 	ModelMetaUp
 }

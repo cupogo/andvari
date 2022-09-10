@@ -55,3 +55,33 @@ func TestMetaFilter(t *testing.T) {
 		t.Error("ERR c", v)
 	}
 }
+
+type tMetaMod struct {
+	DefaultModel
+	MetaField
+}
+
+func TestMetaModel(t *testing.T) {
+	tmm := new(tMetaMod)
+
+	tmm.MetaSet("a", 1)
+
+	other := JsonKV{
+		"a": 2,
+		"b": 1,
+	}
+
+	tmm.MergeMeta(other)
+
+	if tmm.Meta.GetInt("a") == 2 {
+		t.Log("OK")
+	} else {
+		t.Error("ERR")
+	}
+	if tmm.Meta.GetInt("b") == 1 {
+		t.Log("OK")
+	} else {
+		t.Error("ERR")
+	}
+
+}
