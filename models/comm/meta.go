@@ -104,6 +104,10 @@ type MetaField struct {
 	Meta JsonKV `bson:"meta,omitempty" json:"meta,omitempty" pg:"meta,notnull,use_zero,default:'{}'" swaggerignore:"true"`
 }
 
+func (mf *MetaField) MetaCopy() Meta {
+	return mf.Meta.Copy()
+}
+
 func (mf *MetaField) MergeMeta(other JsonKV) {
 	mf.Meta = MergeMeta(mf.Meta, other)
 }
