@@ -113,7 +113,7 @@ type DefaultModel struct {
 	IDField      `bson:",inline"`
 	DateFields   `bson:",inline"`
 	CreatorField `bson:",inline"`
-	ChangeMod
+	ChangeMod    `bson:",inline"`
 }
 
 // Creating function call to it's inner fields defined hooks
@@ -167,7 +167,7 @@ type DunceModel struct {
 	IDFieldStr   `bson:",inline"`
 	DateFields   `bson:",inline"`
 	CreatorField `bson:",inline"`
-	ChangeMod
+	ChangeMod    `bson:",inline"`
 }
 
 // SerialField struct contain model's ID field.
@@ -217,7 +217,7 @@ type SerialModel struct {
 	SerialField  `bson:",inline"`
 	DateFields   `bson:",inline"`
 	CreatorField `bson:",inline"`
-	ChangeMod
+	ChangeMod    `bson:",inline"`
 }
 
 // Creating function call to it's inner fields defined hooks
