@@ -106,25 +106,16 @@ var (
 )
 
 func shardsInit() {
-	shards = map[ObjType]*idgen.IDGen{
-		OtDefault:    idgen.NewWithShard(int64(OtDefault)),
-		OtAccount:    idgen.NewWithShard(int64(OtAccount)),
-		OtCompany:    idgen.NewWithShard(int64(OtCompany)),
-		OtDepartment: idgen.NewWithShard(int64(OtDepartment)),
-		OtEvent:      idgen.NewWithShard(int64(OtEvent)),
-		OtArticle:    idgen.NewWithShard(int64(OtArticle)),
-		OtTeam:       idgen.NewWithShard(int64(OtTeam)),
-		OtToken:      idgen.NewWithShard(int64(OtToken)),
-		OtPeople:     idgen.NewWithShard(int64(OtPeople)),
-		OtForm:       idgen.NewWithShard(int64(OtForm)),
-		OtGoods:      idgen.NewWithShard(int64(OtGoods)),
+	shards = make(map[ObjType]*idgen.IDGen, int(otLast))
+	for i := int64(0); i < int64(otLast); i++ {
+		shards[ObjType(i)] = idgen.NewWithShard(i)
 	}
 }
 
 func getGen(ot ObjType) *idgen.IDGen {
 	shonce.Do(shardsInit)
 
-	if ot > OtDefault && ot <= OtGoods {
+	if ot > OtDefault && ot < otLast {
 		return shards[ot]
 	}
 	return shards[OtDefault]

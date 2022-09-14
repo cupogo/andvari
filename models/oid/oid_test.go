@@ -10,6 +10,8 @@ import (
 
 func TestGen(t *testing.T) {
 	assert.NotEmpty(t, NewObjID(OtAccount))
+	assert.NotEmpty(t, NewObjID(OtGoods))
+	assert.NotEmpty(t, NewObjID(otLast))
 
 	nid, nv := NewObjIDWithID(OtArticle)
 	assert.NotZero(t, nid)
