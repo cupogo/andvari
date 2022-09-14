@@ -18,8 +18,12 @@ func EnsureArgs(n int, args ...any) bool {
 }
 
 func ParseInts(s string) ([]int, bool) {
-	out, err := StringsToInts(strings.Split(s, ","))
-	return out, err == nil
+	if len(s) == 0 {
+		return nil, false
+	}
+	out, err := StringsToInts(SliceRidZero[string](strings.Split(s, ",")))
+	out = SliceRidZero[int](out)
+	return out, err == nil && len(out) > 0
 }
 
 // StringsToInts convert []string to []int
@@ -33,4 +37,16 @@ func StringsToInts(sa []string) ([]int, error) {
 		si[i] = v
 	}
 	return si, nil
+}
+
+func SliceRidZero[T comparable](in []T) []T {
+	var zero T
+	out := make([]T, 0, len(in))
+	for _, v := range in {
+		if v != zero {
+			out = append(out, v)
+		}
+	}
+
+	return out
 }
