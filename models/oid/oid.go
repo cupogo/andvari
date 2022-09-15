@@ -13,8 +13,6 @@ import (
 type IID = idgen.IID
 type OID IID
 
-type OIDs []OID
-
 const ZeroID OID = 0
 const Min OID = idgen.Min
 

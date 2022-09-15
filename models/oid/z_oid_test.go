@@ -81,3 +81,13 @@ func TestParse(t *testing.T) {
 	assert.NotZero(t, id)
 	assert.NotEmpty(t, cat)
 }
+
+func TestOIDs(t *testing.T) {
+	ids, err := OIDsStr("").Decode()
+	assert.Error(t, err)
+	assert.Nil(t, ids)
+
+	ids, err = OIDsStr("pe-39vg1q8y2mf4").Decode()
+	assert.NoError(t, err)
+	assert.NotNil(t, ids)
+}
