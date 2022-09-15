@@ -22,7 +22,6 @@ func ParseInts(s string) ([]int, bool) {
 		return nil, false
 	}
 	out, err := StringsToInts(SliceRidZero[string](strings.Split(s, ",")))
-	out = SliceRidZero[int](out)
 	return out, err == nil && len(out) > 0
 }
 

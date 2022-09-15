@@ -1,7 +1,10 @@
 package pgx
 
 import (
+	"strings"
 	"time"
+
+	"github.com/go-pg/pg/v10/types"
 
 	"daxv.cn/gopak/lib/sqlutil"
 	"hyyl.xyz/cupola/andvari/models/oid"
@@ -54,6 +57,20 @@ func (md *MDftSpec) Sift(q *ormQuery) (*ormQuery, error) {
 	return q, nil
 }
 
+func SiftOIDs(q *ormQuery, field string, s string, isOr bool) (*ormQuery, bool) {
+	if len(s) > 0 {
+		if ids, ok := oid.ParseOIDs(s); ok {
+			if len(ids) == 1 {
+				return Sift(q, field, "=", ids[0], isOr)
+			}
+			return Sift(q, field, "in", ids, isOr)
+		} else {
+			logger().Infow("invalid oids", "s", s)
+		}
+	}
+	return q, false
+}
+
 func SiftOID(q *ormQuery, field string, s string, isOr bool) (*ormQuery, bool) {
 	if len(s) > 0 {
 		if _, id, err := oid.Parse(s); err == nil {
@@ -99,32 +116,39 @@ func SiftLess(q *ormQuery, field string, v any, isOr bool) (*ormQuery, bool) {
 }
 
 func Sift(q *ormQuery, field, op string, v any, isOr bool) (*ormQuery, bool) {
-	tm := q.TableModel()
-	var pre string
-	if len(tm.GetJoins()) > 0 {
-		pre = string(tm.Table().Alias) + "."
+	if utils.IsZero(v) {
+		return q, false
 	}
+
 	if t, ok := v.(time.Time); ok {
 		if t.IsZero() {
 			return q, false
 		}
 		if op == "=" {
 			const oneDay = time.Hour * 24
-			if isOr {
-				return q.WhereOr(pre+"? BETWEEN ? AND ?", pgIdent(field),
-					t.Truncate(oneDay), t.Add(oneDay).Truncate(oneDay)), true
-			}
-			return q.Where(pre+"? BETWEEN ? AND ?", pgIdent(field),
-				t.Truncate(oneDay), t.Add(oneDay).Truncate(oneDay)), true
+			return SiftBetween(q, field, t.Truncate(oneDay), t.Add(oneDay).Truncate(oneDay), isOr)
 		}
 	}
-	if utils.IsZero(v) {
-		return q, false
+
+	tm := q.TableModel()
+	var pre string
+	if len(tm.GetJoins()) > 0 {
+		pre = string(tm.Table().Alias) + "."
+	}
+
+	var cond string
+	if strings.ToLower(op) == "in" {
+		cond = pre + "? " + op + " (?)"
+		if _, ok := v.(types.ValueAppender); !ok {
+			v = types.In(v)
+		}
+	} else {
+		cond = pre + "? " + op + " ?"
 	}
 	if isOr {
-		return q.WhereOr(pre+"? "+op+" ?", pgIdent(field), v), true
+		return q.WhereOr(cond, pgIdent(field), v), true
 	}
-	return q.Where(pre+"? "+op+" ?", pgIdent(field), v), true
+	return q.Where(cond, pgIdent(field), v), true
 }
 
 // SiftDate 按日期(时间)类型传递查询条件
@@ -133,11 +157,6 @@ func Sift(q *ormQuery, field, op string, v any, isOr bool) (*ormQuery, bool) {
 //	isInt 是指用整数(毫秒)表示的时间
 func SiftDate(q *ormQuery, field string, during string, isInt, isOr bool) (*ormQuery, bool) {
 	if len(during) > 0 {
-		tm := q.TableModel()
-		var pre string
-		if len(tm.GetJoins()) > 0 {
-			pre = string(tm.Table().Alias) + "."
-		}
 		if dr, err := sqlutil.GetDateRange(during); err == nil {
 			var start, end any
 			if isInt {
@@ -145,14 +164,30 @@ func SiftDate(q *ormQuery, field string, during string, isInt, isOr bool) (*ormQ
 			} else {
 				start, end = dr.Start, dr.End
 			}
-			if isOr {
-				return q.WhereOr(pre+"? between ? and ?", pgIdent(field), start, end), true
-			}
-			return q.Where(pre+"? between ? and ?", pgIdent(field), start, end), true
+			return SiftBetween(q, field, start, end, isOr)
 		} else {
 			logger().Infow("invalid param", "field", field, "during", during, "err", err)
 		}
 	}
 
 	return q, false
+}
+
+// SiftBetween 匹配两个值之间的条件
+func SiftBetween(q *ormQuery, field string, v1, v2 any, isOr bool) (*ormQuery, bool) {
+	if utils.IsZero(v1) || utils.IsZero(v2) {
+		return q, false
+	}
+
+	tm := q.TableModel()
+	var pre string
+	if len(tm.GetJoins()) > 0 {
+		pre = string(tm.Table().Alias) + "."
+	}
+
+	if isOr {
+		return q.WhereOr(pre+"? BETWEEN ? AND ?", pgIdent(field), v1, v2), true
+	}
+	return q.Where(pre+"? BETWEEN ? AND ?", pgIdent(field), v1, v2), true
+
 }
