@@ -26,6 +26,12 @@ func ParseInts(s string) ([]int, bool) {
 	return out, err == nil && len(out) > 0
 }
 
+func ParseStrs(s string) ([]string, bool) {
+	out := strings.Split(s, ",")
+	out = SliceRidZero[string](out)
+	return out, len(out) > 0
+}
+
 // StringsToInts convert []string to []int
 func StringsToInts(sa []string) ([]int, error) {
 	si := make([]int, len(sa))
