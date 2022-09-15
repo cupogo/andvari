@@ -21,6 +21,9 @@ func (ss StringSlice) String() string {
 }
 
 func (ss StringSlice) Decode() (OIDs, error) {
+	if len(ss) == 0 {
+		return nil, ErrEmptyOID
+	}
 	a := make(OIDs, len(ss))
 	for i := 0; i < len(ss); i++ {
 		if _, id, err := Parse(ss[i]); err != nil {
@@ -51,4 +54,13 @@ func (s OIDsStr) Valid() bool {
 
 func (s OIDsStr) String() string {
 	return string(s)
+}
+
+// Vals for gencode
+func (s OIDsStr) Vals() OIDs {
+	ids, err := s.Slice().Decode()
+	if err != nil {
+		return nil
+	}
+	return ids
 }

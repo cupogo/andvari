@@ -138,13 +138,13 @@ func NewObjIDWithID(ot ObjType) (string, int64) {
 	return objPrefix(ot) + idgen.IID(id).String(), id
 }
 
-func parse(s string) (a string, id OID, ok bool) {
+func parse(s string) (cat string, id OID, ok bool) {
 	if len(s) == 0 {
 		return
 	}
 	var b string
 	var ii IID
-	if a, b, ok = strings.Cut(s, "-"); ok {
+	if cat, b, ok = strings.Cut(s, "-"); ok {
 		if ii, ok = idgen.ParseID(b); ok {
 			id = OID(ii)
 			return

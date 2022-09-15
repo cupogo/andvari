@@ -90,4 +90,8 @@ func TestOIDs(t *testing.T) {
 	ids, err = OIDsStr("pe-39vg1q8y2mf4").Decode()
 	assert.NoError(t, err)
 	assert.NotNil(t, ids)
+
+	assert.Nil(t, OIDsStr("").Vals())
+	assert.Nil(t, OIDsStr(",").Vals())
+	assert.NotNil(t, OIDsStr("39vg1q8y2mf4").Vals())
 }
