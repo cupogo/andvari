@@ -21,3 +21,8 @@ func IsZero(v any) bool {
 	}
 	return IsNil(v) || reflect.DeepEqual(v, reflect.Zero(reflect.TypeOf(v)).Interface())
 }
+
+func IsSlice(slice any) bool {
+	v := reflect.ValueOf(slice)
+	return v.Kind() == reflect.Slice
+}

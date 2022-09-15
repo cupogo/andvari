@@ -64,3 +64,14 @@ func (s OIDsStr) Vals() OIDs {
 	}
 	return ids
 }
+
+func ParseOIDs(s string) (OIDs, bool) {
+	if len(s) == 0 {
+		return nil, false
+	}
+	ids, err := OIDsStr(s).Decode()
+	if err != nil {
+		return nil, false
+	}
+	return ids, true
+}
