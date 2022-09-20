@@ -19,9 +19,18 @@ type TextSearchSpec struct {
 	// 关键词搜索
 	SearchKeyWord string `json:"skw,omitempty" form:"skw" extensions:"x-order=8"`
 	// 搜索风格 `web` `plain` 或空
-	SearchStyle string `json:"sst,omitempty" form:"sst" extensions:"x-order=9"`
+	SearchStyle string `json:"sst,omitempty" form:"sst" extensions:"x-order=9" enums:",web,plain"`
 }
 
+func (tss *TextSearchSpec) SetTsConfig(cn string, en bool) {
+	tss.cfgname, tss.enabled = cn, en
+}
+
+func (tss *TextSearchSpec) SetTsFallback(cols ...string) {
+	tss.fallbacks = cols
+}
+
+// deprecated
 func (tss *TextSearchSpec) SetFallback(cols ...string) {
 	tss.fallbacks = cols
 }

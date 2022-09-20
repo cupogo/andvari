@@ -104,6 +104,7 @@ func (w *DB) GetTsCfg() (string, bool) {
 	return w.ftsConfig, w.ftsEnabled
 }
 
+// deprecated
 func (w *DB) GetTsSpec() *TextSearchSpec {
 	tcn, enl := w.GetTsCfg()
 	tss := &TextSearchSpec{cfgname: tcn, enabled: enl}
