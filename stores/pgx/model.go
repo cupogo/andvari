@@ -38,3 +38,9 @@ type updatable interface {
 	GetID() any
 	GetUpdated() time.Time
 }
+
+type TextSearchable interface {
+	GetTsConfig() string
+	GetTsColumns() []string
+	SetTsColumns(cols ...string)
+}

@@ -260,11 +260,19 @@ func DoUpdate(ctx context.Context, db ormDB, obj ModelChangeable, columns ...str
 		logger().Infow("unchange", "id", obj.GetID())
 		return nil
 	}
+
 	obj.SetChange(field.Updated)
 	columns = obj.GetChanges()
 
-	q := db.ModelContext(ctx, obj)
-	if _, err := q.Column(columns...).WherePK().Update(); err != nil {
+	q := db.ModelContext(ctx, obj).Column(columns...)
+	if tso, ok := obj.(TextSearchable); ok {
+		cfg := tso.GetTsConfig()
+		cols := tso.GetTsColumns()
+		if len(cfg) > 0 && len(cols) > 0 {
+			q.Set("ts_vec = to_tsvector(?, jsonb_build_array("+strings.Join(cols, ",")+"))", cfg)
+		}
+	}
+	if _, err := q.WherePK().Update(); err != nil {
 		logger().Infow("update model fail", "obj", obj, "columns", columns, "err", err)
 		return err
 	} else {

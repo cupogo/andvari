@@ -241,7 +241,21 @@ type TextSearchField struct {
 	TsCfgName string `json:"-" pg:"ts_cfg,notnull,use_zero,type:name"`
 	// tsvector 格式的关键词，用于全文检索
 	TsVector string `bson:"textKeyword" json:"-" pg:"ts_vec,type:tsvector"`
+
+	cols []string
 } // @name TextSearchField
+
+func (tsf *TextSearchField) GetTsConfig() string {
+	return tsf.TsCfgName
+}
+
+func (tsf *TextSearchField) SetTsColumns(cols ...string) {
+	tsf.cols = cols
+}
+
+func (tsf *TextSearchField) GetTsColumns() []string {
+	return tsf.cols
+}
 
 // GenSlug deprecated
 func GenSlug() string {
