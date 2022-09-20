@@ -1,7 +1,5 @@
 package pgx
 
-import "time"
-
 type Changeable interface {
 	SetChange(...string)
 	GetChanges() []string
@@ -32,11 +30,6 @@ type Pager interface {
 	GetTotal() int
 	SetTotal(n int)
 	Sortable
-}
-
-type updatable interface {
-	GetID() any
-	GetUpdated() time.Time
 }
 
 type TextSearchable interface {
