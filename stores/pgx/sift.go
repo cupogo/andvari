@@ -11,8 +11,8 @@ import (
 	"hyyl.xyz/cupola/andvari/utils"
 )
 
-// MDftSpec 默认的查询条件
-type MDftSpec struct {
+// ModelSpec 模型默认的查询条件
+type ModelSpec struct {
 	// 主键编号`ids`（以逗号分隔的字串），仅供 Form 或 Query 使用, example:"aaa,bbb,ccc"
 	IDsStr oid.OIDsStr `form:"ids" json:"idstr"  extensions:"x-order=0" example:"aaa,bbb,ccc"`
 	// 主键编号`ids`（集），仅供 JSON 使用, example:"['aaa','bbb','ccc']"
@@ -25,8 +25,10 @@ type MDftSpec struct {
 	Updated string `form:"updated" json:"updated"  extensions:"x-order=4"`
 } // @name DefaultSpec
 
+type MDftSpec = ModelSpec // deprecated
+
 // CanSort 检测字段是否可排序
-func (md *MDftSpec) CanSort(key string) bool {
+func (md *ModelSpec) CanSort(key string) bool {
 	switch key {
 	case "id", "created", "updated":
 		return true
@@ -35,7 +37,7 @@ func (md *MDftSpec) CanSort(key string) bool {
 	}
 }
 
-func (md *MDftSpec) Sift(q *ormQuery) (*ormQuery, error) {
+func (md *ModelSpec) Sift(q *ormQuery) (*ormQuery, error) {
 	tm := q.TableModel()
 	var pre string
 	if len(tm.GetJoins()) > 0 {
