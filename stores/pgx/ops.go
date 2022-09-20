@@ -269,6 +269,9 @@ func DoUpdate(ctx context.Context, db ormDB, obj ModelChangeable, columns ...str
 		cfg := tso.GetTsConfig()
 		cols := tso.GetTsColumns()
 		if len(cfg) > 0 && len(cols) > 0 {
+			for _, co := range columns {
+				q.Set(co + " = ?" + co)
+			}
 			q.Set("ts_vec = to_tsvector(?, jsonb_build_array("+strings.Join(cols, ",")+"))", cfg)
 		}
 	}
