@@ -211,6 +211,16 @@ func DoInsert(ctx context.Context, db ormDB, obj Model, args ...any) error {
 		return err
 	}
 
+	if dtf, ok := obj.(interface{ SetCreated(ts any) bool }); ok {
+		if ts, ok := CreatedFromContext(ctx); ok && ts > 0 {
+			if dtf.SetCreated(ts) {
+				logger().Infow("seted createAt ok", "ts", ts)
+			} else {
+				logger().Infow("seted createAt fail", "ts", ts)
+			}
+		}
+	}
+
 	q := db.ModelContext(ctx, obj)
 	argc := len(args)
 	if argc > 0 {

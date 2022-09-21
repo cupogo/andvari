@@ -5,8 +5,9 @@ import "context"
 type contextKey int
 
 const (
-	columnsK contextKey = iota
-	relationK
+	columnsK  contextKey = iota // 列集
+	relationK                   // 关联
+	createdK                    // 创建时间戳
 )
 
 func ContextWithColumns(ctx context.Context, columns ...string) context.Context {
@@ -37,4 +38,21 @@ func RelationFromContext(ctx context.Context) []string {
 		return cols
 	}
 	return nil
+}
+
+// ContextWithCreated 将 Created 放入 Context
+func ContextWithCreated(ctx context.Context, dt int64) context.Context {
+	if dt == 0 {
+		return ctx
+	}
+
+	return context.WithValue(ctx, createdK, dt)
+}
+
+// ContextWithCreated 从 Context 取 Created
+func CreatedFromContext(ctx context.Context) (int64, bool) {
+	if v, ok := ctx.Value(createdK).(int64); ok {
+		return v, true
+	}
+	return 0, false
 }
