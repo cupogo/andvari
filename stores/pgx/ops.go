@@ -302,9 +302,9 @@ func DoDeleteT(ctx context.Context, db ormDB, scDft, scCrap string, table string
 	var ret int
 	_, err := db.QueryOneContext(ctx, pg.Scan(&ret), "SELECT op_affect_delete(?, ?, ?, ?)", scDft, scCrap, table, _id)
 	if err != nil {
-		logger().Infow("delete fail", "table", table, "err", err)
+		logger().Infow("delete fail", "table", table, "id", _id, "err", err)
 	} else {
-		logger().Infow("delete ok", "table", table, "ret", ret)
+		logger().Infow("delete ok", "table", table, "id", _id, "ret", ret)
 	}
 	return err
 }
@@ -320,9 +320,9 @@ func DoUndeleteT(ctx context.Context, db ormDB, scDft, scCrap string, table stri
 	var ret int
 	_, err := db.QueryOneContext(ctx, pg.Scan(&ret), "SELECT op_affect_undelete(?, ?, ?, ?)", scDft, scCrap, table, _id)
 	if err != nil {
-		logger().Infow("undelete fail", "table", table, "err", err)
+		logger().Infow("undelete fail", "table", table, "id", _id, "err", err)
 	} else {
-		logger().Infow("undelete ok", "table", table, "ret", ret)
+		logger().Infow("undelete ok", "table", table, "id", _id, "ret", ret)
 	}
 	return err
 }
