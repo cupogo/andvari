@@ -4,6 +4,8 @@ package field
 const (
 	MetaCompany = "company"
 	MetaCountry = "country"
+	MetaCity    = "city"
 	MetaCreator = "creator"
+	MetaOwner   = "owner"
 	MetaSales   = "sales"
 )

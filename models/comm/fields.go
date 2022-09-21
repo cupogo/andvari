@@ -116,6 +116,25 @@ func (f *CreatorField) SetCreatorID(id any) bool {
 	return false
 }
 
+type OwnerField struct {
+	// 所有者ID
+	OwnerID OID `bson:"ownerID,omitempty" json:"ownerID,omitempty" form:"ownerID" pg:"owner_id,notnull,use_zero" extensions:"x-order=@"`
+}
+
+// GetOwnerID 返回所有者ID
+func (f *OwnerField) GetOwnerID() OID {
+	return f.OwnerID
+}
+
+// SetOwnerID 设置所有者ID
+func (f *OwnerField) SetOwnerID(id any) bool {
+	if v := oid.Cast(id); v.Valid() {
+		f.OwnerID = v
+		return true
+	}
+	return false
+}
+
 // DefaultModel struct contain model's default fields.
 type DefaultModel struct {
 	IDField      `bson:",inline"`
