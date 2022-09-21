@@ -5,6 +5,23 @@ import (
 	"time"
 )
 
+type ITime interface {
+	Time() time.Time
+}
+
+func AsTime(ts any) (time.Time, bool) {
+	switch v := ts.(type) {
+	case time.Time:
+		return v, true
+	case ITime:
+		return v.Time(), true
+	case int64:
+		return time.UnixMilli(v), true
+	default:
+		return time.Time{}, false
+	}
+}
+
 // copy and optimize from go.mongodb.org/mongo-driver/bson/primitive
 
 // DateTime represents the BSON datetime value.

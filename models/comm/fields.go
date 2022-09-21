@@ -80,8 +80,16 @@ func (f *DateFields) Creating() error {
 // on create/update model.
 func (f *DateFields) Saving() error {
 	f.UpdatedAt = time.Now()
-
 	return nil
+}
+
+func (f *DateFields) SetCreated(ts any) bool {
+	if v, ok := AsTime(ts); ok {
+		f.CreatedAt = v
+		return ok
+	}
+
+	return false
 }
 
 // GetUpdated return time of updatedAt
