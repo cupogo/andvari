@@ -16,6 +16,8 @@ const (
 	OtPeople             // 人员: 客户信息、联系人、地址等
 	OtForm               // 表单: 配置、订单、票据等
 	OtGoods              // 东西: 设备、配件、软件等
+	OtFile               // 文件和文档等
+	OtImage              // 图片
 	otLast
 )
 
@@ -41,6 +43,10 @@ func (ot ObjType) Code() string {
 		return "pe"
 	case OtGoods:
 		return "go"
+	case OtFile:
+		return "fi"
+	case OtImage:
+		return "im"
 	}
 	return "oo" // default
 }
