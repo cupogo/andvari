@@ -1,6 +1,6 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
-daxv.cn/gopak/lib v0.3.25 h1:v50Hk+X+ukYZEOkDjSM+XG98wqhbsL3WSglMJVuZ6t0=
-daxv.cn/gopak/lib v0.3.25/go.mod h1:KwonXti55u5JrmMxfV7dXxEvRAez0ILLURB5WVIx/pw=
+daxv.cn/gopak/lib v0.3.26 h1:7IZ749vwBRZqeIwFSvJWw6hbs28jmDDkihiIXvpNhME=
+daxv.cn/gopak/lib v0.3.26/go.mod h1:KwonXti55u5JrmMxfV7dXxEvRAez0ILLURB5WVIx/pw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=

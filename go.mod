@@ -3,7 +3,7 @@ module hyyl.xyz/cupola/andvari
 go 1.18
 
 require (
-	daxv.cn/gopak/lib v0.3.25
+	daxv.cn/gopak/lib v0.3.26
 	github.com/go-pg/migrations/v8 v8.1.0
 	github.com/go-pg/pg/v10 v10.10.6
 )
