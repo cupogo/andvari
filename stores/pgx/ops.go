@@ -19,9 +19,20 @@ type pgDB = pg.DB
 type pgTx = pg.Tx
 type pgIdent = pg.Ident
 
-func EnsureSchema(db *pgDB, scDft string) error {
-	if _, err := db.Exec("CREATE SCHEMA IF NOT EXISTS " + scDft); err != nil {
-		logger().Infow("create schema fail", "sc", scDft, "err", err)
+func EnsureSchema(db *pgDB, name string) error {
+	if _, err := db.Exec("CREATE SCHEMA IF NOT EXISTS " + name); err != nil {
+		logger().Infow("create schema fail", "name", name, "err", err)
+		return err
+	}
+	return nil
+}
+
+func EnsureExtension(db *pgDB, name string, sc ...string) error {
+	if len(sc) == 0 || len(sc[0]) == 0 {
+		sc = []string{"public"}
+	}
+	if _, err := db.Exec("CREATE EXTENSION IF NOT EXISTS " + name + " WITH SCHEMA " + sc[0]); err != nil {
+		logger().Infow("create extension fail", "name", name, "err", err)
 		return err
 	}
 	return nil

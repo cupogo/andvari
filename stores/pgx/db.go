@@ -65,7 +65,12 @@ func Open(dsn string, ftscfg string, debug bool) (*DB, error) {
 	w.ftsConfig = ftscfg
 	w.ftsEnabled = CheckTsCfg(db, ftscfg)
 
-	return w, EnsureSchema(db, w.scDft)
+	_ = EnsureSchema(db, w.scDft)
+	for _, name := range []string{"citext", "intarray", "btree_gin", "btree_gist", "pg_trgm"} {
+		_ = EnsureExtension(db, name)
+	}
+
+	return w, nil
 }
 
 func (w *DB) CreateTables(dropIt bool, tables ...any) error {
