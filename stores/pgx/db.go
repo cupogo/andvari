@@ -122,6 +122,7 @@ func (w *DB) ApplyTsQuery(q *ormQuery, kw, sty string, args ...string) (*ormQuer
 
 func (w *DB) RunMigrations(mfs http.FileSystem, dir string) error {
 	collection := migrations.NewCollection()
+	collection.SetTableName(w.scDft + ".gopg_migrations")
 	if err := collection.DiscoverSQLMigrationsFromFilesystem(mfs, dir); err != nil {
 		return err
 	}
