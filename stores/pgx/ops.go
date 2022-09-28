@@ -180,7 +180,7 @@ func CreateModel(db *pg.DB, model any, dropIt bool) (err error) {
 		logger().Errorw("create model failed", "model", model, "err", err)
 		return
 	}
-	logger().Infow("create model", "name", query.TableModel().Table().SQLName)
+	logger().Debugw("create model", "name", query.TableModel().Table().SQLName)
 	return
 }
 

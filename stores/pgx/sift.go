@@ -16,7 +16,7 @@ type ModelSpec struct {
 	// 主键编号`ids`（以逗号分隔的字串），仅供 Form 或 Query 使用, example:"aaa,bbb,ccc"
 	IDsStr oid.OIDsStr `form:"ids" json:"idstr"  extensions:"x-order=0" example:"aaa,bbb,ccc"`
 	// 主键编号`ids`（集），仅供 JSON 使用, example:"['aaa','bbb','ccc']"
-	IDs oid.OIDs `form:"-" json:"ids"  extensions:"x-order=1" `
+	IDs oid.OIDs `form:"-" json:"ids"  extensions:"x-order=1" swaggerignore:"true"`
 	// 创建者ID
 	CreatorID string `form:"creatorID" json:"creatorID"  extensions:"x-order=2"`
 	// 创建时间 形式： yyyy-mm-dd, 1_day, 2_weeks, 3_months

@@ -10,6 +10,7 @@ type dbExecer interface {
 }
 
 func BatchDirSQLs(dbc dbExecer, dbfs fs.FS, patterns ...string) error {
+	var count int
 	for _, pattern := range patterns {
 		matches, err := fs.Glob(dbfs, pattern)
 		if err != nil {
@@ -20,8 +21,10 @@ func BatchDirSQLs(dbc dbExecer, dbfs fs.FS, patterns ...string) error {
 				logger().Warnf("exec sql fail: %+v, %+s", name, err)
 				return err
 			}
+			count++
 		}
 	}
+	logger().Infow("bulk sqls done", "files", count)
 
 	return nil
 }
@@ -39,9 +42,9 @@ func ExecSQLfile(dbc dbExecer, dbfs fs.FS, name string) error {
 		if len(query) > 32 {
 			query = query[:32]
 		}
-		logger().Infof("exec '%s...' result ERR %s", query, err)
+		logger().Infow("exec sql fail", "query", query, "err", err)
 		return err
 	}
-	logger().Infof("exec %q done", name)
+	logger().Debugw("exec sql done", "name", name)
 	return nil
 }
