@@ -118,7 +118,7 @@ func SiftLess(q *ormQuery, field string, v any, isOr bool) (*ormQuery, bool) {
 }
 
 func Sift(q *ormQuery, field, op string, v any, isOr bool) (*ormQuery, bool) {
-	if utils.IsZero(v) {
+	if utils.IsZero(v) || len(field) == 0 {
 		return q, false
 	}
 
