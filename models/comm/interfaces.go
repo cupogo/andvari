@@ -24,6 +24,13 @@ type ModelCreator interface {
 	SetCreatorID(id any) bool
 }
 
+// ModelOwner 可设置拥有者的基础模型
+type ModelOwner interface {
+	Model
+	GetOwnerID() OID
+	SetOwnerID(id any) bool
+}
+
 var (
 	_ ModelCreator = (*DefaultModel)(nil)
 	_ ModelCreator = (*DunceModel)(nil)
