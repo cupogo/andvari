@@ -117,7 +117,7 @@ func (f *CreatorField) SetCreatorID(id any) bool {
 }
 
 type OwnerField struct {
-	// 所有者ID
+	// 所有者OID 默认为当前登录账号主键
 	OwnerID OID `bson:"ownerID,omitempty" json:"ownerID,omitempty" form:"ownerID" pg:"owner_id,notnull,use_zero" extensions:"x-order=@"`
 }
 
