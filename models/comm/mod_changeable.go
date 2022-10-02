@@ -1,6 +1,6 @@
 package comm
 
-import "daxv.cn/gopak/lib/utils/array"
+import "github.com/cupogo/andvari/utils/array"
 
 type ChangeMod struct {
 	cs array.String

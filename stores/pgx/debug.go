@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-pg/pg/v10"
+	"github.com/uptrace/bun"
 )
 
 // DebugHook is a query hook that logs an error with a query if there are any.
@@ -13,25 +13,19 @@ type DebugHook struct {
 	Verbose bool
 }
 
-var _ pg.QueryHook = (*DebugHook)(nil)
+var _ bun.QueryHook = (*DebugHook)(nil)
 
-func (h *DebugHook) BeforeQuery(ctx context.Context, evt *pg.QueryEvent) (context.Context, error) {
-	q, err := evt.FormattedQuery()
-	if err != nil {
-		return nil, err
-	}
-
+func (h *DebugHook) BeforeQuery(ctx context.Context, evt *bun.QueryEvent) context.Context {
 	if evt.Err != nil {
-		logger().Debugf("%s executing a query:\n%s\n", evt.Err, q)
+		logger().Debugf("%s executing a query:\n%s\n", evt.Err, evt.Query)
 	} else if h.Verbose {
-		logger().Debugw(string(q), "model", evt.Model)
+		logger().Debugw("BeforeQuery", "model", evt.Model, "query", evt.Query)
 	}
 
-	return ctx, nil
+	return ctx
 }
 
-func (h *DebugHook) AfterQuery(ctx context.Context, evt *pg.QueryEvent) error {
+func (h *DebugHook) AfterQuery(ctx context.Context, evt *bun.QueryEvent) {
 	dur := time.Since(evt.StartTime)
 	logger().Debugw("AfterQuery", "took", dur.String(), "model", evt.Model)
-	return nil
 }

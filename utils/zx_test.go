@@ -3,7 +3,7 @@ package utils
 import (
 	"testing"
 
-	"daxv.cn/gopak/lib/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestArgs(t *testing.T) {

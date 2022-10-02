@@ -2,12 +2,32 @@ package pgx
 
 import (
 	"context"
-	"net/http"
+	"database/sql"
+	"io/fs"
 
-	"github.com/go-pg/migrations/v8"
-	"github.com/go-pg/pg/v10"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/migrate"
+	"github.com/uptrace/bun/schema"
 
-	"hyyl.xyz/cupola/andvari/models/oid"
+	"github.com/cupogo/andvari/models/oid"
+)
+
+type IConn = bun.IConn
+type IDB = bun.IDB
+type Tx = bun.Tx
+type TxOptions = sql.TxOptions
+type Ident = bun.Ident
+type Safe = bun.Safe
+
+type QueryBuilder = bun.QueryBuilder
+type SelectQuery = bun.SelectQuery
+type QueryAppender = schema.QueryAppender
+
+var (
+	ErrNoRows = sql.ErrNoRows
+	In        = bun.In
 )
 
 const (
@@ -30,7 +50,7 @@ func LastSchemaCrap() string {
 }
 
 type DB struct {
-	*pg.DB
+	*bun.DB
 
 	scDft, scCrap string // default and trash schemas
 	ftsConfig     string
@@ -38,43 +58,48 @@ type DB struct {
 }
 
 func Open(dsn string, ftscfg string, debug bool) (*DB, error) {
-	pgOption, err := pg.ParseURL(dsn)
-	if err != nil {
-		logger().Warnw("parse db url failed", "err", err)
-		return nil, err
-	}
+	pgconn := pgdriver.NewConnector(pgdriver.WithDSN(dsn))
+	// pgOption, err := pg.ParseURL(dsn)
+	// if err != nil {
+	// 	logger().Warnw("parse db url failed", "err", err)
+	// 	return nil, err
+	// }
+	pgcfg := pgconn.Config()
 
 	w := &DB{}
+	sqldb := sql.OpenDB(pgconn)
+	db := bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns())
 
-	logger().Debugw("parsed", "addr", pgOption.Addr, "db", pgOption.Database, "user", pgOption.User)
-	w.scDft = pgOption.User
+	logger().Debugw("parsed", "addr", pgcfg.Addr, "db", pgcfg.Database, "user", pgcfg.User)
+	w.scDft = pgcfg.User
 	lastSchema = w.scDft
-	if w.scDft == "" {
-		logger().Fatalw("pg.user is empty in DSN")
-		return nil, err
-	}
+	// if w.scDft == "" {
+	// 	logger().Fatalw("pg.user is empty in DSN")
+	// 	return nil, err
+	// }
 	w.scCrap = w.scDft + crapSuffix
 	lastSchemaCrap = w.scCrap
 
-	db := pg.Connect(pgOption)
-	if debug {
-		debugHook := &DebugHook{Verbose: true}
-		db.AddQueryHook(debugHook)
-	}
+	// db := pg.Connect(pgOption)
+	// if debug {
+	// 	debugHook := &DebugHook{Verbose: true}
+	// 	db.AddQueryHook(debugHook)
+	// }
+	ctx := context.Background()
 	w.DB = db
 	w.ftsConfig = ftscfg
-	w.ftsEnabled = CheckTsCfg(db, ftscfg)
+	w.ftsEnabled = CheckTsCfg(ctx, db, ftscfg)
 
-	_ = EnsureSchema(db, w.scDft)
+	_ = EnsureSchema(ctx, db, w.scDft)
 	for _, name := range []string{"citext", "intarray", "btree_gin", "btree_gist", "pg_trgm"} {
-		_ = EnsureExtension(db, name)
+		_ = EnsureExtension(ctx, db, name)
 	}
 
 	return w, nil
 }
 
-func (w *DB) CreateTables(dropIt bool, tables ...any) error {
-	return CreateModels(w.DB, dropIt, tables...)
+func (w *DB) CreateTables(ctx context.Context, dropIt bool, tables ...any) error {
+	return CreateModels(ctx, w.DB, dropIt, tables...)
 }
 
 func (w *DB) Schema() string {
@@ -116,20 +141,23 @@ func (w *DB) GetTsSpec() *TextSearchSpec {
 	return tss
 }
 
-func (w *DB) ApplyTsQuery(q *ormQuery, kw, sty string, args ...string) (*ormQuery, error) {
+func (w *DB) ApplyTsQuery(q *SelectQuery, kw, sty string, args ...string) (*SelectQuery, error) {
 	return DoApplyTsQuery(w.ftsEnabled, w.ftsConfig, q, kw, sty, args...)
 }
 
-func (w *DB) RunMigrations(mfs http.FileSystem, dir string) error {
-	collection := migrations.NewCollection()
-	collection.SetTableName(w.scDft + ".gopg_migrations")
-	if err := collection.DiscoverSQLMigrationsFromFilesystem(mfs, dir); err != nil {
+func (w *DB) RunMigrations(ctx context.Context, mfs fs.FS, dir string) error {
+	var migrations = migrate.NewMigrations()
+	// migrations.
+	// collection.SetTableName(w.scDft + ".gopg_migrations")
+	if err := migrations.Discover(mfs); err != nil {
 		return err
 	}
-	oldVer, newVer, err := collection.Run(w, "up")
+	migrator := migrate.NewMigrator(w.DB, migrations)
+	group, err := migrator.Migrate(ctx)
 	if err != nil {
 		return err
 	}
-	logger().Infow("migrated", "oldVer", oldVer, "newVer", newVer)
+
+	logger().Infow("migrated", "result", group.String())
 	return nil
 }

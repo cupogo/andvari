@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"hyyl.xyz/cupola/andvari/models/idgen"
+	"github.com/cupogo/andvari/models/idgen"
 )
 
 // IID 自定义序列号和编号

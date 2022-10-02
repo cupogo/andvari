@@ -3,9 +3,9 @@ package oid
 import (
 	"testing"
 
-	"daxv.cn/gopak/lib/assert"
+	"github.com/stretchr/testify/assert"
 
-	"hyyl.xyz/cupola/andvari/models/idgen"
+	"github.com/cupogo/andvari/models/idgen"
 )
 
 func TestGen(t *testing.T) {

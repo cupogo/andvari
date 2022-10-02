@@ -4,34 +4,30 @@ import (
 	"strconv"
 	"time"
 
-	"hyyl.xyz/cupola/andvari/models/idgen"
-	"hyyl.xyz/cupola/andvari/models/oid"
+	"github.com/cupogo/andvari/models/oid"
 )
 
-type IID = idgen.IID
+type BaseModel struct{}
+
 type OID = oid.OID
-type IIDs = []IID
 type OIDs = []OID
 
 // IDField struct contain model's ID field.
 type IDField struct {
-	ID OID `bson:"_id,omitempty" json:"id" form:"id" pg:",pk,type:bigint" extensions:"x-order=/"` // 主键
+	ID OID `bson:"_id,omitempty" json:"id" form:"id" bun:",pk,type:bigint" pg:",pk,type:bigint" extensions:"x-order=/"` // 主键
 }
 
 // DateFields struct contain `createdAt` and `updatedAt`
 // fields that autofill on insert/update model.
 type DateFields struct {
-	CreatedAt time.Time `bson:"createdAt" json:"createdAt" form:"createdAt" pg:"created,notnull,default:now()" extensions:"x-order=["` // 创建时间
-	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt" form:"updatedAt" pg:"updated,notnull" extensions:"x-order=]"`               // 变更时间
+	CreatedAt time.Time `bson:"createdAt" json:"createdAt" form:"createdAt" bun:"created,notnull,default:now()" pg:"created,notnull,default:now()" extensions:"x-order=["` // 创建时间
+	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt" form:"updatedAt" bun:"updated,notnull" pg:"updated,notnull" extensions:"x-order=]"`                             // 变更时间
 }
 
 // PrepareID method prepare id value to using it as id in filtering,...
 // e.g convert hex-string id value to bson.ObjectId
 func (f *IDField) PrepareID(id any) (any, error) {
-	if v, ok := id.(OID); ok {
-		return v, nil
-	}
-	if v, ok := id.(IID); ok {
+	if v := oid.Cast(id); v.Valid() {
 		return v, nil
 	}
 
@@ -99,7 +95,7 @@ func (f *DateFields) GetUpdated() time.Time {
 
 type CreatorField struct {
 	// 创建者ID
-	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" form:"creatorID" pg:"creator_id,notnull,use_zero" extensions:"x-order=_"`
+	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" form:"creatorID" bun:"creator_id,notnull,default:0" pg:"creator_id,notnull,use_zero" extensions:"x-order=_"`
 }
 
 // GetCreatorID 返回创建者ID
@@ -118,7 +114,7 @@ func (f *CreatorField) SetCreatorID(id any) bool {
 
 type OwnerField struct {
 	// 所有者OID 默认为当前登录账号主键
-	OwnerID OID `bson:"ownerID,omitempty" json:"ownerID,omitempty" form:"ownerID" pg:"owner_id,notnull,use_zero" extensions:"x-order=@"`
+	OwnerID OID `bson:"ownerID,omitempty" json:"ownerID,omitempty" form:"ownerID" bun:"owner_id,notnull,default:0" pg:"owner_id,notnull,use_zero" extensions:"x-order=@"`
 }
 
 // GetOwnerID 返回所有者ID
@@ -154,7 +150,7 @@ func (model *DefaultModel) Saving() error {
 }
 
 type IDFieldStr struct {
-	ID string `bson:"_id,omitempty" json:"id" form:"id" pg:",pk" extensions:"x-order=/"` // 主键
+	ID string `bson:"_id,omitempty" json:"id" form:"id" bun:",pk" pg:",pk" extensions:"x-order=/"` // 主键
 }
 
 func (f *IDFieldStr) PrepareID(id any) (any, error) {
@@ -199,7 +195,7 @@ type DunceModel struct {
 
 // SerialField struct contain model's ID field.
 type SerialField struct {
-	ID int `bson:"_id,omitempty" json:"id" form:"id" pg:",pk,type:serial" extensions:"x-order=/"` // 主键
+	ID int `bson:"_id,omitempty" json:"id" form:"id" bun:",pk,type:serial" pg:",pk,type:serial" extensions:"x-order=/"` // 主键
 }
 
 func (f *SerialField) PrepareID(id any) (any, error) {
@@ -257,17 +253,11 @@ func (model *SerialModel) Saving() error {
 	return model.DateFields.Saving()
 }
 
-// StringsDiff deprecated
-type StringsDiff struct {
-	Newest  []string `json:"newest" validate:"dive"`  // 新增的字串集
-	Removed []string `json:"removed" validate:"dive"` // 删除的字串集
-} // @name StringsDiff
-
 type TextSearchField struct {
 	// 生成 tsvector 时所使用的配置名
-	TsCfgName string `json:"-" pg:"ts_cfg,notnull,use_zero,type:name"`
+	TsCfgName string `json:"-" bun:"ts_cfg,notnull,type:name,default:''" pg:"ts_cfg,notnull,use_zero,type:name"`
 	// tsvector 格式的关键词，用于全文检索
-	TsVector string `bson:"textKeyword" json:"-" pg:"ts_vec,type:tsvector"`
+	TsVector string `bson:"textKeyword" json:"-" bun:"ts_vec,type:tsvector" pg:"ts_vec,type:tsvector"`
 
 	cols []string
 } // @name TextSearchField
@@ -282,9 +272,4 @@ func (tsf *TextSearchField) SetTsColumns(cols ...string) {
 
 func (tsf *TextSearchField) GetTsColumns() []string {
 	return tsf.cols
-}
-
-// GenSlug deprecated
-func GenSlug() string {
-	return oid.NewID(oid.OtDefault).String()
 }

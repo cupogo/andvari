@@ -3,7 +3,7 @@ package comm
 import (
 	"testing"
 
-	"daxv.cn/gopak/lib/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIDField(t *testing.T) {

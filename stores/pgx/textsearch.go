@@ -1,9 +1,10 @@
 package pgx
 
 import (
+	"context"
 	"fmt"
 
-	"daxv.cn/gopak/lib/sqlutil"
+	"github.com/cupogo/andvari/utils/sqlutil"
 )
 
 const (
@@ -35,27 +36,27 @@ func (tss *TextSearchSpec) SetFallback(cols ...string) {
 	tss.fallbacks = cols
 }
 
-func (tss *TextSearchSpec) Sift(q *ormQuery) (*ormQuery, error) {
+func (tss *TextSearchSpec) Sift(q *SelectQuery) (*SelectQuery, error) {
 	return DoApplyTsQuery(tss.enabled, tss.cfgname, q, tss.SearchKeyWord, tss.SearchStyle, tss.fallbacks...)
 }
 
-func DoApplyTsQuery(enabled bool, cfgname string, q *ormQuery, kw, sty string, cols ...string) (*ormQuery, error) {
+func DoApplyTsQuery(enabled bool, cfgname string, q *SelectQuery, kw, sty string, cols ...string) (*SelectQuery, error) {
 	if len(kw) == 0 {
 		return q, nil
 	}
 	if enabled {
-		return q.Where("? @@ "+getTsQuery(cfgname, sty, kw), pgIdent(textVec)), nil
+		return q.Where("? @@ "+getTsQuery(cfgname, sty, kw), Ident(textVec)), nil
 	}
 	if len(cols) > 0 && len(cols[0]) > 0 {
-		q.WhereGroup(func(_q *ormQuery) (*ormQuery, error) {
+		q.WhereGroup(" AND ", func(_q *SelectQuery) *SelectQuery {
 			for i, col := range cols {
 				if i == 0 {
-					_q.Where("? iLIKE ?", pgIdent(col), sqlutil.MendValue(kw))
+					_q.Where("? iLIKE ?", Ident(col), sqlutil.MendValue(kw))
 				} else {
-					_q.WhereOr("? iLIKE ?", pgIdent(col), sqlutil.MendValue(kw))
+					_q.WhereOr("? iLIKE ?", Ident(col), sqlutil.MendValue(kw))
 				}
 			}
-			return _q, nil
+			return _q
 		})
 	}
 	return q, nil
@@ -63,6 +64,20 @@ func DoApplyTsQuery(enabled bool, cfgname string, q *ormQuery, kw, sty string, c
 
 func getTsQuery(tscfg string, sty, kw string) string {
 	return fmt.Sprintf("%s('%s', '%s')", GetTSQname(sty), tscfg, sqlutil.CleanWildcard(kw))
+}
+
+func CheckTsCfg(ctx context.Context, db IDB, ftsConfig string) bool {
+	var ret int
+	err := db.NewSelect().Table("pg_ts_config").Column("oid").Where("cfgname = ?", ftsConfig).Scan(ctx, &ret)
+	if err == nil {
+		if ret > 0 {
+			logger().Infow("fts checked ok", "ts cfg", ftsConfig)
+			return true
+		}
+	} else {
+		logger().Infow("select ts config fail", "tscfg", ftsConfig, "err", err)
+	}
+	return false
 }
 
 // GetTSQname return ts func name with search style

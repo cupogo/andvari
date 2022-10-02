@@ -8,7 +8,5 @@ const (
 	Created = "created"
 	Updated = "updated"
 	Meta    = "meta"
-
-	AuditStatus = "adst"
-	Src         = "src"
+	Src     = "src"
 )
