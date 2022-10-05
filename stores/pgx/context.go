@@ -8,6 +8,7 @@ const (
 	columnsK  contextKey = iota // 列集
 	relationK                   // 关联
 	createdK                    // 创建时间戳
+	excludesK                   // exclude column 排除掉的列集
 )
 
 func ContextWithColumns(ctx context.Context, columns ...string) context.Context {
@@ -20,6 +21,21 @@ func ContextWithColumns(ctx context.Context, columns ...string) context.Context 
 
 func ColumnsFromContext(ctx context.Context) []string {
 	if cols, ok := ctx.Value(columnsK).([]string); ok {
+		return cols
+	}
+	return nil
+}
+
+func ContextWithExcludes(ctx context.Context, columns ...string) context.Context {
+	if len(columns) == 0 {
+		return ctx
+	}
+
+	return context.WithValue(ctx, excludesK, columns)
+}
+
+func ExcludesFromContext(ctx context.Context) []string {
+	if cols, ok := ctx.Value(excludesK).([]string); ok {
 		return cols
 	}
 	return nil

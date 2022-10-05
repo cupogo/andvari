@@ -111,6 +111,13 @@ func (w *DB) List(ctx context.Context, spec ListArg, dataptr any) (total int, er
 	if spec.Deleted() {
 		q.ModelTableExpr(w.scCrap + ".?TableName AS ?TableAlias")
 	}
+
+	if excols := ExcludesFromContext(ctx); len(excols) > 0 {
+		q.ExcludeColumn(excols...)
+	} else if cols := ColumnsFromContext(ctx); len(cols) > 0 {
+		q.Column(cols...)
+	}
+
 	return QueryPager(ctx, spec, q)
 }
 

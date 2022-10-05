@@ -128,7 +128,7 @@ func TestOps(t *testing.T) {
 	spec.Limit = 2
 	spec.Text = "test"
 	var data Clauses
-	total, err := db.List(ctx, spec, &data)
+	total, err := db.List(ContextWithColumns(ctx, "text"), spec, &data)
 	assert.NoError(t, err)
 	assert.NotZero(t, total)
 
@@ -140,7 +140,7 @@ func TestOps(t *testing.T) {
 	spec2.IsDelete = true
 	assert.True(t, spec2.Deleted())
 	var data2 Clauses
-	total, err = db.List(ctx, spec2, &data2)
+	total, err = db.List(ContextWithExcludes(ctx, "text"), spec2, &data2)
 	assert.NoError(t, err)
 	assert.NotZero(t, total)
 
