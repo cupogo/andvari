@@ -22,7 +22,7 @@ func EnsureExtension(ctx context.Context, db IConn, name string, sc ...string) e
 	if len(sc) == 0 || len(sc[0]) == 0 {
 		sc = []string{"public"}
 	}
-	if _, err := db.ExecContext(context.TODO(), "CREATE EXTENSION IF NOT EXISTS "+name+" WITH SCHEMA "+sc[0]); err != nil {
+	if _, err := db.ExecContext(ctx, "CREATE EXTENSION IF NOT EXISTS "+name+" WITH SCHEMA "+sc[0]); err != nil {
 		logger().Infow("create extension fail", "name", name, "err", err)
 		return err
 	}
@@ -114,7 +114,7 @@ func QueryPager(ctx context.Context, p Pager, q *SelectQuery) (count int, err er
 	return
 }
 
-func ModelWherePK(ctx context.Context, db IDB, obj Model, columns ...string) (err error) {
+func ModelWithPK(ctx context.Context, db IDB, obj Model, columns ...string) (err error) {
 	if obj.IsZeroID() {
 		return ErrEmptyPK
 	}
@@ -134,7 +134,7 @@ func ModelWherePK(ctx context.Context, db IDB, obj Model, columns ...string) (er
 
 func ModelWithPKID(ctx context.Context, db IDB, obj Model, id any, columns ...string) error {
 	if obj.SetID(id) {
-		return ModelWherePK(ctx, db, obj, columns...)
+		return ModelWithPK(ctx, db, obj, columns...)
 	}
 
 	logger().Infow("invalid id", "id", id)
@@ -263,7 +263,7 @@ type columnsFn func() []string
 func StoreWithCall(ctx context.Context, db IDB, exist, obj ModelChangeable, csfn columnsFn, args ...string) (isn bool, err error) {
 	if !obj.IsZeroID() {
 		exist.SetID(obj.GetID())
-		err = ModelWherePK(ctx, db, exist)
+		err = ModelWithPK(ctx, db, exist)
 	} else if len(args) > 1 && utils.EnsureArgs(2, args[0], args[1]) {
 		err = ModelWithUnique(ctx, db, exist, args[0], args[1])
 	}

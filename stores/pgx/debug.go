@@ -16,9 +16,7 @@ type DebugHook struct {
 var _ bun.QueryHook = (*DebugHook)(nil)
 
 func (h *DebugHook) BeforeQuery(ctx context.Context, evt *bun.QueryEvent) context.Context {
-	if evt.Err != nil {
-		logger().Debugf("%s executing a query:\n%s\n", evt.Err, evt.Query)
-	} else if h.Verbose {
+	if h.Verbose {
 		logger().Debugw("BeforeQuery", "model", evt.Model, "query", evt.Query)
 	}
 
@@ -26,6 +24,12 @@ func (h *DebugHook) BeforeQuery(ctx context.Context, evt *bun.QueryEvent) contex
 }
 
 func (h *DebugHook) AfterQuery(ctx context.Context, evt *bun.QueryEvent) {
+
 	dur := time.Since(evt.StartTime)
-	logger().Debugw("AfterQuery", "took", dur.String(), "model", evt.Model)
+	if evt.Err != nil {
+		logger().Infow("executing a query fail", "err", evt.Err, "query", evt.Query)
+	} else {
+		logger().Debugw("AfterQuery", "took", dur.String(), "model", evt.Model)
+	}
+
 }

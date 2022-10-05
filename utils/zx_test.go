@@ -19,8 +19,8 @@ func TestSlice(t *testing.T) {
 	assert.Len(t, out, 0)
 
 	out, ok = ParseInts("0,,")
-	assert.False(t, ok)
-	assert.Len(t, out, 0)
+	assert.True(t, ok)
+	assert.Len(t, out, 1)
 
 	out2 := SliceRidZero[int](out)
 	assert.Len(t, out2, 0)

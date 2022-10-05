@@ -59,38 +59,34 @@ type DB struct {
 
 func Open(dsn string, ftscfg string, debug bool) (*DB, error) {
 	pgconn := pgdriver.NewConnector(pgdriver.WithDSN(dsn))
-	// pgOption, err := pg.ParseURL(dsn)
-	// if err != nil {
-	// 	logger().Warnw("parse db url failed", "err", err)
-	// 	return nil, err
-	// }
 	pgcfg := pgconn.Config()
 
-	w := &DB{}
 	sqldb := sql.OpenDB(pgconn)
 	db := bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns())
 
-	logger().Debugw("parsed", "addr", pgcfg.Addr, "db", pgcfg.Database, "user", pgcfg.User)
-	w.scDft = pgcfg.User
+	ctx := context.Background()
+	if err := db.PingContext(ctx); err != nil {
+		logger().Infow("connect fail", "addr", pgcfg.Addr, "db", pgcfg.Database, "user", pgcfg.User, "err", err)
+		return nil, err
+	}
+	logger().Debugw("connected OK", "db", db.String(), "addr", pgcfg.Addr, "db", pgcfg.Database, "user", pgcfg.User)
+
+	w := &DB{DB: db, scDft: pgcfg.User, scCrap: pgcfg.User + crapSuffix}
 	lastSchema = w.scDft
-	// if w.scDft == "" {
-	// 	logger().Fatalw("pg.user is empty in DSN")
-	// 	return nil, err
-	// }
-	w.scCrap = w.scDft + crapSuffix
 	lastSchemaCrap = w.scCrap
 
-	// db := pg.Connect(pgOption)
-	// if debug {
-	// 	debugHook := &DebugHook{Verbose: true}
-	// 	db.AddQueryHook(debugHook)
-	// }
-	ctx := context.Background()
-	w.DB = db
+	if debug {
+		debugHook := &DebugHook{Verbose: true}
+		db.AddQueryHook(debugHook)
+	}
+
 	w.ftsConfig = ftscfg
 	w.ftsEnabled = CheckTsCfg(ctx, db, ftscfg)
 
-	_ = EnsureSchema(ctx, db, w.scDft)
+	if err := EnsureSchema(ctx, db, w.scDft); err != nil {
+		return nil, err
+	}
+
 	for _, name := range []string{"citext", "intarray", "btree_gin", "btree_gist", "pg_trgm"} {
 		_ = EnsureExtension(ctx, db, name)
 	}
@@ -132,13 +128,6 @@ func (w *DB) OpUndeleteOID(ctx context.Context, table string, id string) error {
 
 func (w *DB) GetTsCfg() (string, bool) {
 	return w.ftsConfig, w.ftsEnabled
-}
-
-// deprecated
-func (w *DB) GetTsSpec() *TextSearchSpec {
-	tcn, enl := w.GetTsCfg()
-	tss := &TextSearchSpec{cfgname: tcn, enabled: enl}
-	return tss
 }
 
 func (w *DB) ApplyTsQuery(q *SelectQuery, kw, sty string, args ...string) (*SelectQuery, error) {

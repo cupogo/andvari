@@ -67,6 +67,9 @@ func getTsQuery(tscfg string, sty, kw string) string {
 }
 
 func CheckTsCfg(ctx context.Context, db IDB, ftsConfig string) bool {
+	if len(ftsConfig) == 0 {
+		return false
+	}
 	var ret int
 	err := db.NewSelect().Table("pg_ts_config").Column("oid").Where("cfgname = ?", ftsConfig).Scan(ctx, &ret)
 	if err == nil {
