@@ -7,10 +7,7 @@ import (
 	"github.com/cupogo/andvari/models/oid"
 )
 
-type BaseModel struct{}
-
 type OID = oid.OID
-type OIDs = []OID
 
 // IDField struct contain model's ID field.
 type IDField struct {
