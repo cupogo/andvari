@@ -94,10 +94,6 @@ func Open(dsn string, ftscfg string, debug bool) (*DB, error) {
 	return w, nil
 }
 
-func (w *DB) CreateTables(ctx context.Context, dropIt bool, tables ...any) error {
-	return CreateModels(ctx, w.DB, dropIt, tables...)
-}
-
 func (w *DB) Schema() string {
 	return w.scDft
 }
@@ -121,6 +117,46 @@ func (w *DB) List(ctx context.Context, spec ListArg, dataptr any) (total int, er
 	return QueryPager(ctx, spec, q)
 }
 
+func (w *DB) GetModel(ctx context.Context, obj Model, id any, columns ...string) (err error) {
+	if !obj.SetID(id) || obj.IsZeroID() {
+		return ErrEmptyPK
+	}
+	q := w.NewSelect().Model(obj).WherePK()
+
+	if len(columns) > 0 {
+		q.Column(columns...)
+	} else {
+		if excols := ExcludesFromContext(ctx); len(excols) > 0 {
+			q.ExcludeColumn(excols...)
+		} else if cols := ColumnsFromContext(ctx); len(cols) > 0 {
+			q.Column(cols...)
+		}
+	}
+
+	err = q.Scan(ctx)
+	if err == sql.ErrNoRows {
+		return ErrNotFound
+	}
+	return
+}
+
+func (w *DB) DeleteModel(ctx context.Context, obj Model, id any) error {
+	if !obj.SetID(id) || obj.IsZeroID() {
+		return ErrEmptyPK
+	}
+	q := w.NewDelete().Model(obj)
+	return OpDeleteInTrans(ctx, w.DB, w.scDft, w.scCrap, q.GetTableName(), obj.GetID())
+}
+
+func (w *DB) UndeleteModel(ctx context.Context, obj Model, id any) error {
+	if !obj.SetID(id) || obj.IsZeroID() {
+		return ErrEmptyPK
+	}
+	q := w.NewDelete().Model(obj)
+	return OpUndeletedInTrans(ctx, w.DB, w.scDft, w.scCrap, q.GetTableName(), obj.GetID())
+}
+
+// deprecated by DeleteModel
 func (w *DB) OpDeleteOID(ctx context.Context, table string, id string) error {
 	_, _id, err := oid.Parse(id)
 	if err != nil {
@@ -129,10 +165,12 @@ func (w *DB) OpDeleteOID(ctx context.Context, table string, id string) error {
 	return OpDeleteInTrans(ctx, w.DB, w.scDft, w.scCrap, table, _id)
 }
 
+// deprecated by DeleteModel
 func (w *DB) OpDeleteAny(ctx context.Context, table string, _id any) error {
 	return OpDeleteInTrans(ctx, w.DB, w.scDft, w.scCrap, table, _id)
 }
 
+// deprecated by UndeleteModel
 func (w *DB) OpUndeleteOID(ctx context.Context, table string, id string) error {
 	_, _id, err := oid.Parse(id)
 	if err != nil {
@@ -160,7 +198,7 @@ func (w *DB) bulkExecAllFsSQLs(ctx context.Context) error {
 }
 
 func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
-	if err := w.CreateTables(ctx, dropIt, allmodels...); err != nil {
+	if err := CreateModels(ctx, w.DB, dropIt, allmodels...); err != nil {
 		return err
 	}
 	logger().Infow("inited schema", "tables", len(allmodels))

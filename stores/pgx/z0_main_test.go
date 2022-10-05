@@ -127,12 +127,13 @@ func TestOps(t *testing.T) {
 	spec := &ClauseSpec{}
 	spec.Limit = 2
 	spec.Text = "test"
+	spec.Sort = "created DESC"
 	var data Clauses
 	total, err := db.List(ContextWithColumns(ctx, "text"), spec, &data)
 	assert.NoError(t, err)
 	assert.NotZero(t, total)
 
-	err = db.OpDeleteOID(ctx, "cms_clause", obj2.StringID())
+	err = db.DeleteModel(ctx, &Clause{}, obj2.ID)
 	assert.NoError(t, err)
 
 	spec2 := &ClauseSpec{}
@@ -144,7 +145,7 @@ func TestOps(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotZero(t, total)
 
-	err = db.OpUndeleteOID(ctx, "cms_clause", obj2.StringID())
+	err = db.UndeleteModel(ctx, &Clause{}, obj2.ID)
 	assert.NoError(t, err)
 
 	exist := new(Clause)
@@ -155,4 +156,14 @@ func TestOps(t *testing.T) {
 	err = DoUpdate(ctx, db, exist, "text")
 	assert.NoError(t, err)
 
+	exist = new(Clause)
+	err = db.GetModel(ctx, exist, "")
+	err = db.GetModel(ctx, exist, "not-found")
+	assert.Error(t, err)
+	err = db.GetModel(ContextWithColumns(ctx, "text"), exist, obj.ID)
+	assert.NoError(t, err)
+	err = db.GetModel(ContextWithExcludes(ctx, "text"), exist, obj.ID)
+	assert.NoError(t, err)
+	err = db.GetModel(ctx, exist, obj.ID, "text")
+	assert.NoError(t, err)
 }
