@@ -36,9 +36,9 @@ func (h *DebugHook) AfterQuery(ctx context.Context, evt *bun.QueryEvent) {
 
 	args := []interface{}{
 		"[db]",
-		now.Format(" 15:04:05.000 "),
-		fmt.Sprintf(" %10s", evt.Operation()),
-		fmt.Sprintf(" %9s ", dur.Round(time.Microsecond)),
+		now.Format("15:04:05.000"),
+		fmt.Sprintf(" %12s", evt.Operation()),
+		fmt.Sprintf(" %10s ", dur.Round(time.Microsecond)),
 		evt.Query,
 	}
 
