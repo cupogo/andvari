@@ -4,10 +4,12 @@ import (
 	"context"
 	"os"
 	"testing"
+	"testing/fstest"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 
+	"github.com/cupogo/andvari/database/embeds"
 	"github.com/cupogo/andvari/models/comm"
 	"github.com/cupogo/andvari/models/oid"
 	"github.com/cupogo/andvari/utils/zlog"
@@ -41,10 +43,19 @@ func TestOpen(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, db)
 
-	dsn = "postgres://testing:testing1@localhost/testing?sslmode=disable"
-	db, err = Open(dsn, ftscfg, false)
+}
+
+func TestInit(t *testing.T) {
+	db, err := Open("postgres://testing:testing1@localhost/testing?sslmode=disable", "", false)
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
+
+	ctx := context.Background()
+	dropIt := true
+	err = db.InitSchemas(ctx, dropIt)
+
+	err = db.RunMigrations(ctx, fstest.MapFS{})
+	assert.NoError(t, err)
 }
 
 // Clause 条款
@@ -71,6 +82,11 @@ func (z *Clause) Creating() error {
 	return z.DefaultModel.Creating()
 }
 
+func init() {
+	RegisterModel((*Clause)(nil))
+	RegisterDbFs(embeds.DBFS())
+}
+
 type ClauseSpec struct {
 	comm.PageSpec
 	ModelSpec
@@ -91,10 +107,6 @@ func TestOps(t *testing.T) {
 	assert.NotNil(t, db)
 
 	ctx := context.Background()
-	dropIt := true
-	tables := []any{&Clause{}}
-	err = CreateModels(ctx, db, dropIt, tables...)
-	assert.NoError(t, err)
 
 	obj := new(Clause)
 	obj.Text = "test"
@@ -116,10 +128,24 @@ func TestOps(t *testing.T) {
 	spec.Limit = 2
 	spec.Text = "test"
 	var data Clauses
-	q := db.NewSelect().Model(&data)
-	total, err := QueryPager(ctx, spec, q.Apply(spec.Sift))
+	total, err := db.List(ctx, spec, &data)
 	assert.NoError(t, err)
 	assert.NotZero(t, total)
+
+	err = db.OpDeleteOID(ctx, "cms_clause", obj2.StringID())
+	assert.NoError(t, err)
+
+	spec2 := &ClauseSpec{}
+	spec2.Limit = 2
+	spec2.IsDelete = true
+	assert.True(t, spec2.Deleted())
+	var data2 Clauses
+	total, err = db.List(ctx, spec2, &data2)
+	assert.NoError(t, err)
+	assert.NotZero(t, total)
+
+	err = db.OpUndeleteOID(ctx, "cms_clause", obj2.StringID())
+	assert.NoError(t, err)
 
 	exist := new(Clause)
 	err = ModelWithPKID(ctx, db, exist, obj.ID)

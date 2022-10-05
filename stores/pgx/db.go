@@ -142,17 +142,38 @@ func (w *DB) ApplyTsQuery(q *SelectQuery, kw, sty string, args ...string) (*Sele
 	return DoApplyTsQuery(w.ftsEnabled, w.ftsConfig, q, kw, sty, args...)
 }
 
-func (w *DB) RunMigrations(ctx context.Context, mfs fs.FS, dir string) error {
+// nolint
+func (w *DB) bulkExecAllFsSQLs(ctx context.Context) error {
+	for _, dbfs := range alldbfs {
+		if err := BulkFsSQLs(ctx, w.DB, dbfs); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
+	if err := w.CreateTables(ctx, dropIt, allmodels...); err != nil {
+		return err
+	}
+	logger().Infow("inited schema", "tables", len(allmodels))
+
+	return w.bulkExecAllFsSQLs(ctx)
+}
+
+func (w *DB) RunMigrations(ctx context.Context, mfs fs.FS) error {
 	var migrations = migrate.NewMigrations()
-	// migrations.
-	// collection.SetTableName(w.scDft + ".gopg_migrations")
 	if err := migrations.Discover(mfs); err != nil {
 		return err
 	}
 	migrator := migrate.NewMigrator(w.DB, migrations)
+	if err := migrator.Init(ctx); err != nil {
+		return err
+	}
 	group, err := migrator.Migrate(ctx)
 	if err != nil {
-		return err
+		logger().Infow("migrate fail", "err", err)
+		return nil
 	}
 
 	logger().Infow("migrated", "result", group.String())
