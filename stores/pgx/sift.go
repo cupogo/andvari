@@ -21,9 +21,9 @@ type ModelSpec struct {
 	Created string `form:"created" json:"created"  extensions:"x-order=3"`
 	// 更新时间 形式： yyyy-mm-dd, 1_day, 2_weeks, 3_months
 	Updated string `form:"updated" json:"updated"  extensions:"x-order=4"`
+	// IsDelete 查询删除的记录
+	IsDelete bool `form:"isDelete" json:"isDelete"  extensions:"x-order=5"`
 } // @name DefaultSpec
-
-type MDftSpec = ModelSpec // deprecated
 
 // CanSort 检测字段是否可排序
 func (md *ModelSpec) CanSort(key string) bool {
@@ -33,6 +33,10 @@ func (md *ModelSpec) CanSort(key string) bool {
 	default:
 		return false
 	}
+}
+
+func (md *ModelSpec) Deleted() bool {
+	return md.IsDelete
 }
 
 func (md *ModelSpec) Sift(q *SelectQuery) *SelectQuery {
