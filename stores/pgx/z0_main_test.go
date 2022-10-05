@@ -60,6 +60,8 @@ type ClauseBasic struct {
 	Text string `bun:"text,notnull,type:text" extensions:"x-order=A" form:"text" json:"text" pg:"text,notnull"`
 } // @name ClauseBasic
 
+type Clauses []Clause
+
 // Creating function call to it's inner fields defined hooks
 func (z *Clause) Creating() error {
 	if z.IsZeroID() {
@@ -67,6 +69,20 @@ func (z *Clause) Creating() error {
 	}
 
 	return z.DefaultModel.Creating()
+}
+
+type ClauseSpec struct {
+	comm.PageSpec
+	ModelSpec
+
+	Text string `extensions:"x-order=A" form:"text" json:"text"`
+}
+
+func (spec *ClauseSpec) Sift(q *SelectQuery) *SelectQuery {
+	q = spec.ModelSpec.Sift(q)
+	q, _ = SiftMatch(q, "text", spec.Text, false)
+
+	return q
 }
 
 func TestOps(t *testing.T) {
@@ -85,6 +101,25 @@ func TestOps(t *testing.T) {
 	err = DoInsert(ctx, db, obj)
 	assert.NoError(t, err)
 	assert.False(t, obj.IsZeroID())
+	err = DoInsert(ctx, db, obj, "text")
+	assert.NoError(t, err)
+
+	obj2 := new(Clause)
+	obj2.Text = "hello world"
+	err = StoreSimple(ctx, db, obj2, "text")
+	assert.NoError(t, err)
+	assert.False(t, obj.IsZeroID())
+	err = StoreSimple(ctx, db, obj2, "text")
+	assert.NoError(t, err)
+
+	spec := &ClauseSpec{}
+	spec.Limit = 2
+	spec.Text = "test"
+	var data Clauses
+	q := db.NewSelect().Model(&data)
+	total, err := QueryPager(ctx, spec, q.Apply(spec.Sift))
+	assert.NoError(t, err)
+	assert.NotZero(t, total)
 
 	exist := new(Clause)
 	err = ModelWithPKID(ctx, db, exist, obj.ID)
@@ -93,4 +128,5 @@ func TestOps(t *testing.T) {
 	exist.Text = "test2"
 	err = DoUpdate(ctx, db, exist, "text")
 	assert.NoError(t, err)
+
 }
