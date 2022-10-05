@@ -51,7 +51,7 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 
 	_, err = query.Exec(ctx)
 	if err != nil {
-		logger().Errorw("create model failed", "model", model, "err", err)
+		logger().Errorw("create model failed", "name", query.GetTableName(), "err", err)
 		return
 	}
 	logger().Debugw("create model", "name", query.GetTableName())

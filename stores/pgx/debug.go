@@ -2,6 +2,9 @@ package pgx
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -16,20 +19,39 @@ type DebugHook struct {
 var _ bun.QueryHook = (*DebugHook)(nil)
 
 func (h *DebugHook) BeforeQuery(ctx context.Context, evt *bun.QueryEvent) context.Context {
-	if h.Verbose {
-		logger().Debugw("BeforeQuery", "model", evt.Model, "query", evt.Query)
-	}
-
 	return ctx
 }
 
 func (h *DebugHook) AfterQuery(ctx context.Context, evt *bun.QueryEvent) {
 
-	dur := time.Since(evt.StartTime)
-	if evt.Err != nil {
-		logger().Infow("executing a query fail", "err", evt.Err, "query", evt.Query)
-	} else {
-		logger().Debugw("AfterQuery", "took", dur.String(), "model", evt.Model)
+	if !h.Verbose {
+		switch evt.Err {
+		case nil, sql.ErrNoRows, sql.ErrTxDone:
+			return
+		}
 	}
+
+	now := time.Now()
+	dur := now.Sub(evt.StartTime)
+
+	args := []interface{}{
+		"[db]",
+		now.Format(" 15:04:05.000 "),
+		fmt.Sprintf(" %10s", evt.Operation()),
+		fmt.Sprintf(" %9s ", dur.Round(time.Microsecond)),
+		evt.Query,
+	}
+
+	// if evt.IQuery != nil {
+	// 	if tb := evt.IQuery.GetTableName(); len(tb) > 0 {
+	// 		args = append(args, "table:"+tb)
+	// 	}
+	// }
+
+	if evt.Err != nil {
+		args = append(args, "\t", evt.Err.Error())
+	}
+
+	fmt.Fprintln(os.Stderr, args...)
 
 }

@@ -1,12 +1,15 @@
 package pgx
 
 import (
+	"context"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 
+	"github.com/cupogo/andvari/models/comm"
+	"github.com/cupogo/andvari/models/oid"
 	"github.com/cupogo/andvari/utils/zlog"
 )
 
@@ -29,18 +32,65 @@ func TestMain(m *testing.M) {
 func TestOpen(t *testing.T) {
 	dsn := "postgres://testing@localhost"
 	ftscfg := ""
-	debug := true
-	db, err := Open(dsn, ftscfg, debug)
+	db, err := Open(dsn, ftscfg, false)
 	assert.Error(t, err)
 	assert.Nil(t, db)
 
 	dsn = "postgres://testing:testing1@localhost/postgres?sslmode=disable"
-	db, err = Open(dsn, ftscfg, debug)
+	db, err = Open(dsn, ftscfg, false)
 	assert.Error(t, err)
 	assert.Nil(t, db)
 
 	dsn = "postgres://testing:testing1@localhost/testing?sslmode=disable"
-	db, err = Open(dsn, ftscfg, debug)
+	db, err = Open(dsn, ftscfg, false)
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
+}
+
+// Clause 条款
+type Clause struct {
+	comm.BaseModel `bun:"table:cms_clause,alias:c" json:"-"`
+
+	comm.DefaultModel
+
+	ClauseBasic
+} // @name Clause
+
+type ClauseBasic struct {
+	Text string `bun:"text,notnull,type:text" extensions:"x-order=A" form:"text" json:"text" pg:"text,notnull"`
+} // @name ClauseBasic
+
+// Creating function call to it's inner fields defined hooks
+func (z *Clause) Creating() error {
+	if z.IsZeroID() {
+		z.SetID(oid.NewID(oid.OtArticle))
+	}
+
+	return z.DefaultModel.Creating()
+}
+
+func TestOps(t *testing.T) {
+	db, err := Open("postgres://testing:testing1@localhost/testing?sslmode=disable", "", true)
+	assert.NoError(t, err)
+	assert.NotNil(t, db)
+
+	ctx := context.Background()
+	dropIt := true
+	tables := []any{&Clause{}}
+	err = CreateModels(ctx, db, dropIt, tables...)
+	assert.NoError(t, err)
+
+	obj := new(Clause)
+	obj.Text = "test"
+	err = DoInsert(ctx, db, obj)
+	assert.NoError(t, err)
+	assert.False(t, obj.IsZeroID())
+
+	exist := new(Clause)
+	err = ModelWithPKID(ctx, db, exist, obj.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, "test", exist.Text)
+	exist.Text = "test2"
+	err = DoUpdate(ctx, db, exist, "text")
+	assert.NoError(t, err)
 }
