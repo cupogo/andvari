@@ -198,6 +198,7 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 		}
 
 	}
+	q.Returning("NULL")
 
 	if _, err := q.Exec(ctx); err != nil {
 		logger().Infow("insert model fail", "obj", obj, "err", err)
