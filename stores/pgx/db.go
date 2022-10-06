@@ -24,6 +24,7 @@ type Safe = bun.Safe
 type QueryBuilder = bun.QueryBuilder
 type SelectQuery = bun.SelectQuery
 type QueryAppender = schema.QueryAppender
+type PGError = pgdriver.Error
 
 var (
 	ErrNoRows = sql.ErrNoRows

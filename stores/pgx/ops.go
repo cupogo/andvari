@@ -322,15 +322,15 @@ func DoUndeleteT(ctx context.Context, db IDB, scDft, scCrap string, table string
 	return err
 }
 
-// func FilterError(err error) error {
-// 	if e, ok := err.(pg.Error); ok {
-// 		switch e.Field('C') {
-// 		case "23502":
-// 			return ErrEmptyKey
-// 		case "23505":
-// 			return ErrDuplicate
-// 		}
-// 		return ErrInternal
-// 	}
-// 	return err
-// }
+func FilterError(err error) error {
+	if e, ok := err.(PGError); ok {
+		switch e.Field('C') {
+		case "23502":
+			return ErrEmptyKey
+		case "23505":
+			return ErrDuplicate
+		}
+		return ErrInternal
+	}
+	return err
+}
