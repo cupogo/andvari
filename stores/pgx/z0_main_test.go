@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 	"testing/fstest"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -46,7 +47,7 @@ func TestOpen(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	db, err := Open("postgres://testing:testing1@localhost/testing?sslmode=disable", "", false)
+	db, err := Open("postgres://testing:testing1@localhost/testing?sslmode=disable", "simple", false)
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 
@@ -102,7 +103,7 @@ func (spec *ClauseSpec) Sift(q *SelectQuery) *SelectQuery {
 }
 
 func TestOps(t *testing.T) {
-	db, err := Open("postgres://testing:testing1@localhost/testing?sslmode=disable", "", true)
+	db, err := Open("postgres://testing:testing1@localhost/testing?sslmode=disable", "mycfg", true)
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 
@@ -110,19 +111,27 @@ func TestOps(t *testing.T) {
 
 	obj := new(Clause)
 	obj.Text = "test"
-	err = DoInsert(ctx, db, obj)
+	err = DoInsert(ContextWithCreated(ctx, 0), db, obj)
 	assert.NoError(t, err)
 	assert.False(t, obj.IsZeroID())
+	assert.NotZero(t, obj.ID)
 	err = DoInsert(ctx, db, obj, "text")
 	assert.NoError(t, err)
+	assert.False(t, obj.IsZeroID())
+	assert.NotZero(t, obj.ID)
 
+	now := time.Now()
 	obj2 := new(Clause)
 	obj2.Text = "hello world"
-	err = StoreSimple(ctx, db, obj2, "text")
+	err = StoreSimple(ContextWithCreated(ctx, now.UnixMilli()), db, obj2, "text")
 	assert.NoError(t, err)
+	assert.False(t, obj2.IsZeroID())
+	assert.NotZero(t, obj2.ID)
 	assert.False(t, obj.IsZeroID())
 	err = StoreSimple(ctx, db, obj2, "text")
 	assert.NoError(t, err)
+	assert.False(t, obj2.IsZeroID())
+	assert.NotZero(t, obj2.ID)
 
 	spec := &ClauseSpec{}
 	spec.Limit = 2
@@ -133,8 +142,13 @@ func TestOps(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotZero(t, total)
 
-	err = db.DeleteModel(ctx, &Clause{}, obj2.ID)
+	id := obj2.ID
+	err = db.DeleteModel(ctx, &Clause{}, id)
 	assert.NoError(t, err)
+
+	err = db.GetModel(ctx, &Clause{}, id)
+	assert.Error(t, err)
+	assert.EqualError(t, err, ErrNotFound.Error())
 
 	spec2 := &ClauseSpec{}
 	spec2.Limit = 2
@@ -144,8 +158,13 @@ func TestOps(t *testing.T) {
 	total, err = db.List(ContextWithExcludes(ctx, "text"), spec2, &data2)
 	assert.NoError(t, err)
 	assert.NotZero(t, total)
+	if assert.NotEmpty(t, data2) {
+		assert.Empty(t, data2[0].Text)
+	}
 
-	err = db.UndeleteModel(ctx, &Clause{}, obj2.ID)
+	err = db.UndeleteModel(ctx, &Clause{}, id)
+	assert.NoError(t, err)
+	err = db.GetModel(ctx, &Clause{}, id)
 	assert.NoError(t, err)
 
 	exist := new(Clause)
