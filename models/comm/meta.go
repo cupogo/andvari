@@ -101,7 +101,7 @@ type MetaUp = MetaDiff // patch of migrate only, will delete soon
 
 type MetaField struct {
 	// Meta 元信息
-	Meta JsonKV `bson:"meta,omitempty" json:"meta,omitempty" pg:"meta,notnull,use_zero,default:'{}'" swaggerignore:"true"`
+	Meta JsonKV `bson:"meta,omitempty" json:"meta,omitempty" bun:"meta,notnull,nullzero,default:'{}'" pg:"meta,notnull,use_zero,default:'{}'" swaggerignore:"true"`
 }
 
 func (mf *MetaField) MetaCopy() Meta {
