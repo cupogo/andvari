@@ -9,6 +9,12 @@ import (
 	"github.com/cupogo/andvari/utils/sqlutil"
 )
 
+// StringsDiff 字串增减操作
+type StringsDiff struct {
+	Newest  []string `json:"newest" validate:"dive"`  // 新增的字串集
+	Removed []string `json:"removed" validate:"dive"` // 删除的字串集
+} // @name StringsDiff
+
 // ModelSpec 模型默认的查询条件
 type ModelSpec struct {
 	// 主键编号`ids`（以逗号分隔的字串），仅供 Form 或 Query 使用, example:"aaa,bbb,ccc"
