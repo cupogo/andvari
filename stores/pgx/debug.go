@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -39,7 +40,7 @@ func (h *DebugHook) AfterQuery(ctx context.Context, evt *bun.QueryEvent) {
 		now.Format("15:04:05.000"),
 		fmt.Sprintf(" %12s", evt.Operation()),
 		fmt.Sprintf(" %10s ", dur.Round(time.Microsecond)),
-		evt.Query,
+		fistLine(evt.Query),
 	}
 
 	// if evt.IQuery != nil {
@@ -54,4 +55,11 @@ func (h *DebugHook) AfterQuery(ctx context.Context, evt *bun.QueryEvent) {
 
 	fmt.Fprintln(os.Stderr, args...)
 
+}
+
+func fistLine(s string) string {
+	if pos := strings.Index(s, "\n"); pos > 0 {
+		return s[0:pos] + " ..."
+	}
+	return s
 }
