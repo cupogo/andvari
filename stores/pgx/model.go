@@ -47,3 +47,12 @@ type TextSearchable interface {
 	GetTsColumns() []string
 	SetTsColumns(cols ...string)
 }
+
+type ModelMeta interface {
+	Model
+	Changeable
+
+	MetaGet(key string) (v any, ok bool)
+	MetaSet(key string, value any)
+	MetaUnset(key string)
+}

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/cupogo/andvari/models/field"
+	"github.com/cupogo/andvari/models/oid"
 	"github.com/cupogo/andvari/utils"
 )
 
@@ -320,6 +321,21 @@ func DoUndeleteT(ctx context.Context, db IDB, scDft, scCrap string, table string
 		logger().Infow("undelete ok", "table", table, "id", _id, "ret", ret)
 	}
 	return err
+}
+
+type metaValueFunc func(ctx context.Context, id oid.OID) (any, error)
+
+func OpModelMetaSet(ctx context.Context, mm ModelMeta, key string, id oid.OID, fn metaValueFunc) error {
+	if !id.IsZero() {
+		if val, err := fn(ctx, id); err != nil {
+			return err
+		} else if !utils.IsZero(val) {
+			logger().Debugw("set meta", key, val)
+			mm.MetaSet(key, val)
+			mm.SetChange(field.Meta)
+		}
+	}
+	return nil
 }
 
 func FilterError(err error) error {
