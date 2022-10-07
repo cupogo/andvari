@@ -109,6 +109,9 @@ func TestOps(t *testing.T) {
 
 	ctx := context.Background()
 
+	err = DoInsert(ctx, db, &Clause{})
+	assert.NoError(t, err)
+
 	obj := new(Clause)
 	obj.Text = "test"
 	err = DoInsert(ContextWithCreated(ctx, 0), db, obj)

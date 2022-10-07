@@ -252,7 +252,7 @@ func (model *SerialModel) Saving() error {
 
 type TextSearchField struct {
 	// 生成 tsvector 时所使用的配置名
-	TsCfgName string `json:"-" bun:"ts_cfg,notnull,nullzero,type:name,default:''" pg:"ts_cfg,notnull,use_zero,default:'',type:name"`
+	TsCfgName string `json:"-" bun:"ts_cfg,notnull,type:name" pg:"ts_cfg,notnull,default:'',type:name"`
 	// tsvector 格式的关键词，用于全文检索
 	TsVector string `bson:"textKeyword" json:"-" bun:"ts_vec,type:tsvector" pg:"ts_vec,type:tsvector"`
 
