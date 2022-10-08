@@ -1,6 +1,7 @@
 package pgx
 
 import (
+	"context"
 	"io/fs"
 	"strings"
 )
@@ -9,7 +10,7 @@ type dbExecer interface {
 	Exec(query any, params ...any) (ormResult, error)
 }
 
-func BatchDirSQLs(dbc dbExecer, dbfs fs.FS, patterns ...string) error {
+func BatchDirSQLs(ctx context.Context, dbc dbExecer, dbfs fs.FS, patterns ...string) error {
 	var count int
 	for _, pattern := range patterns {
 		matches, err := fs.Glob(dbfs, pattern)
@@ -17,7 +18,7 @@ func BatchDirSQLs(dbc dbExecer, dbfs fs.FS, patterns ...string) error {
 			return err
 		}
 		for _, name := range matches {
-			if err := ExecSQLfile(dbc, dbfs, name); err != nil {
+			if err := ExecSQLfile(ctx, dbc, dbfs, name); err != nil {
 				logger().Warnf("exec sql fail: %+v, %+s", name, err)
 				return err
 			}
@@ -29,7 +30,24 @@ func BatchDirSQLs(dbc dbExecer, dbfs fs.FS, patterns ...string) error {
 	return nil
 }
 
-func ExecSQLfile(dbc dbExecer, dbfs fs.FS, name string) error {
+func BulkFsSQLs(ctx context.Context, dbc dbExecer, dbfs fs.FS) error {
+	return fs.WalkDir(dbfs, ".", func(name string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+
+		if !strings.HasSuffix(name, ".sql") {
+			return nil
+		}
+
+		return ExecSQLfile(ctx, dbc, dbfs, name)
+	})
+}
+
+func ExecSQLfile(ctx context.Context, dbc dbExecer, dbfs fs.FS, name string) error {
 	data, err := fs.ReadFile(dbfs, name)
 	if err != nil {
 		logger().Infow("read fail", "name", name, "err", err)

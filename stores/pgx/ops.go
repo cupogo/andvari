@@ -38,7 +38,7 @@ func EnsureExtension(db *pgDB, name string, sc ...string) error {
 	return nil
 }
 
-func CreateModels(db *pgDB, dropIt bool, tables ...any) error {
+func CreateModels(ctx context.Context, db *pgDB, dropIt bool, tables ...any) error {
 	for _, table := range tables {
 		if err := CreateModel(db, table, dropIt); err != nil {
 			return err

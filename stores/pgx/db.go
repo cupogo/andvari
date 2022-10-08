@@ -74,7 +74,7 @@ func Open(dsn string, ftscfg string, debug bool) (*DB, error) {
 }
 
 func (w *DB) CreateTables(dropIt bool, tables ...any) error {
-	return CreateModels(w.DB, dropIt, tables...)
+	return CreateModels(context.TODO(), w.DB, dropIt, tables...)
 }
 
 func (w *DB) Schema() string {
@@ -118,6 +118,25 @@ func (w *DB) GetTsSpec() *TextSearchSpec {
 
 func (w *DB) ApplyTsQuery(q *ormQuery, kw, sty string, args ...string) (*ormQuery, error) {
 	return DoApplyTsQuery(w.ftsEnabled, w.ftsConfig, q, kw, sty, args...)
+}
+
+// nolint
+func (w *DB) bulkExecAllFsSQLs(ctx context.Context) error {
+	for _, dbfs := range alldbfs {
+		if err := BulkFsSQLs(ctx, w.DB, dbfs); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
+	if err := CreateModels(ctx, w.DB, dropIt, allmodels...); err != nil {
+		return err
+	}
+	logger().Infow("inited schema", "tables", len(allmodels))
+
+	return w.bulkExecAllFsSQLs(ctx)
 }
 
 func (w *DB) RunMigrations(mfs http.FileSystem, dir string) error {
