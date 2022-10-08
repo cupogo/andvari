@@ -85,6 +85,37 @@ func (w *DB) SchemaCrap() string {
 	return w.scCrap
 }
 
+func (w *DB) List(ctx context.Context, spec ListArg, dataptr any) (total int, err error) {
+	q := w.ModelContext(ctx, dataptr).Apply(spec.Sift)
+
+	if cols := ColumnsFromContext(ctx); len(cols) > 0 {
+		q.Column(cols...)
+	}
+
+	return QueryPager(spec, q)
+}
+
+func (w *DB) GetModel(ctx context.Context, obj Model, id any, columns ...string) (err error) {
+	if !obj.SetID(id) || obj.IsZeroID() {
+		return ErrEmptyPK
+	}
+	q := w.ModelContext(ctx, obj).WherePK()
+
+	if len(columns) > 0 {
+		q.Column(columns...)
+	} else {
+		if cols := ColumnsFromContext(ctx); len(cols) > 0 {
+			q.Column(cols...)
+		}
+	}
+
+	err = q.Select()
+	if err == pg.ErrNoRows {
+		return ErrNotFound
+	}
+	return
+}
+
 func (w *DB) OpDeleteOID(ctx context.Context, table string, id string) error {
 	_, _id, err := oid.Parse(id)
 	if err != nil {

@@ -37,3 +37,12 @@ type TextSearchable interface {
 	GetTsColumns() []string
 	SetTsColumns(cols ...string)
 }
+
+type Sifter interface {
+	Sift(q *ormQuery) (*ormQuery, error)
+}
+
+type ListArg interface {
+	Pager
+	Sifter
+}
