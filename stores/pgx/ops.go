@@ -127,12 +127,12 @@ func ModelWithPKID(ctx context.Context, db ormDB, obj Model, id any, columns ...
 	return fmt.Errorf("invalid id: '%+v'", id)
 }
 
-func ModelWithUnique(db ormDB, obj Model, key string, val any) error {
+func ModelWithUnique(ctx context.Context, db ormDB, obj Model, key string, val any) error {
 	if val == nil || val == 0 || val == "" {
 		logger().Infow("empty param", "key", key, "val", val)
 		return ErrEmptyKey
 	}
-	err := db.Model(obj).Where("? = ?", pg.Ident(key), val).Limit(1).Select()
+	err := db.ModelContext(ctx, obj).Where("? = ?", pg.Ident(key), val).Limit(1).Select()
 	if err == pg.ErrNoRows {
 		logger().Debugw("get model with key no rows", "key", key, "val", val)
 		return ErrNotFound
@@ -199,7 +199,7 @@ func StoreWithCall(ctx context.Context, db ormDB, exist, obj ModelChangeable, cs
 		exist.SetID(obj.GetID())
 		err = ModelWherePK(ctx, db, exist)
 	} else if len(args) > 1 && utils.EnsureArgs(2, args[0], args[1]) {
-		err = ModelWithUnique(db, exist, args[0], args[1])
+		err = ModelWithUnique(ctx, db, exist, args[0], args[1])
 	}
 
 	if err == nil && !exist.IsZeroID() {
