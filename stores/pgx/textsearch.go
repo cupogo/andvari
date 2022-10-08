@@ -36,16 +36,16 @@ func (tss *TextSearchSpec) SetFallback(cols ...string) {
 	tss.fallbacks = cols
 }
 
-func (tss *TextSearchSpec) Sift(q *SelectQuery) (*SelectQuery, error) {
+func (tss *TextSearchSpec) Sift(q *SelectQuery) *SelectQuery {
 	return DoApplyTsQuery(tss.enabled, tss.cfgname, q, tss.SearchKeyWord, tss.SearchStyle, tss.fallbacks...)
 }
 
-func DoApplyTsQuery(enabled bool, cfgname string, q *SelectQuery, kw, sty string, cols ...string) (*SelectQuery, error) {
+func DoApplyTsQuery(enabled bool, cfgname string, q *SelectQuery, kw, sty string, cols ...string) *SelectQuery {
 	if len(kw) == 0 {
-		return q, nil
+		return q
 	}
 	if enabled {
-		return q.Where("? @@ "+getTsQuery(cfgname, sty, kw), Ident(textVec)), nil
+		return q.Where("? @@ "+getTsQuery(cfgname, sty, kw), Ident(textVec))
 	}
 	if len(cols) > 0 && len(cols[0]) > 0 {
 		q.WhereGroup(" AND ", func(_q *SelectQuery) *SelectQuery {
@@ -59,7 +59,7 @@ func DoApplyTsQuery(enabled bool, cfgname string, q *SelectQuery, kw, sty string
 			return _q
 		})
 	}
-	return q, nil
+	return q
 }
 
 func getTsQuery(tscfg string, sty, kw string) string {
