@@ -184,7 +184,7 @@ func (w *DB) GetTsCfg() (string, bool) {
 	return w.ftsConfig, w.ftsEnabled
 }
 
-func (w *DB) ApplyTsQuery(q *SelectQuery, kw, sty string, args ...string) (*SelectQuery, error) {
+func (w *DB) ApplyTsQuery(q *SelectQuery, kw, sty string, args ...string) *SelectQuery {
 	return DoApplyTsQuery(w.ftsEnabled, w.ftsConfig, q, kw, sty, args...)
 }
 
