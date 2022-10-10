@@ -14,6 +14,10 @@ type Sifter interface {
 	Sift(q *SelectQuery) *SelectQuery
 }
 
+type SifterX interface {
+	SiftX(ctx context.Context, q *SelectQuery) *SelectQuery
+}
+
 type ListArg interface {
 	Pager
 	Sifter

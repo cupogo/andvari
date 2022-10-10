@@ -108,6 +108,9 @@ func (w *DB) List(ctx context.Context, spec ListArg, dataptr any) (total int, er
 	if spec.Deleted() {
 		q.ModelTableExpr(w.scCrap + ".?TableName AS ?TableAlias")
 	}
+	if v, ok := spec.(SifterX); ok {
+		q = v.SiftX(ctx, q)
+	}
 
 	if excols := ExcludesFromContext(ctx); len(excols) > 0 {
 		q.ExcludeColumn(excols...)
