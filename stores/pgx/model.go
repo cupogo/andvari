@@ -32,16 +32,6 @@ type Pager interface {
 	Sortable
 }
 
-type Sifter interface {
-	Sift(q *SelectQuery) *SelectQuery
-}
-
-type ListArg interface {
-	Pager
-	Sifter
-	Deleted() bool
-}
-
 type TextSearchable interface {
 	GetTsConfig() string
 	GetTsColumns() []string

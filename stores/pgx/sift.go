@@ -1,6 +1,7 @@
 package pgx
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -8,6 +9,16 @@ import (
 	"github.com/cupogo/andvari/utils"
 	"github.com/cupogo/andvari/utils/sqlutil"
 )
+
+type Sifter interface {
+	Sift(q *SelectQuery) *SelectQuery
+}
+
+type ListArg interface {
+	Pager
+	Sifter
+	Deleted() bool
+}
 
 // StringsDiff 字串增减操作
 type StringsDiff struct {
