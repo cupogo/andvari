@@ -48,8 +48,7 @@ func CreateModels(ctx context.Context, db *pgDB, dropIt bool, tables ...any) err
 	return nil
 }
 
-// QueryPager 根据分页参数进行查询
-func QueryPager(p Pager, q *ormQuery) (count int, err error) {
+func querySort(p Pager, q *ormQuery) *ormQuery {
 	if order := p.GetSort(); len(order) > 1 {
 		var key, op string
 		if b, a, ok := strings.Cut(order, " "); ok {
@@ -72,6 +71,12 @@ func QueryPager(p Pager, q *ormQuery) (count int, err error) {
 
 		}
 	}
+	return q
+}
+
+// QueryPager 根据分页参数进行查询
+func QueryPager(p Pager, q *ormQuery) (count int, err error) {
+	q = querySort(p, q)
 	limit := p.GetLimit()
 	if p.GetPage() > 0 && limit == 0 {
 		limit = defaultLimit
