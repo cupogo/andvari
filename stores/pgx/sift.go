@@ -91,7 +91,7 @@ func SiftEquel(q *SelectQuery, field string, v any, isOr bool) (*SelectQuery, bo
 	return Sift(q, field, "=", v, isOr)
 }
 
-// SiftICE 忽略大小写相等
+// SiftICE ignore case equel 忽略大小写相等
 func SiftICE(q *SelectQuery, field string, v string, isOr bool) (*SelectQuery, bool) {
 	if utils.IsZero(v) {
 		return q, false
@@ -99,15 +99,13 @@ func SiftICE(q *SelectQuery, field string, v string, isOr bool) (*SelectQuery, b
 	return Sift(q, field, "ILIKE", sqlutil.CleanWildcard(v), isOr)
 }
 
-// SiftMatch 忽略大小写并匹配前缀
+// SiftMatch ignore case match 忽略大小写并匹配前缀
 func SiftMatch(q *SelectQuery, field string, v string, isOr bool) (*SelectQuery, bool) {
 	if utils.IsZero(v) {
 		return q, false
 	}
 	return Sift(q, field, "ILIKE", sqlutil.MendValue(v), isOr)
 }
-
-var SiftILike = SiftMatch // Deprecated
 
 // SiftGreat 大于
 func SiftGreat(q *SelectQuery, field string, v any, isOr bool) (*SelectQuery, bool) {
