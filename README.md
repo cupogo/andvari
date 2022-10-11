@@ -2,8 +2,14 @@
 
 基础模型和数据访问组件
 
+Base model and data access components
 
-数据库
+Dependencies
 ---
 
-- `PostgreSQL` >= 13
+- [Bun](https://bun.uptrace.dev/)
+
+Databases
+---
+
+- `PostgreSQL` for now
