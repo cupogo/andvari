@@ -32,6 +32,9 @@ var _ json.Unmarshaler = (*DateTime)(nil)
 
 // MarshalJSON marshal to time type.
 func (d DateTime) MarshalJSON() ([]byte, error) {
+	if d == 0 {
+		return []byte{'"', '"'}, nil
+	}
 	return json.Marshal(d.Time())
 }
 
@@ -40,7 +43,7 @@ func (d *DateTime) UnmarshalJSON(data []byte) error {
 	// Ignore "null" to keep parity with the time.Time type and the standard library. Decoding "null" into a non-pointer
 	// DateTime field will leave the field unchanged. For pointer values, the encoding/json will set the pointer to nil
 	// and will not defer to the UnmarshalJSON hook.
-	if string(data) == "null" {
+	if len(data) == 0 || string(data) == "null" || string(data) == "\"\"" {
 		return nil
 	}
 
