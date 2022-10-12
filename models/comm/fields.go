@@ -192,7 +192,7 @@ type DunceModel struct {
 
 // SerialField struct contain model's ID field.
 type SerialField struct {
-	ID int `bson:"_id,omitempty" json:"id" form:"id" bun:",pk,type:serial" pg:",pk,type:serial" extensions:"x-order=/"` // 主键
+	ID int `bson:"_id,omitempty" json:"id" form:"id" bun:",pk,autoincrement" pg:",pk,type:serial" extensions:"x-order=/"` // 主键
 }
 
 func (f *SerialField) PrepareID(id any) (any, error) {
