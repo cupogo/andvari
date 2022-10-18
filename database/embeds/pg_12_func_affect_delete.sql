@@ -20,7 +20,7 @@ BEGIN
 	USING _id;
 
 	IF tid IS NULL THEN
-		RAISE NOTICE 'ERR  record % NOT FOUND', _id;
+		RAISE NOTICE 'ERR: record % NOT FOUND', _id;
 		RETURN -1;
 	END IF;
 
@@ -38,7 +38,10 @@ BEGIN
 		INTO tid
 		USING _id;
 		IF tid IS NOT NULL THEN
-			RETURN -3;
+			RAISE NOTICE 'WARN: deleted record % FOUND', _id;
+			EXECUTE format('DELETE FROM %I.%I WHERE id = $1', _sc_trash, _table)
+			USING _id;
+			-- RETURN -3;
 		END IF;
 
 	END IF;
@@ -74,7 +77,7 @@ BEGIN
 	USING _id;
 
 	IF tid IS NULL THEN
-		RAISE NOTICE 'ERR  record % NOT FOUND', _id;
+		RAISE NOTICE 'ERR: record % NOT FOUND', _id;
 		RETURN -1;
 	END IF;
 
@@ -92,7 +95,10 @@ BEGIN
 		INTO tid
 		USING _id;
 		IF tid IS NOT NULL THEN
-			RETURN -3;
+			RAISE NOTICE 'WARN: deleted record % FOUND', _id;
+			EXECUTE format('DELETE FROM %I.%I WHERE id = $1', _sc_trash, _table)
+			USING _id;
+			-- RETURN -3;
 		END IF;
 
 	END IF;
