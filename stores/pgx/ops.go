@@ -159,14 +159,14 @@ func ModelWithUnique(ctx context.Context, db IDB, obj Model, key string, val any
 	return nil
 }
 
-// DoInsert insert with ignore duplicate (force)
+// DoInsert insert with ignore duplicate (optional)
 func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	// Call to saving hook
 	if err := callToBeforeCreateHooks(obj); err != nil {
 		return err
 	}
 
-	if dtf, ok := obj.(interface{ SetCreated(ts any) bool }); ok {
+	if dtf, ok := obj.(CreatedSetter); ok {
 		if ts, ok := CreatedFromContext(ctx); ok && ts > 0 {
 			if dtf.SetCreated(ts) {
 				logger().Infow("seted createAt ok", "ts", ts)

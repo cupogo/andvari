@@ -46,3 +46,7 @@ type ModelMeta interface {
 	MetaSet(key string, value any)
 	MetaUnset(key string)
 }
+
+type CreatedSetter interface {
+	SetCreated(ts any) bool
+}
