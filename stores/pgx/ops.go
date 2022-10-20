@@ -179,14 +179,14 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	q := db.NewInsert().Model(obj)
 	argc := len(args)
 	if argc > 0 {
-		q.On("CONFLICT (?) DO UPDATE", Ident(field.ID))
-		var foundUpd bool
-		for i, arg := range args {
-			if b, ok := arg.(bool); ok && b && i == 0 {
-				q.Set("?0 = EXCLUDED.?0", Ident(field.Updated))
-				foundUpd = true
-				break
+		unikey := field.ID
+		if k, ok := args[0].(string); ok && obj.IsZeroID() {
+			unikey = k
+			args = args[1:]
 			}
+		q.On("CONFLICT (?) DO UPDATE", Ident(unikey))
+		var foundUpd bool
+		for _, arg := range args {
 			if a, ok := arg.(string); ok {
 				q.Set("?0 = EXCLUDED.?0", Ident(a))
 				if a == field.Updated {

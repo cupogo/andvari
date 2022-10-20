@@ -69,6 +69,7 @@ type Clause struct {
 } // @name Clause
 
 type ClauseBasic struct {
+	Slug string `bun:"slug,notnull,type:name,unique" extensions:"x-order=A" form:"slug" json:"slug" pg:"slug,notnull"`
 	Text string `bun:"text,notnull,type:text" extensions:"x-order=A" form:"text" json:"text" pg:"text,notnull"`
 } // @name ClauseBasic
 
@@ -113,18 +114,20 @@ func TestOps(t *testing.T) {
 	assert.NoError(t, err)
 
 	obj := new(Clause)
+	obj.Slug = oid.NewObjID(oid.OtDefault)
 	obj.Text = "test"
-	err = DoInsert(ContextWithCreated(ctx, 0), db, obj)
+	err = DoInsert(ContextWithCreated(ctx, 0), db, obj, "slug")
 	assert.NoError(t, err)
 	assert.False(t, obj.IsZeroID())
 	assert.NotZero(t, obj.ID)
-	err = DoInsert(ctx, db, obj, "text")
+	err = DoInsert(ctx, db, obj, "slug", "text")
 	assert.NoError(t, err)
 	assert.False(t, obj.IsZeroID())
 	assert.NotZero(t, obj.ID)
 
 	now := time.Now()
 	obj2 := new(Clause)
+	obj2.Slug = oid.NewObjID(oid.OtDefault)
 	obj2.Text = "hello world"
 	err = StoreSimple(ContextWithCreated(ctx, now.UnixMilli()), db, obj2, "text")
 	assert.NoError(t, err)
