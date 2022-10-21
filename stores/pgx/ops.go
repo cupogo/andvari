@@ -240,14 +240,14 @@ func DoInsert(ctx context.Context, db ormDB, obj Model, args ...any) error {
 	q := db.ModelContext(ctx, obj)
 	argc := len(args)
 	if argc > 0 {
-		q.OnConflict("(?) DO UPDATE", pgIdent(field.ID))
+		unikey := field.ID
+		if k, ok := args[0].(string); ok && obj.IsZeroID() {
+			unikey = k
+			args = args[1:]
+		}
+		q.OnConflict("(?) DO UPDATE", pgIdent(unikey))
 		var foundUpd bool
-		for i, arg := range args {
-			if b, ok := arg.(bool); ok && b && i == 0 {
-				q.Set("?0 = EXCLUDED.?0", pgIdent(field.Updated))
-				foundUpd = true
-				break
-			}
+		for _, arg := range args {
 			if a, ok := arg.(string); ok {
 				q.Set("?0 = EXCLUDED.?0", pgIdent(a))
 				if a == field.Updated {
