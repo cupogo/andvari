@@ -18,7 +18,7 @@ type TextSearchSpec struct {
 
 	// 关键词搜索
 	SearchKeyWord string `json:"skw,omitempty" form:"skw" extensions:"x-order=8"`
-	// 搜索风格 `web` `plain` 或空
+	// 匹配风格 `web` `plain` `valid` 或空
 	SearchStyle string `json:"sst,omitempty" form:"sst" extensions:"x-order=9" enums:",web,plain"`
 }
 
@@ -66,13 +66,16 @@ func getTsQuery(tscfg string, sty, kw string) string {
 }
 
 // GetTSQname return ts func name with search style
+// see also https://www.postgresql.org/docs/13/functions-textsearch.html
 func GetTSQname(sty string) string {
 	switch sty {
 	case "web":
 		return "websearch_to_tsquery"
 	case "plain":
 		return "plainto_tsquery"
-	default:
+	case "valid":
 		return "to_tsquery"
+	default:
+		return "phraseto_tsquery"
 	}
 }
