@@ -262,11 +262,12 @@ func DoInsert(ctx context.Context, db ormDB, obj Model, args ...any) error {
 	}
 
 	if _, err := q.Insert(); err != nil {
-		logger().Infow("insert model fail", "obj", obj, "err", err)
+		logger().Infow("insert model fail", "name", q.TableModel().Table().SQLName,
+			"obj", obj, "err", err)
 		return err
 	} else {
-		logger().Debugw("insert model ok", "id", obj.GetID(),
-			"name", q.TableModel().Table().SQLName)
+		logger().Debugw("insert model ok", "name", q.TableModel().Table().SQLName,
+			"id", obj.GetID())
 	}
 
 	return callToAfterCreateHooks(obj)
@@ -302,12 +303,12 @@ func DoUpdate(ctx context.Context, db ormDB, obj ModelChangeable, columns ...str
 		}
 	}
 	if _, err := q.WherePK().Update(); err != nil {
-		logger().Infow("update model fail", "obj", obj, "columns", columns, "err", err)
+		logger().Infow("update model fail", "name", q.TableModel().Table().SQLName,
+			"obj", obj, "columns", columns, "err", err)
 		return err
 	} else {
-		logger().Debugw("update model ok", "id", obj.GetID(),
-			"name", q.TableModel().Table().SQLName,
-			"columns", columns)
+		logger().Debugw("update model ok", "name", q.TableModel().Table().SQLName,
+			"id", obj.GetID(), "columns", columns)
 	}
 
 	return callToAfterUpdateHooks(obj)
