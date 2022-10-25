@@ -353,6 +353,21 @@ func DoUndeleteT(ctx context.Context, db ormDB, scDft, scCrap string, table stri
 	return err
 }
 
+type MetaValueFunc func(ctx context.Context, id any) (any, error)
+
+func OpModelMetaSet(ctx context.Context, mm ModelMeta, key string, id any, fn MetaValueFunc) error {
+	if !utils.IsZero(id) {
+		if val, err := fn(ctx, id); err != nil {
+			return err
+		} else if !utils.IsZero(val) {
+			logger().Debugw("set meta", key, val)
+			mm.MetaSet(key, val)
+			mm.SetChange(field.Meta)
+		}
+	}
+	return nil
+}
+
 func FilterError(err error) error {
 	if e, ok := err.(pg.Error); ok {
 		switch e.Field('C') {

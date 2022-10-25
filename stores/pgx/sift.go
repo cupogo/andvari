@@ -1,6 +1,7 @@
 package pgx
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -10,6 +11,10 @@ import (
 	"hyyl.xyz/cupola/andvari/models/oid"
 	"hyyl.xyz/cupola/andvari/utils"
 )
+
+type SifterX interface {
+	SiftX(ctx context.Context, q *ormQuery) *ormQuery
+}
 
 // StringsDiff 字串增减操作
 type StringsDiff struct {

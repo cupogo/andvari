@@ -87,9 +87,7 @@ func (w *DB) SchemaCrap() string {
 
 func (w *DB) List(ctx context.Context, spec ListArg, dataptr any) (total int, err error) {
 	q := w.ModelContext(ctx, dataptr).Apply(spec.Sift)
-	if v, ok := spec.(interface {
-		SiftX(context.Context, *ormQuery) *ormQuery
-	}); ok {
+	if v, ok := spec.(SifterX); ok {
 		q = v.SiftX(ctx, q)
 	}
 

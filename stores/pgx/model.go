@@ -38,6 +38,15 @@ type TextSearchable interface {
 	SetTsColumns(cols ...string)
 }
 
+type ModelMeta interface {
+	Model
+	Changeable
+
+	MetaGet(key string) (v any, ok bool)
+	MetaSet(key string, value any)
+	MetaUnset(key string)
+}
+
 type Sifter interface {
 	Sift(q *ormQuery) (*ormQuery, error)
 }
