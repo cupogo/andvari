@@ -50,6 +50,11 @@ func CreateModels(ctx context.Context, db *pgDB, dropIt bool, tables ...any) err
 
 func querySort(p Pager, q *ormQuery) *ormQuery {
 	if order := p.GetSort(); len(order) > 1 {
+		tm := q.TableModel()
+		var pre string
+		if len(tm.GetJoins()) > 0 {
+			pre = string(tm.Table().Alias) + "."
+		}
 		var key, op string
 		if b, a, ok := strings.Cut(order, " "); ok {
 			op = strings.ToUpper(a)
@@ -64,9 +69,9 @@ func querySort(p Pager, q *ormQuery) *ormQuery {
 		}
 		if p.CanSort(key) {
 			if len(op) > 0 {
-				q.Order(key + " " + op)
+				q.Order(pre + key + " " + op)
 			} else {
-				q.Order(key)
+				q.Order(pre + key)
 			}
 
 		}
