@@ -49,7 +49,7 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 			return
 		}
 	}
-
+	// TODO: alter table for added columns
 	_, err = query.Exec(ctx)
 	if err != nil {
 		logger().Errorw("create model failed", "name", query.GetTableName(), "err", err)
@@ -75,9 +75,9 @@ func querySort(p Pager, q *SelectQuery) *SelectQuery {
 		}
 		if len(key) > 0 && p.CanSort(key) {
 			if len(op) > 0 {
-				q.Order(key + " " + op)
+				q.OrderExpr(key + " " + op)
 			} else {
-				q.Order(key)
+				q.OrderExpr(key)
 			}
 		}
 	}
@@ -202,10 +202,10 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	q.Returning("NULL")
 
 	if _, err := q.Exec(ctx); err != nil {
-		logger().Infow("insert model fail", "obj", obj, "err", err)
+		logger().Infow("insert model fail", "name", q.GetTableName(), "obj", obj, "err", err)
 		return err
 	} else {
-		logger().Debugw("insert model ok", "id", obj.GetID(), "name", q.GetTableName())
+		logger().Debugw("insert model ok", "name", q.GetTableName(), "id", obj.GetID())
 	}
 
 	return callToAfterCreateHooks(obj)
@@ -241,12 +241,12 @@ func DoUpdate(ctx context.Context, db IDB, obj ModelChangeable, columns ...strin
 		}
 	}
 	if _, err := q.WherePK().Exec(ctx); err != nil {
-		logger().Infow("update model fail", "obj", obj, "columns", columns, "err", err)
+		logger().Infow("update model fail", "name", q.GetTableName(),
+			"obj", obj, "columns", columns, "err", err)
 		return err
 	} else {
-		logger().Debugw("update model ok", "id", obj.GetID(),
-			"name", q.GetTableName(),
-			"columns", columns)
+		logger().Debugw("update model ok", "name", q.GetTableName(),
+			"id", obj.GetID(), "columns", columns)
 	}
 
 	return callToAfterUpdateHooks(obj)
@@ -323,9 +323,9 @@ func DoUndeleteT(ctx context.Context, db IDB, scDft, scCrap string, table string
 	return err
 }
 
-type metaValueFunc func(ctx context.Context, id oid.OID) (any, error)
+type MetaValueFunc func(ctx context.Context, id oid.OID) (any, error)
 
-func OpModelMetaSet(ctx context.Context, mm ModelMeta, key string, id oid.OID, fn metaValueFunc) error {
+func OpModelMetaSet(ctx context.Context, mm ModelMeta, key string, id oid.OID, fn MetaValueFunc) error {
 	if !id.IsZero() {
 		if val, err := fn(ctx, id); err != nil {
 			return err
