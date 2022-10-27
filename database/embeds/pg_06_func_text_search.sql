@@ -12,6 +12,7 @@ BEGIN
 	END IF;
 
 	EXECUTE 'CREATE TEXT SEARCH CONFIGURATION '|| quote_ident(name) ||' (PARSER = '|| quote_ident(parser) ||')';
+	EXECUTE 'ALTER TEXT SEARCH CONFIGURATION '|| quote_ident(name) ||' ADD MAPPING FOR n,v,a,i,e,l WITH simple)';
 
 	RETURN 1;
 
