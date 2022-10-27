@@ -18,6 +18,7 @@ type ormResult = orm.Result
 type pgDB = pg.DB
 type pgTx = pg.Tx
 type pgIdent = pg.Ident
+type pgSafe = pg.Safe
 
 func EnsureSchema(db *pgDB, name string) error {
 	if _, err := db.Exec("CREATE SCHEMA IF NOT EXISTS " + name); err != nil {
@@ -69,11 +70,10 @@ func querySort(p Pager, q *ormQuery) *ormQuery {
 		}
 		if p.CanSort(key) {
 			if len(op) > 0 {
-				q.Order(pre + key + " " + op)
+				q.OrderExpr(pre+"? ?", pgIdent(key), pgSafe(op))
 			} else {
-				q.Order(pre + key)
+				q.OrderExpr(pre+"?", pgIdent(key))
 			}
-
 		}
 	}
 	return q
