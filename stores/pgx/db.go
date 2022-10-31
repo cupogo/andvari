@@ -105,7 +105,11 @@ func (w *DB) SchemaCrap() string {
 	return w.scCrap
 }
 
+// Deprecatec by ListModel
 func (w *DB) List(ctx context.Context, spec ListArg, dataptr any) (total int, err error) {
+	return w.ListModel(ctx, spec, dataptr)
+}
+func (w *DB) ListModel(ctx context.Context, spec ListArg, dataptr any) (total int, err error) {
 	q := w.NewSelect().Model(dataptr).Apply(spec.Sift)
 	if spec.Deleted() {
 		q.ModelTableExpr(w.scCrap + ".?TableName AS ?TableAlias")
