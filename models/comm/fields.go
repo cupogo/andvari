@@ -92,7 +92,7 @@ func (f *DateFields) GetUpdated() time.Time {
 
 type CreatorField struct {
 	// 创建者ID
-	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" form:"creatorID" bun:"creator_id,notnull,default:0" pg:"creator_id,notnull,use_zero" extensions:"x-order=_"`
+	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" form:"creatorID" bun:"creator_id,notnull" pg:"creator_id,notnull,use_zero" extensions:"x-order=_"`
 }
 
 // GetCreatorID 返回创建者ID
@@ -111,7 +111,7 @@ func (f *CreatorField) SetCreatorID(id any) bool {
 
 type OwnerField struct {
 	// 所有者OID 默认为当前登录账号主键
-	OwnerID OID `bson:"ownerID,omitempty" json:"ownerID,omitempty" form:"ownerID" bun:"owner_id,notnull,default:0" pg:"owner_id,notnull,use_zero" extensions:"x-order=@"`
+	OwnerID OID `bson:"ownerID,omitempty" json:"ownerID,omitempty" form:"ownerID" bun:"owner_id,notnull" pg:"owner_id,notnull,use_zero" extensions:"x-order=@"`
 }
 
 // GetOwnerID 返回所有者ID
