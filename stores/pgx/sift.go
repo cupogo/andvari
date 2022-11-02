@@ -62,11 +62,11 @@ func (md *ModelSpec) Deleted() bool {
 
 func (md *ModelSpec) Sift(q *SelectQuery) *SelectQuery {
 	if len(md.IDs) > 0 {
-		q.Where("id in (?)", In(md.IDs))
+		q.Where("?TableAlias.id in (?)", In(md.IDs))
 	} else if md.IDsStr.Valid() {
 		ids, err := md.IDsStr.Decode()
 		if err == nil {
-			q.Where("id in (?)", In(ids))
+			q.Where("?TableAlias.id in (?)", In(ids))
 		}
 	}
 	q, _ = SiftOID(q, "creator_id", md.CreatorID, false)
@@ -156,6 +156,9 @@ func Sift(q *SelectQuery, field, op string, v any, isOr bool) (*SelectQuery, boo
 	} else {
 		cond = "? " + op + " ?"
 	}
+	if !strings.Contains(field, ".") {
+		cond = "?TableAlias." + cond
+	}
 	if isOr {
 		return q.WhereOr(cond, Ident(field), v), true
 	}
@@ -189,10 +192,13 @@ func SiftBetween(q *SelectQuery, field string, v1, v2 any, isOr bool) (*SelectQu
 	if utils.IsZero(v1) || utils.IsZero(v2) {
 		return q, false
 	}
-
-	if isOr {
-		return q.WhereOr("? BETWEEN ? AND ?", Ident(field), v1, v2), true
+	cond := "? "
+	if !strings.Contains(field, ".") {
+		cond = "?TableAlias." + cond
 	}
-	return q.Where("? BETWEEN ? AND ?", Ident(field), v1, v2), true
+	if isOr {
+		return q.WhereOr(cond+" BETWEEN ? AND ?", Ident(field), v1, v2), true
+	}
+	return q.Where(cond+" BETWEEN ? AND ?", Ident(field), v1, v2), true
 
 }
