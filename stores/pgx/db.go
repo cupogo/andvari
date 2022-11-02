@@ -91,10 +91,6 @@ func Open(dsn string, ftscfg string, debug bool) (*DB, error) {
 		return nil, err
 	}
 
-	for _, name := range []string{"citext", "intarray", "btree_gin", "btree_gist", "pg_trgm"} {
-		_ = EnsureExtension(ctx, db, name)
-	}
-
 	return w, nil
 }
 
@@ -209,6 +205,10 @@ func (w *DB) bulkExecAllFsSQLs(ctx context.Context) error {
 }
 
 func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
+	for _, name := range trustExt {
+		_ = EnsureExtension(ctx, w.DB, name)
+	}
+
 	if err := CreateModels(ctx, w.DB, dropIt, allmodels...); err != nil {
 		return err
 	}

@@ -6,6 +6,8 @@ var (
 	allmodels []any
 	alldbfs   []fs.FS
 	alterfs   []fs.FS
+
+	trustExt = []string{"citext", "intarray", "btree_gin", "btree_gist", "pg_trgm"}
 )
 
 // RegisterModel all tables will be created by InitSchemas()
