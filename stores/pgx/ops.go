@@ -183,7 +183,7 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 		if k, ok := args[0].(string); ok && obj.IsZeroID() {
 			unikey = k
 			args = args[1:]
-			}
+		}
 		q.On("CONFLICT (?) DO UPDATE", Ident(unikey))
 		var foundUpd bool
 		for _, arg := range args {
@@ -339,6 +339,9 @@ func OpModelMetaSet(ctx context.Context, mm ModelMeta, key string, id oid.OID, f
 }
 
 func FilterError(err error) error {
+	if err == ErrNoRows {
+		return ErrNotFound
+	}
 	if e, ok := err.(PGError); ok {
 		switch e.Field('C') {
 		case "23502":

@@ -10,6 +10,7 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/migrate"
 	"github.com/uptrace/bun/schema"
+	"github.com/yalue/merged_fs"
 
 	"github.com/cupogo/andvari/models/oid"
 )
@@ -216,9 +217,12 @@ func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
 	return w.bulkExecAllFsSQLs(ctx)
 }
 
-func (w *DB) RunMigrations(ctx context.Context, mfs fs.FS) error {
+func (w *DB) RunMigrations(ctx context.Context, mfs ...fs.FS) error {
+	if len(mfs) == 0 {
+		mfs = alterfs
+	}
 	var migrations = migrate.NewMigrations()
-	if err := migrations.Discover(mfs); err != nil {
+	if err := migrations.Discover(merged_fs.MergeMultiple(mfs...)); err != nil {
 		return err
 	}
 	migrator := migrate.NewMigrator(w.DB, migrations)
