@@ -54,6 +54,7 @@ func TestInit(t *testing.T) {
 	ctx := context.Background()
 	dropIt := true
 	err = db.InitSchemas(ctx, dropIt)
+	assert.NoError(t, err)
 
 	err = db.RunMigrations(ctx, fstest.MapFS{})
 	assert.NoError(t, err)
@@ -186,6 +187,7 @@ func TestOps(t *testing.T) {
 
 	exist = new(Clause)
 	err = db.GetModel(ctx, exist, "")
+	assert.NoError(t, err)
 	err = db.GetModel(ctx, exist, "not-found")
 	assert.Error(t, err)
 	err = db.GetModel(ContextWithColumns(ctx, "text"), exist, obj.ID)

@@ -66,6 +66,7 @@ func TestDateRange(t *testing.T) {
 
 	//日期范围的末尾精度修正
 	dr, err = GetDateRange("2019-07-12~2019-08-31")
+	assert.NoError(t, err)
 	if dr.End.Format("2006-01-02") == "2019-09-01" {
 		t.Logf("dr %v", dr)
 	} else {

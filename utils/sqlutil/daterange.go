@@ -131,9 +131,11 @@ func (dr *DateRange) Parse(during string, days ...int) (err error) {
 func (dr *DateRange) parse2(a, b string) (err error) {
 	if !IsDate(a) {
 		err = fmt.Errorf("invalid date %q", a)
+		return
 	}
 	if !IsDate(b) {
 		err = fmt.Errorf("invalid date %q", b)
+		return
 	}
 
 	dr.Start, err = time.ParseInLocation(LayoutDate, a, dr.Location())

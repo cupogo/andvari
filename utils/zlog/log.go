@@ -37,23 +37,23 @@ func (z *logger) Info(args ...interface{}) {
 	syslog.Print(args...)
 }
 func (z *logger) Printf(template string, args ...interface{}) {
-	syslog.Output(2, fmt.Sprintf(template, args...))
+	_ = syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Debugf(template string, args ...interface{}) {
-	syslog.Output(2, fmt.Sprintf(template, args...))
+	_ = syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Infof(template string, args ...interface{}) {
-	syslog.Output(2, fmt.Sprintf(template, args...))
+	_ = syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Warnf(template string, args ...interface{}) {
-	syslog.Output(2, fmt.Sprintf(template, args...))
+	_ = syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Errorf(template string, args ...interface{}) {
-	syslog.Output(2, fmt.Sprintf(template, args...))
+	_ = syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Panicf(template string, args ...interface{}) {
@@ -65,19 +65,19 @@ func (z *logger) Fatalf(template string, args ...interface{}) {
 }
 
 func (z *logger) Debugw(msg string, keysAndValues ...interface{}) {
-	syslog.Output(2, fmt.Sprint("DEBUG: "+msg, keysAndValues))
+	_ = syslog.Output(2, fmt.Sprint("DEBUG: "+msg, keysAndValues))
 }
 
 func (z *logger) Infow(msg string, keysAndValues ...interface{}) {
-	syslog.Output(2, fmt.Sprint("INFO: "+msg, keysAndValues))
+	_ = syslog.Output(2, fmt.Sprint("INFO: "+msg, keysAndValues))
 }
 
 func (z *logger) Warnw(msg string, keysAndValues ...interface{}) {
-	syslog.Output(2, fmt.Sprint("WARN: "+msg, keysAndValues))
+	_ = syslog.Output(2, fmt.Sprint("WARN: "+msg, keysAndValues))
 }
 
 func (z *logger) Errorw(msg string, keysAndValues ...interface{}) {
-	syslog.Output(2, fmt.Sprint("ERROR: "+msg, keysAndValues))
+	_ = syslog.Output(2, fmt.Sprint("ERROR: "+msg, keysAndValues))
 }
 
 func (z *logger) Panicw(msg string, keysAndValues ...interface{}) {
