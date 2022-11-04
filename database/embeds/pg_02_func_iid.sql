@@ -34,8 +34,8 @@ CREATE OR REPLACE FUNCTION b36_decode(IN b36 varchar)
         DECLARE
 			a char[];
 			ret bigint;
-			i int;
-			val int;
+			i bigint;
+			val bigint;
 			chars varchar;
 		BEGIN
 		chars := '0123456789abcdefghijklmnopqrstuvwxyz';
@@ -47,7 +47,7 @@ CREATE OR REPLACE FUNCTION b36_decode(IN b36 varchar)
 		ret := 0;
 		WHILE i < (array_length(a,1)) LOOP
 			val := position(a[i+1] IN chars)-1;
-			ret := ret + (val * (36 ^ i));
+			ret := ret + (val * (36 ^ i)::bigint);
 			i := i + 1;
 		END LOOP;
 
