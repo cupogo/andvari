@@ -60,24 +60,31 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 }
 
 func querySort(p Pager, q *SelectQuery) *SelectQuery {
-	if order := p.GetSort(); len(order) > 1 {
-		var key, op string
-		if b, a, ok := strings.Cut(order, " "); ok {
-			op = strings.ToUpper(a)
-			if op == "DESC" || op == "ASC" {
-				key = b
-			}
-		} else if strings.Index(order, "-") == 0 { // -createdAt
-			key = order[1:]
-			op = "DESC"
-		} else {
-			key = order
+	if rule := p.GetSort(); len(rule) > 1 {
+		orders := strings.Split(rule, ",")
+		// two fields at most
+		if len(orders) > 2 {
+			orders = orders[:2]
 		}
-		if len(key) > 0 && p.CanSort(key) {
-			if len(op) > 0 {
-				q.OrderExpr(key + " " + op)
+		for _, order := range orders {
+			var key, op string
+			if b, a, ok := strings.Cut(order, " "); ok {
+				op = strings.ToUpper(a)
+				if op == "DESC" || op == "ASC" {
+					key = b
+				}
+			} else if strings.Index(order, "-") == 0 { // -createdAt
+				key = order[1:]
+				op = "DESC"
 			} else {
-				q.OrderExpr(key)
+				key = order
+			}
+			if len(key) > 0 && p.CanSort(key) {
+				if len(op) > 0 {
+					q.OrderExpr(key + " " + op)
+				} else {
+					q.OrderExpr(key)
+				}
 			}
 		}
 	}
