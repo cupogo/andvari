@@ -49,7 +49,6 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 			return
 		}
 	}
-	// TODO: alter table for added columns
 	_, err = query.Exec(ctx)
 	if err != nil {
 		logger().Errorw("create model failed", "name", query.GetTableName(), "err", err)

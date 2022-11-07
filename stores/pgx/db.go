@@ -204,7 +204,7 @@ func (w *DB) bulkExecAllFsSQLs(ctx context.Context) error {
 	return nil
 }
 
-func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
+func (w *DB) InitSchemas(ctx context.Context, dropIt bool, opts ...AlterOption) error {
 	for _, name := range trustExt {
 		_ = EnsureExtension(ctx, w.DB, name)
 	}
@@ -213,6 +213,17 @@ func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
 		return err
 	}
 	logger().Infow("inited schema", "tables", len(allmodels))
+
+	if len(opts) > 0 && !dropIt {
+		schemas := []string{w.Schema(), w.SchemaCrap()}
+		for i := 0; i < len(allmodels); i++ {
+			for j := 0; j < len(schemas); j++ {
+				if err := AlterModel(ctx, w.DB, schemas[j], allmodels[i], opts...); err != nil {
+					return err
+				}
+			}
+		}
+	}
 
 	return w.bulkExecAllFsSQLs(ctx)
 }
