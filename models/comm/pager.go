@@ -17,7 +17,7 @@ type PageSpec struct {
 	Page int `json:"page,omitempty" form:"page" extensions:"x-order=["`
 	// 跳过多少条记录，如果提供 page 此项跳过
 	Skip int `json:"skip,omitempty" form:"skip" extensions:"x-order=]"`
-	// 排序 field desc | [asc]
+	// 排序，允许最多两个字段排序 field1 [asc | desc] [,field2 [asc | desc] ...]
 	Sort string `json:"sort,omitempty" form:"sort" extensions:"x-order=|"`
 
 	Total int `json:"total,omitempty" swaggerignore:"true"`
