@@ -3,6 +3,7 @@ module github.com/cupogo/andvari
 go 1.18
 
 require (
+	github.com/pkg/errors v0.8.1
 	github.com/stretchr/testify v1.8.0
 	github.com/uptrace/bun v1.1.8
 	github.com/uptrace/bun/dialect/pgdialect v1.1.8
