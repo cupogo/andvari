@@ -165,17 +165,14 @@ func AlterModel(ctx context.Context, db IDB, schema string, model any, opts ...A
 	if err != nil {
 		return
 	}
-	schTable := tbName
-	if len(schema) > 0 {
-		schTable = schema + "." + tbName
-	}
+
 	if option.add {
-		if err = addColumnQuery(ctx, db, schTable, as, option.output); err != nil {
+		if err = addColumnQuery(ctx, db, schema, tbName, as, option.output); err != nil {
 			return
 		}
 	}
 	if option.drop {
-		if err = dropColumnQuery(ctx, db, schTable, ds, option.output); err != nil {
+		if err = dropColumnQuery(ctx, db, schema, tbName, ds, option.output); err != nil {
 			return
 		}
 	}
@@ -253,13 +250,13 @@ func getColumnDefault(f *schema.Field) (colDef string, err error) {
 	return
 }
 
-func addColumnQuery(ctx context.Context, db IDB, tbName string, as []*schema.Field, output io.Writer) (err error) {
-	alter := "ALTER TABLE IF EXISTS %s ADD IF NOT EXISTS %s %s %s %s;"
+func addColumnQuery(ctx context.Context, db IDB, schema, tbName string, as []*schema.Field, output io.Writer) (err error) {
+	alter := "ALTER TABLE IF EXISTS %q.%q ADD IF NOT EXISTS %q %s %s %s;"
 
 	for _, f := range as {
 		pgTag := f.Tag
 		// column type
-		sqlType := f.UserSQLType
+		sqlType := strings.ToUpper(f.UserSQLType)
 		// notnull
 		sqlNotNull := ""
 		if pgTag.HasOption("notnull") {
@@ -278,7 +275,8 @@ func addColumnQuery(ctx context.Context, db IDB, tbName string, as []*schema.Fie
 			}
 		}
 
-		err = execColumnQuery(ctx, db, output, alter, tbName, f.Name, sqlType, sqlNotNull, sqlDefault)
+		err = execColumnQuery(ctx, db, output, alter,
+			schema, tbName, f.Name, sqlType, sqlNotNull, sqlDefault)
 		if err != nil {
 			return
 		}
@@ -287,11 +285,12 @@ func addColumnQuery(ctx context.Context, db IDB, tbName string, as []*schema.Fie
 }
 
 // nolint
-func dropColumnQuery(ctx context.Context, db IDB, tbName string, ds tableColumns, output io.Writer) (err error) {
-	alter := "ALTER TABLE IF EXISTS %s DROP IF EXISTS %s;"
+func dropColumnQuery(ctx context.Context, db IDB, schema, tbName string, ds tableColumns, output io.Writer) (err error) {
+	alter := "ALTER TABLE IF EXISTS %q.%q DROP IF EXISTS %q;"
 
 	for _, c := range ds {
-		err = execColumnQuery(ctx, db, output, alter, tbName, c.ColumnName)
+		err = execColumnQuery(ctx, db, output, alter,
+			schema, tbName, c.ColumnName)
 		if err != nil {
 			return
 		}
