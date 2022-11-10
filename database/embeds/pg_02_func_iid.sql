@@ -78,3 +78,11 @@ BEGIN
 
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
+
+-- for change data type repeat
+CREATE OR REPLACE FUNCTION iid_decode(IN eiid bigint)
+  RETURNS bigint AS $$
+BEGIN
+		RETURN eiid;
+END;
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
