@@ -148,12 +148,16 @@ func Sift(q *SelectQuery, field, op string, v any, isOr bool) (*SelectQuery, boo
 	}
 
 	var cond string
-	if strings.ToLower(op) == "in" {
+	if strings.ToUpper(op) == "IN" {
 		cond = "? " + op + " (?)"
 		if _, ok := v.(QueryAppender); !ok {
 			v = In(v)
 		}
 	} else {
+		if op == "?|" || strings.ToUpper(op) == "ANY" {
+			op = "\\?|"
+			v = Array(v)
+		}
 		cond = "? " + op + " ?"
 	}
 	if !strings.Contains(field, ".") {

@@ -32,6 +32,7 @@ type QueryApplierFn func(q *SelectQuery) *SelectQuery
 var (
 	ErrNoRows = sql.ErrNoRows
 	In        = bun.In
+	Array     = pgdialect.Array
 )
 
 const (
