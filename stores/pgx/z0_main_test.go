@@ -70,8 +70,9 @@ type Clause struct {
 } // @name Clause
 
 type ClauseBasic struct {
-	Slug string `bun:"slug,notnull,type:name,unique" extensions:"x-order=A" form:"slug" json:"slug" pg:"slug,notnull"`
-	Text string `bun:"text,notnull,type:text" extensions:"x-order=A" form:"text" json:"text" pg:"text,notnull"`
+	Slug  string   `bun:"slug,notnull,type:name,unique" json:"slug" pg:"slug,notnull"`
+	Text  string   `bun:"text,notnull,type:text" form:"text" json:"text" pg:"text,notnull"`
+	Cates []string `bun:"cates,notnull,type:jsonb" form:"cats" json:"cats" pg:"cates,notnull,type:jsonb"`
 } // @name ClauseBasic
 
 type Clauses []Clause
@@ -94,12 +95,14 @@ type ClauseSpec struct {
 	comm.PageSpec
 	ModelSpec
 
-	Text string `extensions:"x-order=A" form:"text" json:"text"`
+	Text  string   `form:"text" json:"text"`
+	Cates []string `form:"cats" json:"cats"`
 }
 
 func (spec *ClauseSpec) Sift(q *SelectQuery) *SelectQuery {
 	q = spec.ModelSpec.Sift(q)
 	q, _ = SiftMatch(q, "text", spec.Text, false)
+	q, _ = Sift(q, "cates", "any", spec.Cates, false)
 
 	return q
 }
@@ -117,6 +120,7 @@ func TestOps(t *testing.T) {
 	obj := new(Clause)
 	obj.Slug = oid.NewObjID(oid.OtDefault)
 	obj.Text = "test"
+	obj.Cates = append(obj.Cates, "cat", "dog")
 	err = DoInsert(ContextWithCreated(ctx, 0), db, obj, "slug")
 	assert.NoError(t, err)
 	assert.False(t, obj.IsZeroID())
@@ -142,6 +146,7 @@ func TestOps(t *testing.T) {
 
 	spec := &ClauseSpec{}
 	spec.Limit = 2
+	spec.Cates = append(spec.Cates, "dog", "sheep")
 	spec.Text = "test"
 	spec.Sort = "created DESC"
 	var data Clauses
@@ -187,7 +192,7 @@ func TestOps(t *testing.T) {
 
 	exist = new(Clause)
 	err = db.GetModel(ctx, exist, "")
-	assert.NoError(t, err)
+	assert.Error(t, err)
 	err = db.GetModel(ctx, exist, "not-found")
 	assert.Error(t, err)
 	err = db.GetModel(ContextWithColumns(ctx, "text"), exist, obj.ID)
