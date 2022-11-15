@@ -74,7 +74,7 @@ func CheckTsCfg(ctx context.Context, db IDB, ftsConfig string) bool {
 	err := db.NewSelect().Table("pg_ts_config").Column("oid").Where("cfgname = ?", ftsConfig).Scan(ctx, &ret)
 	if err == nil {
 		if ret > 0 {
-			logger().Infow("fts checked ok", "ts cfg", ftsConfig)
+			logger().Debugw("fts checked ok", "ts cfg", ftsConfig)
 			return true
 		}
 	} else {
