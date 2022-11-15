@@ -11,7 +11,7 @@ type OID = oid.OID
 
 // IDField struct contain model's ID field.
 type IDField struct {
-	ID OID `bson:"_id,omitempty" json:"id" form:"id" bun:",pk,type:bigint" pg:",pk,type:bigint" extensions:"x-order=/"` // 主键
+	ID OID `bson:"_id,omitempty" json:"id" form:"id" bun:",pk,type:bigint" pg:",pk,type:bigint" extensions:"x-order=/" swaggertype:"string"` // 主键
 }
 
 // DateFields struct contain `createdAt` and `updatedAt`
@@ -92,7 +92,7 @@ func (f *DateFields) GetUpdated() time.Time {
 
 type CreatorField struct {
 	// 创建者ID
-	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" form:"creatorID" bun:"creator_id,notnull" pg:"creator_id,notnull,use_zero" extensions:"x-order=_"`
+	CreatorID OID `bson:"creatorID,omitempty" json:"creatorID,omitempty" form:"creatorID" bun:"creator_id,notnull" pg:"creator_id,notnull,use_zero" extensions:"x-order=_" swaggertype:"string"`
 }
 
 // GetCreatorID 返回创建者ID
@@ -111,7 +111,7 @@ func (f *CreatorField) SetCreatorID(id any) bool {
 
 type OwnerField struct {
 	// 所有者OID 默认为当前登录账号主键
-	OwnerID OID `bson:"ownerID,omitempty" json:"ownerID,omitempty" form:"ownerID" bun:"owner_id,notnull" pg:"owner_id,notnull,use_zero" extensions:"x-order=@"`
+	OwnerID OID `bson:"ownerID,omitempty" json:"ownerID,omitempty" form:"ownerID" bun:"owner_id,notnull" pg:"owner_id,notnull,use_zero" extensions:"x-order=@" swaggertype:"string"`
 }
 
 // GetOwnerID 返回所有者ID
