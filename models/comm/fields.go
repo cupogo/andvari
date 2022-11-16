@@ -232,6 +232,10 @@ func (f *SerialField) StringID() string {
 	return strconv.Itoa(f.ID)
 }
 
+func (f *SerialField) IsSerial() bool {
+	return true
+}
+
 // SerialModel struct contain model's default fields.
 type SerialModel struct {
 	SerialField  `bson:",inline"`

@@ -7,7 +7,7 @@ type ObjType int16
 const (
 	OtDefault    ObjType = iota
 	OtAccount            // 账号
-	OtCompany            // 公司、企业
+	OtCompany            // 公司、企业、组织
 	OtDepartment         // 部门
 	OtArticle            // 内容、文章、条款
 	OtTeam               // 小组、群

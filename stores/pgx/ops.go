@@ -203,9 +203,12 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 		if !foundUpd {
 			q.Set("?0 = EXCLUDED.?0", Ident(field.Updated))
 		}
-
 	}
-	q.Returning("NULL")
+	if vs, ok := obj.(interface{ IsSerial() bool }); ok && vs.IsSerial() {
+		q.Returning("id")
+	} else {
+		q.Returning("NULL")
+	}
 
 	if _, err := q.Exec(ctx); err != nil {
 		logger().Infow("insert model fail", "name", q.GetTableName(), "obj", obj, "err", err)
