@@ -14,6 +14,15 @@ func (z OIDs) String() string {
 	return a.String()
 }
 
+func (z OIDs) Has(id OID) bool {
+	for i := 0; i < len(z); i++ {
+		if id == z[i] {
+			return true
+		}
+	}
+	return false
+}
+
 type StringSlice []string
 
 func (ss StringSlice) String() string {
