@@ -220,23 +220,29 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	return callToAfterCreateHooks(obj)
 }
 
-func DoUpdate(ctx context.Context, db IDB, obj ModelChangeable, columns ...string) error {
-	if len(columns) > 0 {
-		obj.SetChange(columns...)
-	}
+func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
+
 	// Call to saving hook
 	if err := callToBeforeUpdateHooks(obj); err != nil {
 		logger().Infow("before update model fail", "obj", obj, "err", err)
 		return err
 	}
 
-	if obj.CountChange() == 0 {
+	if vo, ok := obj.(Changeable); ok {
+		if len(columns) > 0 {
+			vo.SetChange(columns...)
+		}
+		if vo.CountChange() == 0 {
+			logger().Infow("unchange", "id", obj.GetID())
+			return nil
+		}
+
+		vo.SetChange(field.Updated)
+		columns = vo.GetChanges()
+	} else if len(columns) == 0 {
 		logger().Infow("unchange", "id", obj.GetID())
 		return nil
 	}
-
-	obj.SetChange(field.Updated)
-	columns = obj.GetChanges()
 
 	q := db.NewUpdate().Model(obj).Column(columns...)
 	if tso, ok := obj.(TextSearchable); ok {
@@ -341,7 +347,9 @@ func OpModelMetaSet(ctx context.Context, mm ModelMeta, key string, id oid.OID, f
 		} else if !utils.IsZero(val) {
 			logger().Debugw("set meta", key, val)
 			mm.MetaSet(key, val)
-			mm.SetChange(field.Meta)
+			if mm.CountChange() > 0 {
+				mm.SetChange(field.Meta)
+			}
 		}
 	}
 	return nil
