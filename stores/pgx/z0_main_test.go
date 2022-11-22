@@ -186,6 +186,7 @@ func TestOps(t *testing.T) {
 	exist.Text = ""
 	err = DoUpdate(ctx, db, exist, "text")
 	assert.NoError(t, err)
+	assert.True(t, exist.IsUpdate())
 	exist.Text = "test2"
 	err = DoUpdate(ctx, db, exist, "text")
 	assert.NoError(t, err)
