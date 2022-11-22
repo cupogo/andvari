@@ -263,6 +263,9 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		logger().Debugw("update model ok", "name", q.GetTableName(),
 			"id", obj.GetID(), "columns", columns)
 	}
+	if vo, ok := obj.(interface{ SetIsUpdate(v bool) }); ok {
+		vo.SetIsUpdate(true)
+	}
 
 	return callToAfterUpdateHooks(obj)
 }
@@ -347,9 +350,7 @@ func OpModelMetaSet(ctx context.Context, mm ModelMeta, key string, id oid.OID, f
 		} else if !utils.IsZero(val) {
 			logger().Debugw("set meta", key, val)
 			mm.MetaSet(key, val)
-			if mm.CountChange() > 0 {
-				mm.SetChange(field.Meta)
-			}
+			mm.SetChange(field.Meta)
 		}
 	}
 	return nil

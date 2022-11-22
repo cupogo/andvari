@@ -3,7 +3,8 @@ package comm
 import "github.com/cupogo/andvari/utils/array"
 
 type ChangeMod struct {
-	cs array.String
+	cs   array.String
+	isUp bool
 }
 
 func (cm *ChangeMod) SetChange(cs ...string) {
@@ -24,4 +25,12 @@ func (cm *ChangeMod) CountChange() int {
 
 func (cm *ChangeMod) HasChange(name string) bool {
 	return cm.cs.Has(name)
+}
+
+func (cm *ChangeMod) IsUpdate() bool {
+	return cm.isUp
+}
+
+func (cm *ChangeMod) SetIsUpdate(v bool) {
+	cm.isUp = v
 }
