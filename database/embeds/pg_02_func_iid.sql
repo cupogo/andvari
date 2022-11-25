@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE FUNCTION b36_encode(IN digits bigint, IN min_width int = 0)
   RETURNS varchar AS $$
         DECLARE
@@ -84,5 +83,54 @@ CREATE OR REPLACE FUNCTION iid_decode(IN eiid bigint)
   RETURNS bigint AS $$
 BEGIN
 		RETURN eiid;
+END;
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
+
+
+CREATE OR REPLACE FUNCTION b36_decode_array(IN b36 varchar)
+  RETURNS bigint AS $$
+        DECLARE
+			a char[];
+			ret bigint;
+			i int;
+			val int;
+			chars varchar;
+            pow36 bigint[];
+		BEGIN
+		chars := '0123456789abcdefghijklmnopqrstuvwxyz';
+		pow36 := ARRAY[1, 36, 1296, 46656, 1679616, 60466176,
+                     2176782336, 78364164096, 2821109907456,
+                     101559956668416, 3656158440062976,
+                     131621703842267136];
+
+		FOR i IN REVERSE char_length(b36)..1 LOOP
+			a := a || substring(lower(b36) FROM i FOR 1)::char;
+		END LOOP;
+		i := 0;
+		ret := 0;
+		WHILE i < (array_length(a,1)) LOOP
+			val := position(a[i+1] IN chars)-1;
+			ret := ret + (val * pow36[i+1]);
+			i := i + 1;
+		END LOOP;
+
+		RETURN ret;
+
+END;
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION iid_decode_as(IN eiid varchar)
+  RETURNS bigint AS $$
+BEGIN
+
+		IF eiid LIKE '__-____%' THEN
+		    eiid := substring(eiid from 4);
+		END IF;
+
+        IF length(eiid) > 12 THEN
+            eiid := left(eiid, 12);
+        end if;
+        RETURN b36_decode_array(eiid);
+
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
