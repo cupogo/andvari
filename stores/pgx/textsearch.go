@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cupogo/andvari/models/field"
 	"github.com/cupogo/andvari/utils/sqlutil"
 )
 
@@ -37,7 +38,8 @@ func (tss *TextSearchSpec) SetFallback(cols ...string) {
 }
 
 func (tss *TextSearchSpec) Sift(q *SelectQuery) *SelectQuery {
-	return DoApplyTsQuery(tss.enabled, tss.cfgname, q, tss.SearchKeyWord, tss.SearchStyle, tss.fallbacks...)
+	return DoApplyTsQuery(tss.enabled, tss.cfgname, q.ExcludeColumn(field.TsCfg, field.TsVec),
+		tss.SearchKeyWord, tss.SearchStyle, tss.fallbacks...)
 }
 
 func DoApplyTsQuery(enabled bool, cfgname string, q *SelectQuery, kw, sty string, cols ...string) *SelectQuery {

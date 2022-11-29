@@ -9,4 +9,7 @@ const (
 	Updated = "updated"
 	Meta    = "meta"
 	Src     = "src"
+
+	TsCfg = "ts_cfg"
+	TsVec = "ts_vec"
 )
