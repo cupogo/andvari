@@ -53,5 +53,4 @@ func ListFS(cate string, w io.Writer) {
 			}
 		}
 	}
-	return
 }
