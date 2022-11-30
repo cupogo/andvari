@@ -37,8 +37,12 @@ func (tss *TextSearchSpec) SetFallback(cols ...string) {
 	tss.fallbacks = cols
 }
 
+func HideTsColumn(q *SelectQuery) *SelectQuery {
+	return q.ExcludeColumn(field.TsCfg, field.TsVec)
+}
+
 func (tss *TextSearchSpec) Sift(q *SelectQuery) *SelectQuery {
-	return DoApplyTsQuery(tss.enabled, tss.cfgname, q.ExcludeColumn(field.TsCfg, field.TsVec),
+	return DoApplyTsQuery(tss.enabled, tss.cfgname, HideTsColumn(q),
 		tss.SearchKeyWord, tss.SearchStyle, tss.fallbacks...)
 }
 
