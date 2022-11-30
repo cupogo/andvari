@@ -160,7 +160,7 @@ type contentStore struct {
 }
 
 func (s *contentStore) ListArticle(ctx context.Context, spec *ArticleSpec) (data cms1.Articles, total int, err error) {
-	total, err = s.w.db.List(ctx, spec, &data)
+	total, err = s.w.db.ListModel(ctx, spec, &data)
 	return
 }
 func (s *contentStore) GetArticle(ctx context.Context, id string) (obj *cms1.Article, err error) {
