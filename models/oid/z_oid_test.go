@@ -80,6 +80,8 @@ func TestParse(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotZero(t, id)
 	assert.NotEmpty(t, cat)
+
+	assert.Equal(t, OtPeople, id.Cate())
 }
 
 func TestOIDs(t *testing.T) {

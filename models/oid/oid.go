@@ -176,3 +176,8 @@ func Parse(s string) (code string, oid OID, err error) {
 
 	return
 }
+
+func (z OID) Cate() ObjType {
+	_, shard, _ := idgen.SplitID(int64(z))
+	return ObjType(shard)
+}
