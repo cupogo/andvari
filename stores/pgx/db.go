@@ -115,7 +115,9 @@ func (w *DB) ListModel(ctx context.Context, spec ListArg, dataptr any) (total in
 	if v, ok := spec.(SifterX); ok {
 		q = v.SiftX(ctx, q)
 	}
-	q = q.Apply(spec.Sift)
+	if !spec.IsSifted() {
+		q = q.Apply(spec.Sift)
+	}
 
 	if excols := ExcludesFromContext(ctx); len(excols) > 0 {
 		q.ExcludeColumn(excols...)

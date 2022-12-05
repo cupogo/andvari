@@ -12,6 +12,8 @@ import (
 
 type Sifter interface {
 	Sift(q *SelectQuery) *SelectQuery
+	IsSifted() bool
+	SetSifted(bool)
 }
 
 type SifterX interface {
@@ -44,7 +46,17 @@ type ModelSpec struct {
 	Updated string `form:"updated" json:"updated"  extensions:"x-order=4"`
 	// IsDelete 查询删除的记录
 	IsDelete bool `form:"isDelete" json:"isDelete"  extensions:"x-order=5"`
+
+	sifted bool
 } // @name DefaultSpec
+
+func (ms *ModelSpec) IsSifted() bool {
+	return ms.sifted
+}
+
+func (ms *ModelSpec) SetSifted(v bool) {
+	ms.sifted = v
+}
 
 // CanSort 检测字段是否可排序
 func (md *ModelSpec) CanSort(key string) bool {
@@ -61,6 +73,9 @@ func (md *ModelSpec) Deleted() bool {
 }
 
 func (md *ModelSpec) Sift(q *SelectQuery) *SelectQuery {
+	if md.IsSifted() {
+		return q
+	}
 	if len(md.IDs) > 0 {
 		q.Where("?TableAlias.id in (?)", In(md.IDs))
 	} else if md.IDsStr.Valid() {
@@ -72,6 +87,8 @@ func (md *ModelSpec) Sift(q *SelectQuery) *SelectQuery {
 	q, _ = SiftOID(q, "creator_id", md.CreatorID, false)
 	q, _ = SiftDate(q, "created", md.Created, false, false)
 	q, _ = SiftDate(q, "updated", md.Updated, false, false)
+
+	md.SetSifted(true)
 
 	return q
 }
