@@ -73,9 +73,6 @@ func (md *ModelSpec) Deleted() bool {
 }
 
 func (md *ModelSpec) Sift(q *SelectQuery) *SelectQuery {
-	if md.IsSifted() {
-		return q
-	}
 	if len(md.IDs) > 0 {
 		q.Where("?TableAlias.id in (?)", In(md.IDs))
 	} else if md.IDsStr.Valid() {
@@ -87,8 +84,6 @@ func (md *ModelSpec) Sift(q *SelectQuery) *SelectQuery {
 	q, _ = SiftOID(q, "creator_id", md.CreatorID, false)
 	q, _ = SiftDate(q, "created", md.Created, false, false)
 	q, _ = SiftDate(q, "updated", md.Updated, false, false)
-
-	md.SetSifted(true)
 
 	return q
 }
