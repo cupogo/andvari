@@ -81,6 +81,13 @@ func (p *PGYesOrNo) Value() (driver.Value, error) {
 	return "NO", nil
 }
 
+func (p *PGYesOrNo) String() string {
+	if p == nil || !*p {
+		return "NO"
+	}
+	return "YES"
+}
+
 // tableColumn table columns in db
 type tableColumn struct {
 	schema.BaseModel `bun:"table:information_schema.columns"` // nolint

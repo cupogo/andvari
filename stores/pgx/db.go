@@ -221,6 +221,10 @@ func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
 	return w.bulkExecAllFsSQLs(ctx)
 }
 
+func (w *DB) SyncSchema(ctx context.Context, opts ...SyncTrashOption) error {
+	return syncTrashSchema(ctx, w.DB, w.Schema(), w.SchemaCrap(), opts...)
+}
+
 func (w *DB) AlterModels(ctx context.Context, opts ...AlterOption) error {
 	schemas := []string{w.Schema(), w.SchemaCrap()}
 	for i := 0; i < len(allmodels); i++ {
