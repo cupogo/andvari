@@ -3,38 +3,22 @@ package pgx
 import (
 	"context"
 	"fmt"
-	"io"
-	"os"
 
 	"github.com/uptrace/bun/schema"
 )
-
-type syncTrashOption struct {
-	output io.Writer // sql output
-}
-
-// SyncTrashOption present options for sync schema
-type SyncTrashOption func(option *syncTrashOption)
-
-// WithSyncTrashOption present writer for sql output
-func WithSyncTrashOption(w io.Writer) SyncTrashOption {
-	return func(opt *syncTrashOption) {
-		opt.output = w
-	}
-}
 
 const (
 	TableTypeBase = "BASE TABLE"
 )
 
 const (
-	syncTrashSchemaSegment = "-- \n" +
+	syncTrashSchemaSegment = "\n-- \n" +
 		"-- Name: %s; Type: SCHEMA; Schema: - \n" +
 		"-- \n"
-	syncTrashTableSegment = "-- \n" +
+	syncTrashTableSegment = "\n-- \n" +
 		"-- Name: %s; Type: TABLE; Schema: %s \n" +
 		"-- \n"
-	syncTrashColumnSegment = "-- \n" +
+	syncTrashColumnSegment = "\n-- \n" +
 		"-- Name: %s.%s; Type: COLUMN; Schema: %s \n" +
 		"-- \n"
 )
@@ -49,7 +33,7 @@ type table struct {
 }
 
 // nolint
-func createTrashSchema(ctx context.Context, db IDB, schema string, option syncTrashOption) (err error) {
+func createTrashSchema(ctx context.Context, db IDB, schema string, option alterOption) (err error) {
 	query := fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %q;", schema)
 
 	if option.output != nil {
@@ -63,14 +47,10 @@ func createTrashSchema(ctx context.Context, db IDB, schema string, option syncTr
 	return
 }
 
-func syncTrashSchema(ctx context.Context, db IDB, defSchema, trashSchema string, opts ...SyncTrashOption) (err error) {
-	var option syncTrashOption
+func syncTrashSchema(ctx context.Context, db IDB, defSchema, trashSchema string, opts ...AlterOption) (err error) {
+	var option alterOption
 	for _, op := range opts {
 		op(&option)
-	}
-
-	if option.output == nil {
-		option.output = os.Stdout // init writer with default output
 	}
 
 	exists, _ := db.NewSelect().Table("information_schema.schemata").
@@ -98,7 +78,7 @@ func syncTrashSchema(ctx context.Context, db IDB, defSchema, trashSchema string,
 	return nil
 }
 
-func syncTrashTables(ctx context.Context, db IDB, defSchema, trashSchema string, option syncTrashOption) (err error) {
+func syncTrashTables(ctx context.Context, db IDB, defSchema, trashSchema string, option alterOption) (err error) {
 	// get schema tables
 	var (
 		defTables, trashTables []table
@@ -147,7 +127,7 @@ func syncTrashTables(ctx context.Context, db IDB, defSchema, trashSchema string,
 }
 
 // nolint
-func addTrashTable(ctx context.Context, db IDB, defSchema, trashSchema, tbName string, option syncTrashOption) (err error) {
+func addTrashTable(ctx context.Context, db IDB, defSchema, trashSchema, tbName string, option alterOption) (err error) {
 	query := fmt.Sprintf(
 		"CREATE TABLE IF NOT EXISTS %q.%q (LIKE %q.%q INCLUDING DEFAULTS, PRIMARY KEY (id));",
 		trashSchema, tbName, defSchema, tbName)
@@ -166,7 +146,7 @@ func addTrashTable(ctx context.Context, db IDB, defSchema, trashSchema, tbName s
 	return nil
 }
 
-func syncTrashColumns(ctx context.Context, db IDB, defSchema, trashSchema, tbName string, option syncTrashOption) (err error) {
+func syncTrashColumns(ctx context.Context, db IDB, defSchema, trashSchema, tbName string, option alterOption) (err error) {
 	// get table columns from db
 	var defCols tableColumns
 	err = db.NewSelect().Model(&tableColumn{}).
@@ -241,7 +221,7 @@ func diffTrashColumns(defCols, trashCols tableColumns) (adds, drops tableColumns
 }
 
 func addTrashColumn(ctx context.Context, db IDB,
-	schema, tbName string, columns tableColumns, option syncTrashOption) (err error) {
+	schema, tbName string, columns tableColumns, option alterOption) (err error) {
 	for _, col := range columns {
 		notNull := ""
 		if !col.IsNullable {
@@ -273,7 +253,7 @@ func addTrashColumn(ctx context.Context, db IDB,
 }
 
 func dropTrashColumn(ctx context.Context, db IDB,
-	schema, tbName string, columns tableColumns, option syncTrashOption) (err error) {
+	schema, tbName string, columns tableColumns, option alterOption) (err error) {
 	for _, col := range columns {
 		query := fmt.Sprintf("ALTER TABLE IF EXISTS %q.%q DROP IF EXISTS %q;",
 			schema, tbName, col.ColumnName)

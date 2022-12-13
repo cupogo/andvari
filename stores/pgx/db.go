@@ -221,7 +221,7 @@ func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
 	return w.bulkExecAllFsSQLs(ctx)
 }
 
-func (w *DB) SyncSchema(ctx context.Context, opts ...SyncTrashOption) error {
+func (w *DB) SyncSchema(ctx context.Context, opts ...AlterOption) error {
 	return syncTrashSchema(ctx, w.DB, w.Schema(), w.SchemaCrap(), opts...)
 }
 
