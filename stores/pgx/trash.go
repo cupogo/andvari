@@ -231,6 +231,8 @@ func addTrashColumn(ctx context.Context, db IDB,
 		def := ""
 		if len(col.ColumnDefault) > 0 {
 			def = "DEFAULT " + col.ColumnDefault
+		} else {
+			def = columnDefaultWithName(col.DataType)
 		}
 		query := fmt.Sprintf("ALTER TABLE IF EXISTS %q.%q ADD IF NOT EXISTS %q %s %s %s;",
 			schema, tbName, col.ColumnName, col.DataType, notNull, def)

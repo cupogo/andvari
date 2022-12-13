@@ -217,31 +217,42 @@ func getColumnIndirectDef(indirectType reflect.Type) (colDef string) {
 	return colDef
 }
 
+func columnDefaultWithName(sqlName string) string {
+	switch strings.ToLower(sqlName) {
+	case "timestamptz", "timestamp with time zone":
+		return "DEFAULT CURRENT_TIMESTAMP"
+	case "timestamp", "timestamp without time zone":
+		return "DEFAULT LOCALTIMESTAMP"
+	case "date":
+		return "DEFAULT CURRENT_DATE"
+	case "time with time zone":
+		return "DEFAULT CURRENT_TIME"
+	case "time", "time without time zone":
+		return "DEFAULT LOCALTIME"
+	case "boolean":
+		return "DEFAULT FALSE"
+	case "real", "double precision":
+		return "DEFAULT 0"
+	case "smallint", "integer", "bigint":
+		return "DEFAULT 0"
+	case "text", "varchar", "char", "character varying", "character":
+		return "DEFAULT ''"
+	case "json", "jsonb":
+		return "DEFAULT '{}'"
+	case "inet":
+		return "DEFAULT '0.0.0.0'::inet"
+	case "macaddr", "macaddr8":
+		return "DEFAULT '00-00-00-00-00-00'::macaddr"
+		// TODO: case array and array_type
+	}
+	return ""
+}
+
 func getColumnDefault(f *schema.Field) (colDef string, err error) {
 	// use specify, type:name
 	if f.UserSQLType != f.DiscoveredSQLType {
-		switch strings.ToLower(f.UserSQLType) {
-		case "timestamptz":
-			colDef = "DEFAULT CURRENT_TIMESTAMP"
-		case "timestamp":
-			colDef = "DEFAULT LOCALTIMESTAMP"
-		case "date":
-			colDef = "DEFAULT CURRENT_DATE"
-		case "time with time zone":
-			colDef = "DEFAULT CURRENT_TIME"
-		case "time":
-			colDef = "DEFAULT LOCALTIME"
-		case "boolean":
-			colDef = "DEFAULT FALSE"
-		case "real", "double precision":
-			colDef = "DEFAULT 0"
-		case "smallint", "integer", "bigint":
-			colDef = "DEFAULT 0"
-		case "text", "varchar", "char":
-			colDef = "DEFAULT ''"
-		case "json", "jsonb":
-			colDef = "DEFAULT '{}'"
-		default:
+		colDef := columnDefaultWithName(f.UserSQLType)
+		if colDef == "" {
 			colDef = getColumnIndirectDef(f.IndirectType)
 			if colDef == "" {
 				return colDef, fmt.Errorf("field(%s) has no default value", f.GoName)
