@@ -251,17 +251,14 @@ func columnDefaultWithName(sqlName string) string {
 func getColumnDefault(f *schema.Field) (colDef string, err error) {
 	// use specify, type:name
 	if f.UserSQLType != f.DiscoveredSQLType {
-		colDef := columnDefaultWithName(f.UserSQLType)
-		if colDef == "" {
-			colDef = getColumnIndirectDef(f.IndirectType)
-			if colDef == "" {
+		if colDef = columnDefaultWithName(f.UserSQLType); colDef == "" {
+			if colDef = getColumnIndirectDef(f.IndirectType); colDef == "" {
 				return colDef, fmt.Errorf("field(%s) has no default value", f.GoName)
 			}
 		}
 	} else {
 		// use indirect type
-		colDef = getColumnIndirectDef(f.IndirectType)
-		if colDef == "" {
+		if colDef = getColumnIndirectDef(f.IndirectType); colDef == "" {
 			return colDef, fmt.Errorf("field(%s) has no default value", f.GoName)
 		}
 	}
