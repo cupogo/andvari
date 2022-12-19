@@ -107,7 +107,7 @@ func SiftOID(q *SelectQuery, field string, s string, isOr bool) (*SelectQuery, b
 		if _, id, err := oid.Parse(s); err == nil {
 			return Sift(q, field, "=", id, isOr)
 		} else {
-			logger().Infow("invalid oid", "s", s)
+			logger().Infow("invalid oid", "s", s, "table", q.GetTableName())
 		}
 	}
 	return q, false
