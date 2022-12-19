@@ -2,13 +2,7 @@ package pgx
 
 import "github.com/cupogo/andvari/models/comm"
 
-type Changeable interface {
-	SetChange(...string)
-	GetChanges() []string
-	CountChange() int
-	IsUpdate() bool
-	ChangedValues() []comm.ChangeValue
-}
+type Changeable = comm.Changeable
 
 // 基于主键 ID 的基础模型
 type Model interface {
@@ -27,12 +21,7 @@ type Sortable interface {
 }
 
 type Pager interface {
-	GetLimit() int
-	GetPage() int
-	GetSkip() int
-	GetSort() string
-	GetTotal() int
-	SetTotal(n int)
+	comm.Pager
 	Sortable
 }
 

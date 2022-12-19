@@ -13,10 +13,12 @@ type ChangeValue struct {
 	NewVal any `bson:"newVal,omitempty" json:"newVal" `
 }
 
+type ChangeValues []ChangeValue
+
 type ChangeMod struct {
 	cs   array.String
 	isUp bool
-	cv   []ChangeValue
+	cv   ChangeValues
 }
 
 func (cm *ChangeMod) SetChange(cs ...string) {
@@ -54,7 +56,7 @@ func (cm *ChangeMod) LogChangeValue(c string, ov, nv any) {
 	cm.SetChange(c)
 }
 
-func (cm *ChangeMod) ChangedValues() []ChangeValue {
+func (cm *ChangeMod) ChangedValues() ChangeValues {
 	return cm.cv
 }
 

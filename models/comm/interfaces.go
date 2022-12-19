@@ -7,7 +7,7 @@ type Changeable interface {
 	CountChange() int
 	HasChange(name string) bool
 	IsUpdate() bool
-	ChangedValues() []ChangeValue
+	ChangedValues() ChangeValues
 	IsLog() bool
 }
 
