@@ -1,10 +1,13 @@
 package pgx
 
+import "github.com/cupogo/andvari/models/comm"
+
 type Changeable interface {
 	SetChange(...string)
 	GetChanges() []string
 	CountChange() int
 	IsUpdate() bool
+	ChangedValues() []comm.ChangeValue
 }
 
 // 基于主键 ID 的基础模型

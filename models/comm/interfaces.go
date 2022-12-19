@@ -7,6 +7,8 @@ type Changeable interface {
 	CountChange() int
 	HasChange(name string) bool
 	IsUpdate() bool
+	ChangedValues() []ChangeValue
+	IsLog() bool
 }
 
 // Model 基于主键 ID 的基础模型
