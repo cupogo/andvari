@@ -119,13 +119,13 @@ func QueryPager(ctx context.Context, p Pager, q *SelectQuery) (count int, err er
 	} else {
 		err = q.Scan(ctx)
 	}
-	if err != nil && err == sql.ErrNoRows {
-		err = ErrNotFound
+	if err != nil {
+		logger().Infow("select failed", "pager", p, "err", err)
 	} else {
 		p.SetTotal(count)
 	}
-	if err != nil {
-		logger().Infow("select failed", "pager", p, "err", err)
+	if err != nil && err == sql.ErrNoRows {
+		err = ErrNotFound
 	}
 
 	return
@@ -154,7 +154,7 @@ func ModelWithPKID(ctx context.Context, db IDB, obj Model, id any, columns ...st
 		return ModelWithPK(ctx, db, obj, columns...)
 	}
 
-	logger().Infow("invalid id", "id", id)
+	logger().Infow("invalid id", "id", id, "name", db.NewSelect().Model(obj).GetTableName())
 	return fmt.Errorf("invalid id: '%+v'", id)
 }
 
@@ -270,12 +270,10 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 			"obj", obj, "columns", columns, "err", err)
 		return err
 	} else {
-		if ov, ok := obj.(interface{ IsLog() bool }); ok && ov.IsLog() {
-			if operateModelLogFn != nil {
-				err = operateModelLogFn(ctx, q.GetTableName(), field.ModelOperateTypeUpdate, obj)
-				if err != nil {
-					logger().Infow("update model operateModelLogFn", "err", err)
-				}
+		if ov, ok := obj.(Changeable); ok && ov.IsLog() && operateModelLogFn != nil {
+			err = operateModelLogFn(ctx, q.GetTableName(), field.ModelOperateTypeUpdate, obj)
+			if err != nil {
+				logger().Infow("update model operateModelLogFn", "name", q.GetTableName(), "err", err)
 			}
 		}
 		logger().Debugw("update model ok", "name", q.GetTableName(),
