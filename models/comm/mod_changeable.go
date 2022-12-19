@@ -1,10 +1,22 @@
 package comm
 
-import "github.com/cupogo/andvari/utils/array"
+import (
+	"github.com/cupogo/andvari/utils/array"
+)
+
+type ChangeValue struct {
+	// 列名称
+	Column string `bson:"column,omitempty" json:"column"  `
+	// 旧值
+	OldVal any `bson:"oldVal,omitempty" json:"oldVal"  `
+	// 新值
+	NewVal any `bson:"newVal,omitempty" json:"newVal" `
+}
 
 type ChangeMod struct {
 	cs   array.String
 	isUp bool
+	cv   []ChangeValue
 }
 
 func (cm *ChangeMod) SetChange(cs ...string) {
@@ -33,4 +45,19 @@ func (cm *ChangeMod) IsUpdate() bool {
 
 func (cm *ChangeMod) SetIsUpdate(v bool) {
 	cm.isUp = v
+}
+
+func (cm *ChangeMod) LogChangeValue(c string, ov, nv any) {
+	if !cm.HasChange(c) {
+		cm.cv = append(cm.cv, ChangeValue{Column: c, OldVal: ov, NewVal: nv})
+	}
+	cm.SetChange(c)
+}
+
+func (cm *ChangeMod) ChangedValues() []ChangeValue {
+	return cm.cv
+}
+
+func (cm *ChangeMod) IsLog() bool {
+	return true
 }
