@@ -11,16 +11,6 @@ import (
 	"github.com/cupogo/andvari/utils"
 )
 
-var (
-	operateModelLogFn ModelLogFunc
-)
-
-type ModelLogFunc func(ctx context.Context, tn string, ot field.ModelOperateType, obj Model) error
-
-func OnOperateModel(fn ModelLogFunc) {
-	operateModelLogFn = fn
-}
-
 func EnsureSchema(ctx context.Context, db IConn, name string) error {
 	if _, err := db.ExecContext(ctx, "CREATE SCHEMA IF NOT EXISTS "+name); err != nil {
 		logger().Infow("create schema fail", "name", name, "err", err)
