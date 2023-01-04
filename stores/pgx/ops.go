@@ -296,11 +296,11 @@ func StoreWithCall(ctx context.Context, db IDB, exist, obj ModelChangeable, csfn
 	}
 
 	if err == nil && !exist.IsZeroID() {
-		cs := csfn()
-		if len(cs) == 0 { // unchanged // TODO: use CountChange()
+		csfn()
+		if obj.CountChange() == 0 {
 			return
 		}
-		err = DoUpdate(ctx, db, exist, cs...)
+		err = DoUpdate(ctx, db, exist)
 	} else {
 		isn = true
 		err = DoInsert(ctx, db, obj)
