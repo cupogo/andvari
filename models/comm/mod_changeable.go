@@ -29,9 +29,9 @@ func (cm *ChangeMod) SetChange(cs ...string) {
 	}
 }
 
-func (cm *ChangeMod) Unchange(c string) {
+func (cm *ChangeMod) Unchange(cs ...string) {
 	if cm.cs != nil {
-		cm.cs.Delete(c)
+		cm.cs.Delete(cs...)
 	}
 }
 
