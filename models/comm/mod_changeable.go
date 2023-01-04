@@ -29,6 +29,12 @@ func (cm *ChangeMod) SetChange(cs ...string) {
 	}
 }
 
+func (cm *ChangeMod) Unchange(c string) {
+	if cm.cs != nil {
+		cm.cs.Delete(c)
+	}
+}
+
 func (cm *ChangeMod) GetChanges() []string {
 	return cm.cs.UnsortedList()
 }
