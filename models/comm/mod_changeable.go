@@ -66,6 +66,6 @@ func (cm *ChangeMod) ChangedValues() ChangeValues {
 	return cm.cv
 }
 
-func (cm *ChangeMod) IsLog() bool {
-	return true
+func (cm *ChangeMod) DisableLog() bool {
+	return false
 }

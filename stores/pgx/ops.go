@@ -263,7 +263,7 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		return err
 	}
 
-	if ov, ok := obj.(Changeable); ok && ov.IsLog() && operateModelLogFn != nil {
+	if ov, ok := obj.(Changeable); ok && !ov.DisableLog() && operateModelLogFn != nil {
 		err := operateModelLogFn(ctx, name, OperateTypeUpdate, obj)
 		if err != nil {
 			logger().Infow("call operateModelLogFn fail", "name", name, "err", err)

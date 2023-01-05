@@ -8,7 +8,7 @@ type Changeable interface {
 	HasChange(name string) bool
 	IsUpdate() bool
 	ChangedValues() ChangeValues
-	IsLog() bool
+	DisableLog() bool
 }
 
 // Model 基于主键 ID 的基础模型
