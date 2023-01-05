@@ -259,17 +259,18 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		logger().Infow("update model fail", "name", q.GetTableName(),
 			"obj", obj, "columns", columns, "err", err)
 		return err
-	} else {
-		if ov, ok := obj.(Changeable); ok && ov.IsLog() && operateModelLogFn != nil {
-			err = operateModelLogFn(ctx, GetModelName(q), OperateTypeUpdate, obj)
-			if err != nil {
-				logger().Infow("update model operateModelLogFn", "name", q.GetTableName(), "err", err)
-			}
-		}
-		logger().Debugw("update model ok", "name", q.GetTableName(),
-			"id", obj.GetID(), "columns", columns)
-
 	}
+
+	name := GetModelName(q)
+	if ov, ok := obj.(Changeable); ok && ov.IsLog() && operateModelLogFn != nil {
+		err := operateModelLogFn(ctx, name, OperateTypeUpdate, obj)
+		if err != nil {
+			logger().Infow("call operateModelLogFn fail", "name", name, "err", err)
+		}
+	}
+	logger().Debugw("update model ok", "name", name,
+		"id", obj.GetID(), "columns", columns)
+
 	if vo, ok := obj.(interface{ SetIsUpdate(v bool) }); ok {
 		vo.SetIsUpdate(true)
 	}
