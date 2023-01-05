@@ -8,9 +8,9 @@ type OperateType int8
 type ModelOperateType = OperateType // deprecated
 
 const (
-	OperateTypeUpdate OperateType = 1 << iota //  1 修改
-	OperateTypeDelete                         //  2 删除
-	OperateTypeCreate                         //  4 新增
+	OperateTypeCreate OperateType = 1 << iota //  1 新增
+	OperateTypeUpdate                         //  2 修改
+	OperateTypeDelete                         //  4 删除
 )
 
 func (z *OperateType) Decode(s string) error {
