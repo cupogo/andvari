@@ -167,6 +167,7 @@ func ModelWithUnique(ctx context.Context, db IDB, obj Model, key string, val any
 
 // DoInsert insert with ignore duplicate (optional)
 func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
+	isZeroID := obj.IsZeroID()
 	// Call to saving hook
 	if err := callToBeforeCreateHooks(obj); err != nil {
 		return err
@@ -210,11 +211,18 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 		q.Returning("NULL")
 	}
 
+	name := GetModelName(q)
 	if _, err := q.Exec(ctx); err != nil {
-		logger().Infow("insert model fail", "name", q.GetTableName(), "obj", obj, "err", err)
+		logger().Infow("insert model fail", "name", name, "obj", obj, "err", err)
 		return err
-	} else {
-		logger().Debugw("insert model ok", "name", q.GetTableName(), "id", obj.GetID())
+	}
+
+	logger().Debugw("insert model ok", "name", name, "id", obj.GetID())
+	if ov, ok := obj.(Changeable); ok && !ov.DisableLog() && operateModelLogFn != nil && isZeroID {
+		err := operateModelLogFn(ctx, db, name, OperateTypeCreate, obj)
+		if err != nil {
+			logger().Infow("call create operateModelLogFn fail", "name", name, "err", err)
+		}
 	}
 
 	return callToAfterCreateHooks(obj)
@@ -264,9 +272,9 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 	}
 
 	if ov, ok := obj.(Changeable); ok && !ov.DisableLog() && operateModelLogFn != nil {
-		err := operateModelLogFn(ctx, name, OperateTypeUpdate, obj)
+		err := operateModelLogFn(ctx, db, name, OperateTypeUpdate, obj)
 		if err != nil {
-			logger().Infow("call operateModelLogFn fail", "name", name, "err", err)
+			logger().Infow("call update operateModelLogFn fail", "name", name, "err", err)
 		}
 	}
 	logger().Debugw("update model ok", "name", name,
@@ -314,9 +322,26 @@ func DoDelete(ctx context.Context, db IDB, table string, _id any) error {
 	return DoDeleteT(ctx, db, LastSchema(), LastSchemaCrap(), table, _id)
 }
 
-func OpDeleteInTrans(ctx context.Context, db IDB, scDft, scCrap string, table string, _id any) error {
+func OpDeleteInTrans(ctx context.Context, db IDB, scDft, scCrap string, tOrQ any, obj any) error {
 	return db.RunInTx(ctx, nil, func(ctx context.Context, tx Tx) error {
-		return DoDeleteT(ctx, tx, scDft, scCrap, table, _id)
+		var table string
+		if s, ok := tOrQ.(string); ok {
+			table = s
+		} else if v, ok := tOrQ.(QueryBase); ok {
+			table = v.GetTableName()
+		} else {
+			panic(fmt.Errorf("invalid %+v", tOrQ))
+		}
+		var id any
+		if v, ok := obj.(Model); ok {
+			id = v.GetID()
+		} else {
+			id = obj
+		}
+		if err := DoDeleteT(ctx, tx, scDft, scCrap, table, id); err != nil {
+			return err
+		}
+		return nil
 	})
 }
 

@@ -156,7 +156,7 @@ func (w *DB) DeleteModel(ctx context.Context, obj Model, id any) error {
 		return ErrEmptyPK
 	}
 	q := w.NewDelete().Model(obj)
-	return OpDeleteInTrans(ctx, w.DB, w.Schema(), w.SchemaCrap(), q.GetTableName(), obj.GetID())
+	return OpDeleteInTrans(ctx, w.DB, w.Schema(), w.SchemaCrap(), q, obj)
 }
 
 func (w *DB) UndeleteModel(ctx context.Context, obj Model, id any) error {
