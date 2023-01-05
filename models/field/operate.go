@@ -2,40 +2,40 @@ package field
 
 import "fmt"
 
-// ORM操作类型
-type ModelOperateType int8
+// 操作类型
+type OperateType int8
 
 const (
-	ModelOperateTypeUpdate ModelOperateType = 1 << iota //  1 修改
-	ModelOperateTypeDelete                              //  2 删除
-	ModelOperateTypeCreate                              //  4 新增
+	OperateTypeUpdate OperateType = 1 << iota //  1 修改
+	OperateTypeDelete                         //  2 删除
+	OperateTypeCreate                         //  4 新增
 )
 
-func (z *ModelOperateType) Decode(s string) error {
+func (z *OperateType) Decode(s string) error {
 	switch s {
 	case "1", "update":
-		*z = ModelOperateTypeUpdate
+		*z = OperateTypeUpdate
 	case "2", "delete":
-		*z = ModelOperateTypeDelete
+		*z = OperateTypeDelete
 	case "4", "create":
-		*z = ModelOperateTypeCreate
+		*z = OperateTypeCreate
 	default:
-		return fmt.Errorf("invalid ModelOperateType: %q", s)
+		return fmt.Errorf("invalid OperateType: %q", s)
 	}
 	return nil
 }
-func (z ModelOperateType) String() string {
+func (z OperateType) String() string {
 	switch z {
-	case ModelOperateTypeUpdate:
+	case OperateTypeUpdate:
 		return "update"
-	case ModelOperateTypeDelete:
+	case OperateTypeDelete:
 		return "delete"
-	case ModelOperateTypeCreate:
+	case OperateTypeCreate:
 		return "create"
 	default:
-		return fmt.Sprintf("ModelOperateType %d", int8(z))
+		return fmt.Sprintf("OperateType %d", int8(z))
 	}
 }
-func (z ModelOperateType) MarshalText() ([]byte, error) {
+func (z OperateType) MarshalText() ([]byte, error) {
 	return []byte(z.String()), nil
 }
