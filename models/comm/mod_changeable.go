@@ -6,11 +6,11 @@ import (
 
 type ChangeValue struct {
 	// 列名称
-	Column string `bson:"column,omitempty" json:"column"  `
+	Column string `bson:"key,omitempty" json:"key" extensions:"x-order=a"`
 	// 旧值
-	OldVal any `bson:"oldVal,omitempty" json:"oldVal"  `
+	OldVal any `bson:"ov,omitempty" json:"ov" extensions:"x-order=b"`
 	// 新值
-	NewVal any `bson:"newVal,omitempty" json:"newVal" `
+	NewVal any `bson:"nv,omitempty" json:"nv" extensions:"x-order=c"`
 }
 
 type ChangeValues []ChangeValue
