@@ -5,6 +5,8 @@ import "fmt"
 // 操作类型
 type OperateType int8
 
+type ModelOperateType = OperateType // deprecated
+
 const (
 	OperateTypeUpdate OperateType = 1 << iota //  1 修改
 	OperateTypeDelete                         //  2 删除
