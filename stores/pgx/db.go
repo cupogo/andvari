@@ -258,3 +258,19 @@ func (w *DB) RunMigrations(ctx context.Context, mfs ...fs.FS) error {
 	logger().Infow("migrated", "result", group.String())
 	return nil
 }
+
+type QueryBase interface {
+	GetModel() bun.Model
+	GetTableName() string
+	Operation() string
+}
+
+func GetModelName(q QueryBase) string {
+	if md := q.GetModel(); md != nil {
+		if tm, ok := md.(bun.TableModel); ok {
+			return tm.Table().TypeName
+		}
+	}
+
+	return q.GetTableName()
+}

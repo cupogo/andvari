@@ -261,7 +261,7 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		return err
 	} else {
 		if ov, ok := obj.(Changeable); ok && ov.IsLog() && operateModelLogFn != nil {
-			err = operateModelLogFn(ctx, q.GetTableName(), field.ModelOperateTypeUpdate, obj)
+			err = operateModelLogFn(ctx, GetModelName(q), field.ModelOperateTypeUpdate, obj)
 			if err != nil {
 				logger().Infow("update model operateModelLogFn", "name", q.GetTableName(), "err", err)
 			}
