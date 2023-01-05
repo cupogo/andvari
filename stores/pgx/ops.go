@@ -255,13 +255,14 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 			q.Set("ts_vec = to_tsvector(?, jsonb_build_array("+strings.Join(cols, ",")+"))", cfg)
 		}
 	}
+
+	name := GetModelName(q)
 	if _, err := q.WherePK().Exec(ctx); err != nil {
-		logger().Infow("update model fail", "name", q.GetTableName(),
+		logger().Infow("update model fail", "name", name,
 			"obj", obj, "columns", columns, "err", err)
 		return err
 	}
 
-	name := GetModelName(q)
 	if ov, ok := obj.(Changeable); ok && ov.IsLog() && operateModelLogFn != nil {
 		err := operateModelLogFn(ctx, name, OperateTypeUpdate, obj)
 		if err != nil {

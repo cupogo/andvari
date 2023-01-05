@@ -96,7 +96,7 @@ func SiftOIDs(q *SelectQuery, field string, s string, isOr bool) (*SelectQuery, 
 			}
 			return Sift(q, field, "in", ids, isOr)
 		} else {
-			logger().Infow("invalid oids", "s", s)
+			logger().Infow("invalid oids", "s", s, "model", GetModelName(q))
 		}
 	}
 	return q, false
@@ -107,7 +107,7 @@ func SiftOID(q *SelectQuery, field string, s string, isOr bool) (*SelectQuery, b
 		if _, id, err := oid.Parse(s); err == nil {
 			return Sift(q, field, "=", id, isOr)
 		} else {
-			logger().Infow("invalid oid", "s", s, "table", q.GetTableName())
+			logger().Infow("invalid oid", "s", s, "model", GetModelName(q))
 		}
 	}
 	return q, false
@@ -196,7 +196,7 @@ func SiftDate(q *SelectQuery, field string, during string, isInt, isOr bool) (*S
 			}
 			return SiftBetween(q, field, start, end, isOr)
 		} else {
-			logger().Infow("invalid param", "field", field, "during", during, "err", err)
+			logger().Infow("invalid param", "model", GetModelName(q), "field", field, "during", during, "err", err)
 		}
 	}
 
