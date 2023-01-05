@@ -325,9 +325,11 @@ func DoDelete(ctx context.Context, db IDB, table string, _id any) error {
 func OpDeleteInTrans(ctx context.Context, db IDB, scDft, scCrap string, tOrQ any, obj any) error {
 	return db.RunInTx(ctx, nil, func(ctx context.Context, tx Tx) error {
 		var table string
+		var name string
 		if s, ok := tOrQ.(string); ok {
 			table = s
 		} else if v, ok := tOrQ.(QueryBase); ok {
+			name = GetModelName(v)
 			table = v.GetTableName()
 		} else {
 			panic(fmt.Errorf("invalid %+v", tOrQ))
@@ -340,6 +342,12 @@ func OpDeleteInTrans(ctx context.Context, db IDB, scDft, scCrap string, tOrQ any
 		}
 		if err := DoDeleteT(ctx, tx, scDft, scCrap, table, id); err != nil {
 			return err
+		}
+		if ov, ok := obj.(ModelChangeable); ok && !ov.DisableLog() && operateModelLogFn != nil && len(name) > 0 {
+			err := operateModelLogFn(ctx, db, name, OperateTypeDelete, ov)
+			if err != nil {
+				logger().Infow("call delete operateModelLogFn fail", "name", name, "err", err)
+			}
 		}
 		return nil
 	})
