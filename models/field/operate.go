@@ -36,3 +36,6 @@ func (z ModelOperateType) String() string {
 		return fmt.Sprintf("ModelOperateType %d", int8(z))
 	}
 }
+func (z ModelOperateType) MarshalText() ([]byte, error) {
+	return []byte(z.String()), nil
+}
