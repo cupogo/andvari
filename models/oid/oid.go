@@ -119,7 +119,7 @@ func getGen(ot ObjType) *idgen.IDGen {
 	return shards[OtDefault]
 }
 
-// NewID ...
+// NewID return new id with type
 func NewID(ot ObjType) OID {
 	return OID(idgen.IID(uint64(getGen(ot).Next())))
 }
@@ -128,9 +128,9 @@ func objPrefix(ot ObjType) string {
 	return ot.Code() + "-"
 }
 
-// NewObjID 产生新的组织ID
+// NewObjID 产生新的对象ID
 func NewObjID(ot ObjType) string {
-	return objPrefix(ot) + NewID(ot).String()
+	return NewID(ot).String()
 }
 
 func NewObjIDWithID(ot ObjType) (string, int64) {
