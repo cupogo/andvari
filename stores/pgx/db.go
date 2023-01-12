@@ -181,7 +181,6 @@ func (w *DB) OpDeleteAny(ctx context.Context, table string, _id any) error {
 	return OpDeleteInTrans(ctx, w.DB, w.scDft, w.scCrap, table, _id)
 }
 
-// deprecated by UndeleteModel
 func (w *DB) OpUndeleteOID(ctx context.Context, table string, id string) error {
 	_, _id, err := oid.Parse(id)
 	if err != nil {
