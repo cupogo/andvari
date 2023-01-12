@@ -14,7 +14,7 @@ type PageSpec struct {
 	// 分页大小，默认20
 	Limit int `json:"limit,omitempty" form:"limit" extensions:"x-order=_"`
 	// 第几页
-	Page int `json:"page,omitempty" form:"page" extensions:"x-order=["`
+	Page int `json:"page,omitempty" form:"page" extensions:"x-order=[" example:"1"`
 	// 跳过多少条记录，如果提供 page 此项跳过
 	Skip int `json:"skip,omitempty" form:"skip" extensions:"x-order=]"`
 	// 排序，允许最多两个字段排序 field1 [asc | desc] [,field2 [asc | desc] ...]
