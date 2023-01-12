@@ -154,9 +154,6 @@ func (mf *MetaField) MetaUp(up *MetaDiff) (ok bool) {
 	return
 }
 
-// UpMeta deprecated
-func (mf *MetaField) UpMeta(up *MetaDiff) (ok bool) { return mf.MetaUp(up) }
-
 func (mu *MetaDiff) AddKV(k string, v any) {
 	if mu == nil {
 		mu = &MetaDiff{}
