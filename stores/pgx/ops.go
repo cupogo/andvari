@@ -149,17 +149,20 @@ func ModelWithPKID(ctx context.Context, db IDB, obj Model, id any, columns ...st
 }
 
 func ModelWithUnique(ctx context.Context, db IDB, obj Model, key string, val any, cols ...string) error {
-	if val == nil || val == 0 || val == "" {
-		logger().Infow("empty param", "key", key, "val", val)
+	return ModelWith(ctx, db, obj, key, "=", val, cols...)
+}
+func ModelWith(ctx context.Context, db IDB, obj Model, key, op string, val any, cols ...string) error {
+	if val == nil || val == 0 || val == "" || op == "" {
+		logger().Infow("empty param", "key", key, "op", op, "val", val)
 		return ErrEmptyKey
 	}
-	err := db.NewSelect().Model(obj).Column(cols...).Where("? = ?", Ident(key), val).Limit(1).Scan(ctx)
+	err := db.NewSelect().Model(obj).Column(cols...).Where("? "+op+" ?", Ident(key), val).Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
-		logger().Debugw("get model with key no rows", "key", key, "val", val)
+		logger().Debugw("get model with key no rows", "key", key, "op", op, "val", val)
 		return ErrNotFound
 	}
 	if err != nil {
-		logger().Warnw("get model with key failed", "key", key, "val", val, "err", err)
+		logger().Warnw("get model with key failed", "key", key, "op", op, "val", val, "err", err)
 		return err
 	}
 	return nil
