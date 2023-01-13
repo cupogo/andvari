@@ -148,12 +148,12 @@ func ModelWithPKID(ctx context.Context, db IDB, obj Model, id any, columns ...st
 	return fmt.Errorf("invalid id: '%+v'", id)
 }
 
-func ModelWithUnique(ctx context.Context, db IDB, obj Model, key string, val any) error {
+func ModelWithUnique(ctx context.Context, db IDB, obj Model, key string, val any, cols ...string) error {
 	if val == nil || val == 0 || val == "" {
 		logger().Infow("empty param", "key", key, "val", val)
 		return ErrEmptyKey
 	}
-	err := db.NewSelect().Model(obj).Where("? = ?", Ident(key), val).Limit(1).Scan(ctx)
+	err := db.NewSelect().Model(obj).Column(cols...).Where("? = ?", Ident(key), val).Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
 		logger().Debugw("get model with key no rows", "key", key, "val", val)
 		return ErrNotFound
