@@ -61,10 +61,11 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 func querySort(p Pager, q *SelectQuery) *SelectQuery {
 	if rule := p.GetSort(); len(rule) > 1 {
 		orders := strings.Split(rule, ",")
-		// two fields at most
-		if len(orders) > 2 {
-			orders = orders[:2]
-		}
+		// old: two fields at most
+		// new: has more fields
+		//if len(orders) > 2 {
+		//	orders = orders[:2]
+		//}
 		for _, order := range orders {
 			var key, op string
 			if b, a, ok := strings.Cut(order, " "); ok {
