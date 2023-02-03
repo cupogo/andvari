@@ -1,6 +1,4 @@
-//
 // Package idgen 全局型 ID 生成
-//
 package idgen
 
 import (

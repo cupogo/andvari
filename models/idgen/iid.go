@@ -60,7 +60,7 @@ func ParseID(s string) (IID, bool) {
 	return 0, false
 }
 
-//nolint
+// nolint
 func reverse(s string) string {
 	runes := []rune(s)
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {

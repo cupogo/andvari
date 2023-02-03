@@ -21,7 +21,7 @@ type PageSpec struct {
 	Sort string `json:"sort,omitempty" form:"sort" extensions:"x-order=|"`
 
 	Total int `json:"total,omitempty" swaggerignore:"true"`
-}
+} // @name PageSpec
 
 func (p *PageSpec) GetLimit() int {
 	return p.Limit
