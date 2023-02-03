@@ -180,9 +180,9 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	if dtf, ok := obj.(CreatedSetter); ok {
 		if ts, ok := CreatedFromContext(ctx); ok && ts > 0 {
 			if dtf.SetCreated(ts) {
-				logger().Infow("seted createAt ok", "ts", ts)
+				logger().Infow("set created ok", "ts", ts)
 			} else {
-				logger().Infow("seted createAt fail", "ts", ts)
+				logger().Infow("set created fail", "ts", ts)
 			}
 		}
 	}
@@ -416,4 +416,26 @@ func FilterError(err error) error {
 		return ErrInternal
 	}
 	return err
+}
+
+type idsHold struct {
+	IDs oid.OIDs `bun:"ids,array"`
+}
+
+// BatchDeleteWithFK 按指定的外键批量删除
+func BatchDeleteWithFK(ctx context.Context, db IDB, name, key string, id oid.OID) (ids []oid.OID, err error) {
+	var hold idsHold
+	if err = db.NewRaw("SELECT array_agg(id) as ids FROM ? WHERE ? = ?", Ident(name), Ident(key), id).Scan(ctx, &hold); err == nil {
+		ids = hold.IDs
+		for _, id := range ids {
+			if err = DoDelete(ctx, db, name, id); err != nil {
+				logger().Infow("delete fail", "name", name, "key", key, "id", id, "err", err)
+				return
+			}
+		}
+		logger().Infow("batch delete done", "name", name, "key", key, "id", id, "ids", ids)
+	} else {
+		logger().Infow("query fail when batch delete", "name", name, "key", key, "id", id, "err", err)
+	}
+	return
 }
