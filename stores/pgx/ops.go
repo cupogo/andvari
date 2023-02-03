@@ -422,8 +422,8 @@ type idsHold struct {
 	IDs oid.OIDs `bun:"ids,array"`
 }
 
-// BatchDeleteWithFK 按指定的外键批量删除
-func BatchDeleteWithFK(ctx context.Context, db IDB, name, key string, id oid.OID) (ids []oid.OID, err error) {
+// BatchDeleteWithKey 按指定的外键批量删除
+func BatchDeleteWithKey(ctx context.Context, db IDB, name, key string, id oid.OID) (ids []oid.OID, err error) {
 	var hold idsHold
 	if err = db.NewRaw("SELECT array_agg(id) as ids FROM ? WHERE ? = ?", Ident(name), Ident(key), id).Scan(ctx, &hold); err == nil {
 		ids = hold.IDs
