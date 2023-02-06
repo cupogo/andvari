@@ -165,3 +165,21 @@ func (mu *MetaDiff) AddKV(k string, v any) {
 		Key: k, Value: v,
 	})
 }
+
+func MetaDiffAddKVs(in *MetaDiff, args ...any) *MetaDiff {
+	if len(args) == 0 || len(args)%2 == 1 { // invalid args
+		return in
+	}
+	if in == nil {
+		in = new(MetaDiff)
+	}
+
+	for i := 0; i < len(args); i += 2 {
+		key, val := args[i], args[i+1]
+		if keyStr, ok := key.(string); ok {
+			in.AddKV(keyStr, val)
+		}
+	}
+
+	return in
+}
