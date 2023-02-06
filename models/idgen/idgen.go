@@ -11,7 +11,7 @@ const (
 	shardMask = int64(1<<10) - 1     // 1023
 	seqMask   = int64(1<<11) - 1     // 2047
 
-	Min = 1 << 21
+	Min = 1 << 21 // 2097152
 )
 
 // IDGen generates sortable unique int64 numbers that consist of:
