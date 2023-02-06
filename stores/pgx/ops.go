@@ -191,7 +191,7 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	argc := len(args)
 	if argc > 0 {
 		unikey := field.ID
-		if k, ok := args[0].(string); ok && obj.IsZeroID() {
+		if k, ok := args[0].(string); ok && isZeroID {
 			unikey = k
 			args = args[1:]
 		}
