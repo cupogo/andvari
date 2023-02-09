@@ -209,11 +209,7 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 			q.Set("?0 = EXCLUDED.?0", Ident(field.Updated))
 		}
 	}
-	if vs, ok := obj.(interface{ IsSerial() bool }); ok && vs.IsSerial() {
-		q.Returning("id")
-	} else {
-		q.Returning("NULL")
-	}
+	q.Returning(field.ID)
 
 	name := GetModelName(q)
 	if _, err := q.Exec(ctx); err != nil {
