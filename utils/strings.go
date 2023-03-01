@@ -21,13 +21,13 @@ func ParseInts(s string) ([]int, bool) {
 	if len(s) == 0 {
 		return nil, false
 	}
-	out, err := StringsToInts(SliceRidZero[string](strings.Split(s, ",")))
+	out, err := StringsToInts(SliceRidZero(strings.Split(s, ",")))
 	return out, err == nil && len(out) > 0
 }
 
 func ParseStrs(s string) ([]string, bool) {
 	out := strings.Split(s, ",")
-	out = SliceRidZero[string](out)
+	out = SliceRidZero(out)
 	return out, len(out) > 0
 }
 
