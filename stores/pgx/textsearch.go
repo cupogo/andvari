@@ -42,7 +42,10 @@ func HideTsColumn(q *SelectQuery) *SelectQuery {
 }
 
 func (tss *TextSearchSpec) Sift(q *SelectQuery) *SelectQuery {
-	return DoApplyTsQuery(tss.enabled, tss.cfgname, HideTsColumn(q),
+	if tss.enabled {
+		q = HideTsColumn(q)
+	}
+	return DoApplyTsQuery(tss.enabled, tss.cfgname, q,
 		tss.SearchKeyWord, tss.SearchStyle, tss.fallbacks...)
 }
 
@@ -50,22 +53,17 @@ func DoApplyTsQuery(enabled bool, cfgname string, q *SelectQuery, kw, sty string
 	if len(kw) == 0 {
 		return q
 	}
-	if enabled {
-		return q.Where("? @@ "+getTsQuery(cfgname, sty, kw), Ident(textVec))
-	}
-	if len(cols) > 0 && len(cols[0]) > 0 {
-		q.WhereGroup(" AND ", func(_q *SelectQuery) *SelectQuery {
-			for i, col := range cols {
-				if i == 0 {
-					_q.Where("? iLIKE ?", Ident(col), sqlutil.MendValue(kw))
-				} else {
-					_q.WhereOr("? iLIKE ?", Ident(col), sqlutil.MendValue(kw))
-				}
+	return q.WhereGroup(" AND ", func(_q *SelectQuery) *SelectQuery {
+		if len(cols) > 0 && len(cols[0]) > 0 {
+			for _, col := range cols {
+				_q.WhereOr("? iLIKE ?", Ident(col), sqlutil.MendValue(kw))
 			}
-			return _q
-		})
-	}
-	return q
+		}
+		if enabled {
+			_q.WhereOr("? @@ "+getTsQuery(cfgname, sty, kw), Ident(textVec))
+		}
+		return _q
+	})
 }
 
 func getTsQuery(tscfg string, sty, kw string) string {
