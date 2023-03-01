@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"io/fs"
+	"os"
+	"runtime"
+	"strconv"
 
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
@@ -67,6 +70,15 @@ func Open(dsn string, ftscfg string, debug bool) (*DB, error) {
 	pgcfg := pgconn.Config()
 
 	sqldb := sql.OpenDB(pgconn)
+	if s, ok := os.LookupEnv("PGX_MAX_OPEN_X"); ok && len(s) > 0 {
+		if x, err := strconv.Atoi(s); err == nil && x > 0 && x <= 4 {
+			maxOpenConns := x * runtime.GOMAXPROCS(0)
+			sqldb.SetMaxOpenConns(maxOpenConns)
+			sqldb.SetMaxIdleConns(maxOpenConns)
+			logger().Debugw("set max open = x * maxProcs", "x", x)
+		}
+	}
+
 	db := bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns())
 
 	ctx := context.Background()
