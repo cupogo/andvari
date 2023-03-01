@@ -3,6 +3,7 @@ package pgx
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"strings"
 
@@ -135,6 +136,9 @@ func ModelWithPK(ctx context.Context, db IDB, obj Model, columns ...string) (err
 	}
 	if err != nil {
 		logger().Warnw("get model where pk failed", "objID", obj.GetID(), "err", err)
+		if err == driver.ErrBadConn {
+			panic(err)
+		}
 		return
 	}
 	return
