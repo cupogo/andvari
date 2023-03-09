@@ -3,6 +3,7 @@ package pgx
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"io/fs"
 	"os"
 	"runtime"
@@ -33,9 +34,10 @@ type PGError = pgdriver.Error
 type QueryApplierFn func(q *SelectQuery) *SelectQuery
 
 var (
-	ErrNoRows = sql.ErrNoRows
-	In        = bun.In
-	Array     = pgdialect.Array
+	ErrBadConn = driver.ErrBadConn
+	ErrNoRows  = sql.ErrNoRows
+	In         = bun.In
+	Array      = pgdialect.Array
 )
 
 const (
@@ -120,23 +122,11 @@ func (w *DB) List(ctx context.Context, spec ListArg, dataptr any) (total int, er
 	return w.ListModel(ctx, spec, dataptr)
 }
 func (w *DB) ListModel(ctx context.Context, spec ListArg, dataptr any) (total int, err error) {
-	q := w.NewSelect().Model(dataptr)
+	q := QueryList(ctx, w, spec, dataptr)
 	if spec.Deleted() {
 		q.ModelTableExpr(w.scCrap + ".?TableName AS ?TableAlias")
 	}
-	if v, ok := spec.(SifterX); ok {
-		q = v.SiftX(ctx, q)
-	}
-	if !spec.IsSifted() {
-		q = q.Apply(spec.Sift)
-	}
-
-	if excols := ExcludesFromContext(ctx); len(excols) > 0 {
-		q.ExcludeColumn(excols...)
-	} else if cols := ColumnsFromContext(ctx); len(cols) > 0 {
-		q.Column(cols...)
-	}
-
+	q = ApplyQueryContext(ctx, q)
 	return QueryPager(ctx, spec, q)
 }
 
@@ -149,11 +139,7 @@ func (w *DB) GetModel(ctx context.Context, obj Model, id any, columns ...string)
 	if len(columns) > 0 {
 		q.Column(columns...)
 	} else {
-		if excols := ExcludesFromContext(ctx); len(excols) > 0 {
-			q.ExcludeColumn(excols...)
-		} else if cols := ColumnsFromContext(ctx); len(cols) > 0 {
-			q.Column(cols...)
-		}
+		q = ApplyQueryContext(ctx, q)
 	}
 
 	err = q.Scan(ctx)

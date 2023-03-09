@@ -3,7 +3,6 @@ package pgx
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
 	"fmt"
 	"strings"
 
@@ -59,15 +58,9 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 	return
 }
 
-func querySort(p Pager, q *SelectQuery) *SelectQuery {
+func ApplyQuerySort(p Sortable, q *SelectQuery) *SelectQuery {
 	if rule := p.GetSort(); len(rule) > 1 {
-		orders := strings.Split(rule, ",")
-		// old: two fields at most
-		// new: has more fields
-		//if len(orders) > 2 {
-		//	orders = orders[:2]
-		//}
-		for _, order := range orders {
+		for _, order := range strings.Split(rule, ",") {
 			var key, op string
 			if b, a, ok := strings.Cut(order, " "); ok {
 				op = strings.ToUpper(a)
@@ -94,7 +87,7 @@ func querySort(p Pager, q *SelectQuery) *SelectQuery {
 
 // QueryPager 根据分页参数进行查询
 func QueryPager(ctx context.Context, p Pager, q *SelectQuery) (count int, err error) {
-	q = querySort(p, q)
+	q = ApplyQuerySort(p, q)
 	limit := p.GetLimit()
 	if p.GetPage() > 0 && limit == 0 {
 		limit = defaultLimit
@@ -129,14 +122,13 @@ func ModelWithPK(ctx context.Context, db IDB, obj Model, columns ...string) (err
 	}
 
 	err = db.NewSelect().Model(obj).Column(columns...).WherePK().Scan(ctx)
-
-	if err == sql.ErrNoRows {
-		logger().Debugw("get model where pk no rows", "objID", obj.GetID())
-		return ErrNotFound
-	}
 	if err != nil {
+		if err == ErrNoRows {
+			logger().Debugw("get model where pk no rows", "objID", obj.GetID())
+			return ErrNotFound
+		}
 		logger().Warnw("get model where pk failed", "objID", obj.GetID(), "err", err)
-		if err == driver.ErrBadConn {
+		if err == ErrBadConn {
 			panic(err)
 		}
 		return
@@ -162,7 +154,7 @@ func ModelWith(ctx context.Context, db IDB, obj Model, key, op string, val any, 
 		return ErrEmptyKey
 	}
 	err := db.NewSelect().Model(obj).Column(cols...).Where("? "+op+" ?", Ident(key), val).Limit(1).Scan(ctx)
-	if err == sql.ErrNoRows {
+	if err == ErrNoRows {
 		logger().Debugw("get model with key no rows", "key", key, "op", op, "val", val)
 		return ErrNotFound
 	}
@@ -438,4 +430,108 @@ func BatchDeleteWithKey(ctx context.Context, db IDB, name, key string, id oid.OI
 		logger().Infow("query fail when batch delete", "name", name, "key", key, "id", id, "err", err)
 	}
 	return
+}
+
+type Order int8
+
+const (
+	OrderAsc Order = iota
+	OrderDesc
+
+	OrderNone Order = -1
+)
+
+// First find the first model order by pk with condition
+//
+// Examples:
+//
+// var user User
+// err := First(ctx, db, &User)
+//
+// var user User
+// err := First(ctx, db, &User, id)
+//
+// var user User
+// err := First(ctx, db, &User, "name = ?", "adam")
+// ...
+func First(ctx context.Context, db IDB, obj Model, args ...any) error {
+	return oneWithOrder(ctx, db, OrderAsc, obj, args...)
+}
+
+// Last find the last model order by pk with condition
+func Last(ctx context.Context, db IDB, obj Model, args ...any) error {
+	return oneWithOrder(ctx, db, OrderDesc, obj, args...)
+}
+
+func oneWithOrder(ctx context.Context, db IDB, ord Order, obj Model, args ...any) error {
+	q, ok := QueryOne(db, obj, args...)
+	if !ok {
+		return ErrInternal
+	}
+	switch ord {
+	case OrderAsc:
+		q.Order("id")
+	case OrderDesc:
+		q.Order("id DESC")
+	}
+	err := q.Scan(ctx)
+	if err != nil {
+		if err == ErrNoRows {
+			logger().Debugw("get model with key no rows", "name", q.GetTableName(), "args", args)
+			return ErrNotFound
+		}
+		logger().Warnw("get model with key failed", "name", q.GetTableName(), "args", args, "err", err)
+
+		if err == ErrBadConn {
+			panic(err)
+		}
+	}
+	return err
+}
+
+// QueryOne Query one model record base on optional conditions
+func QueryOne(db IDB, obj Model, args ...any) (*SelectQuery, bool) {
+	q := db.NewSelect().Limit(1).Model(obj)
+
+	if len(args) == 0 {
+		if obj.IsZeroID() {
+			// unconditional
+			return q, true
+		}
+		return q.WherePK(), true
+	}
+	if len(args) == 1 {
+		obj.SetID(args[0])
+		return q.WherePK(), true
+	}
+	if s, ok := args[0].(string); ok && strings.Count(s, "?") == len(args)-1 {
+		return q.Where(s, args[1:]...), true
+	}
+
+	logger().Infow("queryOne: invalid args", "name", q.GetTableName(), "args", args)
+
+	return q, false
+}
+
+// QueryList Query as a collection list with a Sifter
+func QueryList(ctx context.Context, db IDB, spec Sifter, dataptr any) *SelectQuery {
+	q := db.NewSelect().Model(dataptr)
+	if v, ok := spec.(SifterX); ok {
+		q = v.SiftX(ctx, q)
+	}
+	if !spec.IsSifted() {
+		q = spec.Sift(q)
+	}
+
+	return q
+}
+
+// ApplyQueryContext Apply column filtering in a query by reading the context
+func ApplyQueryContext(ctx context.Context, q *SelectQuery) *SelectQuery {
+	if excols := ExcludesFromContext(ctx); len(excols) > 0 {
+		q.ExcludeColumn(excols...)
+	} else if cols := ColumnsFromContext(ctx); len(cols) > 0 {
+		q.Column(cols...)
+	}
+	return q
 }
