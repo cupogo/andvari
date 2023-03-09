@@ -17,6 +17,7 @@ type ModelChangeable interface {
 }
 
 type Sortable interface {
+	GetSort() string
 	CanSort(key string) bool
 }
 

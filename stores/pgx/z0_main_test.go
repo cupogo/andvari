@@ -144,6 +144,35 @@ func TestOps(t *testing.T) {
 	assert.False(t, obj2.IsZeroID())
 	assert.NotZero(t, obj2.ID)
 
+	nid := obj.ID
+	one := new(Clause)
+	assert.NoError(t, First(ctx, db, one))
+	assert.NotZero(t, one.ID)
+	one = new(Clause)
+	assert.NoError(t, First(ctx, db, one, nid))
+	assert.NotZero(t, one.ID)
+	one = new(Clause)
+	assert.NoError(t, First(ctx, db, one, nid.String()))
+	assert.NotZero(t, one.ID)
+	one = new(Clause)
+	assert.NoError(t, First(ctx, db, one, "id = ?", nid))
+	assert.NotZero(t, one.ID)
+	one = new(Clause)
+	assert.NoError(t, First(ctx, db, one, "slug = ?", obj.Slug))
+	assert.NotZero(t, one.ID)
+	one = new(Clause)
+	assert.NoError(t, Last(ctx, db, one))
+	assert.NotZero(t, one.ID)
+
+	one = new(Clause)
+	assert.Error(t, Last(ctx, db, one, 0))
+	assert.Zero(t, one.ID)
+	one = new(Clause)
+	assert.Error(t, Last(ctx, db, one, ""))
+	assert.Zero(t, one.ID)
+	one = new(Clause)
+	assert.Error(t, Last(ctx, db, one, 1, 2))
+
 	spec := &ClauseSpec{}
 	spec.Limit = 2
 	spec.Cates = append(spec.Cates, "dog", "sheep")
