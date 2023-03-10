@@ -11,6 +11,8 @@ var (
 	ErrEmptyKey  = errors.New("empty key")
 	ErrDuplicate = errors.New("duplicate")
 	ErrInternal  = errors.New("internal error")
+
+	ErrInvalidArgs = errors.New("invalid args")
 )
 
 type errID struct {

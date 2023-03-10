@@ -161,6 +161,9 @@ func TestOps(t *testing.T) {
 	assert.NoError(t, First(ctx, db, one, "slug = ?", obj.Slug))
 	assert.NotZero(t, one.ID)
 	one = new(Clause)
+	assert.NoError(t, Get(ctx, db, one))
+	assert.NotZero(t, one.ID)
+	one = new(Clause)
 	assert.NoError(t, Last(ctx, db, one))
 	assert.NotZero(t, one.ID)
 

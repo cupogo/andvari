@@ -458,6 +458,11 @@ func First(ctx context.Context, db IDB, obj Model, args ...any) error {
 	return oneWithOrder(ctx, db, OrderAsc, obj, args...)
 }
 
+// Get find a model with contition
+func Get(ctx context.Context, db IDB, obj Model, args ...any) error {
+	return oneWithOrder(ctx, db, OrderNone, obj, args...)
+}
+
 // Last find the last model order by pk with condition
 func Last(ctx context.Context, db IDB, obj Model, args ...any) error {
 	return oneWithOrder(ctx, db, OrderDesc, obj, args...)
@@ -466,7 +471,7 @@ func Last(ctx context.Context, db IDB, obj Model, args ...any) error {
 func oneWithOrder(ctx context.Context, db IDB, ord Order, obj Model, args ...any) error {
 	q, ok := QueryOne(db, obj, args...)
 	if !ok {
-		return ErrInternal
+		return ErrInvalidArgs
 	}
 	switch ord {
 	case OrderAsc:
