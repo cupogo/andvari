@@ -459,8 +459,8 @@ func First(ctx context.Context, db IDB, obj Model, args ...any) error {
 }
 
 // Get find a model with contition
-func Get(ctx context.Context, db IDB, obj Model, args ...any) error {
-	return oneWithOrder(ctx, db, OrderNone, obj, args...)
+func Get(ctx context.Context, db IDB, obj Model, arg any, args ...any) error {
+	return oneWithOrder(ctx, db, OrderNone, obj, append([]any{arg}, args...)...)
 }
 
 // Last find the last model order by pk with condition
