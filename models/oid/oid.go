@@ -98,13 +98,12 @@ func CheckID(id any) (OID, error) {
 // TODO: split into shard.go
 var (
 	shonce sync.Once
-	shards map[ObjType]*idgen.IDGen
+	shards = make(map[ObjType]*idgen.IDGen, int(otLast))
 
 	ErrEmptyOID = errors.New("empty oid")
 )
 
 func shardsInit() {
-	shards = make(map[ObjType]*idgen.IDGen, int(otLast))
 	for i := int64(0); i < int64(otLast); i++ {
 		shards[ObjType(i)] = idgen.NewWithShard(i)
 	}
@@ -113,10 +112,10 @@ func shardsInit() {
 func getGen(ot ObjType) *idgen.IDGen {
 	shonce.Do(shardsInit)
 
-	if ot > OtDefault && ot < otLast {
-		return shards[ot]
+	if sd, ok := shards[ot]; ok {
+		return sd
 	}
-	return shards[OtDefault]
+	return idgen.NewWithShard(int64(ot))
 }
 
 // NewID return new id with type

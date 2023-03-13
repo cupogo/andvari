@@ -2,6 +2,7 @@ image: fhyx/golang:edge
 
 stages:
   - lint
+  - test
 
 variables:
   CGO_ENABLED: '0'
@@ -26,10 +27,14 @@ before_script:
   - go env
 
 
-test-lint:
+lint:
   stage: lint
   services: []
   script:
     - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
     - go vet ./...  && ${GOPATH}/bin/golangci-lint run --disable structcheck ./...
 
+test:
+  stage: test
+  script:
+    - go test -v -cover ./models/idgen ./models/oid
