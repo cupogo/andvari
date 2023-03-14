@@ -1,5 +1,14 @@
 package oid
 
+import (
+	"fmt"
+	"math/big"
+	"strings"
+	"sync"
+
+	"github.com/cupogo/andvari/models/idgen"
+)
+
 // ObjType 目标类型
 type ObjType int16
 
@@ -23,6 +32,8 @@ const (
 
 func (ot ObjType) Code() string {
 	switch ot {
+	case OtDefault:
+		return "de"
 	case OtAccount:
 		return "ac"
 	case OtCompany:
@@ -37,10 +48,10 @@ func (ot ObjType) Code() string {
 		return "tk"
 	case OtEvent:
 		return "ev"
-	case OtForm:
-		return "fm"
 	case OtPeople:
 		return "pe"
+	case OtForm:
+		return "fm"
 	case OtGoods:
 		return "go"
 	case OtFile:
@@ -48,5 +59,144 @@ func (ot ObjType) Code() string {
 	case OtImage:
 		return "im"
 	}
-	return "oo" // default
+	return valCate(uint16(ot))
+}
+
+func ParseCate(s string) ObjType {
+	switch s {
+	case "ac", "account":
+		return OtAccount
+	case "co", "company":
+		return OtCompany
+	case "dp", "department":
+		return OtDepartment
+	case "at", "article":
+		return OtArticle
+	case "tm", "team":
+		return OtTeam
+	case "tk", "token":
+		return OtToken
+	case "ev", "event":
+		return OtEvent
+	case "pe", "people":
+		return OtPeople
+	case "fm", "form":
+		return OtForm
+	case "go", "goods":
+		return OtGoods
+	case "fi", "file":
+		return OtFile
+	case "im", "image":
+		return OtImage
+	default:
+		return OtDefault
+	}
+}
+
+var (
+	longNames = map[string]string{
+		"department": "dp",
+		"article":    "at",
+		"team":       "tm",
+		"token":      "tk",
+		"form":       "fm",
+	}
+	prefixes = map[string]uint16{
+		"ac": 1,
+		"co": 2,
+		"dp": 3,
+		"at": 4,
+		"tm": 5,
+		"tk": 6,
+		"ev": 7,
+		"pe": 8,
+		"fm": 9,
+		"go": 10,
+		"fi": 11,
+		"im": 12,
+	}
+	cateLock sync.Mutex
+)
+
+const (
+	minCate uint16 = 360 // a0 == 360
+)
+
+func cateVal(s string) uint16 {
+	if len(s) == 0 {
+		panic("empty code")
+	}
+	if s[0] < 'a' || s[0] == ' ' {
+		panic(fmt.Errorf("invalid code: %s", s))
+	}
+	if len(s) == 1 {
+		s = s + "a"
+	} else if s[1] < 'a' || s[1] == ' ' {
+		panic(fmt.Errorf("invalid code: %s", s))
+	}
+
+	var bI big.Int
+	i, _ := bI.SetString(s[0:2], 36)
+	return uint16(i.Uint64()) - minCate
+}
+
+func valCate(n uint16) string {
+	var bI big.Int
+	i := bI.SetUint64(uint64(n + minCate))
+	return i.Text(36)
+}
+
+func RegistCate(name, code string) {
+	if len(name) < 2 {
+		panic(fmt.Errorf("too shart name: %s", name))
+	}
+	if len(code) < 2 {
+		panic(fmt.Errorf("too short code: %s", code))
+	}
+	if len(code) > 2 {
+		code = code[0:2]
+	}
+	code = strings.ToLower(code)
+	name = strings.ToLower(name)
+
+	if ParseCate(name) != OtDefault {
+		panic(fmt.Errorf("exist name %s", name))
+	}
+
+	if ParseCate(code) != OtDefault {
+		panic(fmt.Errorf("exist code %s", code))
+	}
+
+	cateLock.Lock()
+	defer cateLock.Unlock()
+
+	if _, ok := prefixes[code]; ok {
+		panic(fmt.Errorf("exist code %s", code))
+	}
+
+	if name[0:2] != code {
+		if _, ok := longNames[name]; ok {
+			panic(fmt.Errorf("exist name %s", name))
+		}
+		longNames[name] = code
+	}
+	sm := cateVal(code)
+	prefixes[code] = sm
+	shards[ObjType(sm)] = idgen.NewWithShard(int64(sm))
+}
+
+func NewWithCode(code string) (OID, bool) {
+	code = strings.ToLower(code)
+	if ot := ParseCate(code); ot != OtDefault {
+		return NewID(ot), true
+	}
+	if s, ok := longNames[code]; ok {
+		code = s
+	} else if len(code) > 2 {
+		code = code[0:2]
+	}
+	if val, ok := prefixes[code]; ok {
+		return NewID(ObjType(val)), ok
+	}
+	return ZeroID, false
 }

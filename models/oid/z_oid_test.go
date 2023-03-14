@@ -8,6 +8,52 @@ import (
 	"github.com/cupogo/andvari/models/idgen"
 )
 
+func init() {
+	RegistCate("orderForm", "of")
+	RegistCate("orderItem", "oi")
+	RegistCate("quotation", "qt")
+	RegistCate("quotationItem", "qi")
+	RegistCate("shopCart", "sct")
+}
+
+func TestCate(t *testing.T) {
+	for _, s := range []string{
+		"department", "account", "company", "article", "event", "token",
+		"people", "form", "goods", "file", "image", "team",
+		"shopCart", "quotation", "orderItem",
+	} {
+		id, ok := NewWithCode(s)
+		assert.True(t, ok)
+		assert.NotZero(t, id)
+		t.Logf("id: %9s => %s", s, id)
+	}
+	assert.Less(t, int(otLast), len(shards))
+
+	id, ok := NewWithCode("notexist")
+	assert.False(t, ok)
+	assert.Zero(t, id)
+
+	cv := cateVal("a")
+	assert.NotZero(t, cv)
+	assert.Equal(t, 10, int(cv))
+
+	assert.Panics(t, func() { RegistCate("", "") })
+	assert.Panics(t, func() { RegistCate("name", "") })
+	assert.Panics(t, func() { RegistCate("quotation", "qt") })
+	assert.Panics(t, func() { RegistCate("quotation", "qa") })
+	assert.Panics(t, func() { RegistCate("form", "fo") })
+	assert.Panics(t, func() { RegistCate("user", "ac") })
+	assert.Panics(t, func() { cateVal("") })
+	assert.Panics(t, func() { cateVal("1") })
+	assert.Panics(t, func() { cateVal(" ") })
+	assert.Panics(t, func() { cateVal("a ") })
+
+	for i := uint16(98); i < 120; i += 4 {
+		t.Logf("i to s: %d => %s", i, valCate(i))
+	}
+
+}
+
 func TestGen(t *testing.T) {
 	assert.NotEmpty(t, NewObjID(OtAccount))
 	assert.NotEmpty(t, NewObjID(OtGoods))
@@ -45,6 +91,7 @@ func TestCheck(t *testing.T) {
 	assert.Error(t, err)
 	assert.Zero(t, id)
 	assert.False(t, id.Valid())
+	assert.Empty(t, id.String())
 
 	id, err = CheckID(int64(idgen.Min - 1))
 	assert.Error(t, err)
