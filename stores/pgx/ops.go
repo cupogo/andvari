@@ -425,7 +425,9 @@ func BatchDeleteWithKey(ctx context.Context, db IDB, name, key string, id oid.OI
 				return
 			}
 		}
-		logger().Infow("batch delete done", "name", name, "key", key, "id", id, "ids", ids)
+		if len(ids) > 0 {
+			logger().Infow("batch delete done", "name", name, "key", key, "id", id, "ids", ids)
+		}
 	} else {
 		logger().Infow("query fail when batch delete", "name", name, "key", key, "id", id, "err", err)
 	}
