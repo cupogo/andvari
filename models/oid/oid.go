@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/cupogo/andvari/models/idgen"
 )
@@ -176,7 +177,15 @@ func Parse(s string) (code string, oid OID, err error) {
 	return
 }
 
+// Deprecated: use Split
 func (z OID) Cate() ObjType {
 	_, shard, _ := idgen.SplitID(int64(z))
 	return ObjType(shard)
+}
+
+func (z OID) Split() (t time.Time, c ObjType, s int64) {
+	var r int64
+	t, r, s = idgen.SplitID(int64(z))
+	c = ObjType(r)
+	return
 }
