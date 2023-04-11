@@ -128,6 +128,11 @@ func (f *OwnerField) SetOwnerID(id any) bool {
 	return false
 }
 
+// ownerID 可否为空
+func (f *OwnerField) OwnerEmpty() bool {
+	return false
+}
+
 type IDFieldStr struct {
 	ID string `bson:"_id,omitempty" json:"id" form:"id" bun:",pk" pg:",pk" extensions:"x-order=/"` // 主键
 }

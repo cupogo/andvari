@@ -32,6 +32,7 @@ type ModelOwner interface {
 	Model
 	GetOwnerID() OID
 	SetOwnerID(id any) bool
+	OwnerEmpty() bool
 }
 
 var (
