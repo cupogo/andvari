@@ -15,7 +15,7 @@ func (model *DefaultModel) Creating() error {
 
 // Saving function call to it's inner fields defined hooks
 func (model *DefaultModel) Saving() error {
-	return model.DateFields.Saving()
+	return nil
 }
 
 // DunceModel struct contain model's default fields with string pk.
@@ -41,5 +41,5 @@ func (model *SerialModel) Creating() error {
 
 // Saving function call to it's inner fields defined hooks
 func (model *SerialModel) Saving() error {
-	return model.DateFields.Saving()
+	return nil
 }

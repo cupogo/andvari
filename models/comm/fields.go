@@ -17,8 +17,8 @@ type IDField struct {
 // DateFields struct contain `createdAt` and `updatedAt`
 // fields that autofill on insert/update model.
 type DateFields struct {
-	CreatedAt time.Time `bson:"createdAt" json:"createdAt" form:"createdAt" bun:"created,notnull,default:now()" pg:"created,notnull,default:now()" extensions:"x-order=["` // 创建时间
-	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt" form:"updatedAt" bun:"updated,notnull" pg:"updated,notnull" extensions:"x-order=]"`                             // 变更时间
+	CreatedAt time.Time  `bson:"created" json:"createdAt" form:"created" bun:"created,notnull,default:now()" pg:"created,notnull,default:now()" extensions:"x-order=["` // 创建时间
+	UpdatedAt *time.Time `bson:"updated" json:"updatedAt,omitempty" form:"updated" bun:"updated" pg:"updated" extensions:"x-order=]"`                                   // 变更时间
 }
 
 // PrepareID method prepare id value to using it as id in filtering,...
@@ -69,10 +69,11 @@ func (f *DateFields) Creating() error {
 	return nil
 }
 
-// Saving hook used here to set `updated` field value
-// on create/update model.
-func (f *DateFields) Saving() error {
-	f.UpdatedAt = time.Now()
+// Updating hook used here to set `updated` field value
+// on update model.
+func (f *DateFields) Updating() error {
+	now := time.Now()
+	f.UpdatedAt = &now
 	return nil
 }
 
@@ -87,7 +88,10 @@ func (f *DateFields) SetCreated(ts any) bool {
 
 // GetUpdated return time of updatedAt
 func (f *DateFields) GetUpdated() time.Time {
-	return f.UpdatedAt
+	if f.UpdatedAt == nil {
+		return f.CreatedAt
+	}
+	return *f.UpdatedAt
 }
 
 type CreatorField struct {
