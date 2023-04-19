@@ -511,7 +511,7 @@ func QueryOne(db IDB, obj Model, args ...any) (*SelectQuery, bool) {
 		obj.SetID(args[0])
 		return q.WherePK(), true
 	}
-	if s, ok := args[0].(string); ok && strings.Count(s, "?") == len(args)-1 {
+	if s, ok := args[0].(string); ok {
 		return q.Where(s, args[1:]...), true
 	}
 
