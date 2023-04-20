@@ -1,6 +1,7 @@
 package pgx
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/fs"
@@ -53,4 +54,14 @@ func ListFS(cate string, w io.Writer) {
 			}
 		}
 	}
+}
+
+type MetaUpFn func(ctx context.Context, db IDB, obj Model) error
+
+var (
+	metaUpFuncs []MetaUpFn
+)
+
+func RegisterMetaUp(fns ...MetaUpFn) {
+	metaUpFuncs = append(metaUpFuncs, fns...)
 }
