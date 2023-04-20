@@ -13,6 +13,7 @@ import (
 	"github.com/cupogo/andvari/database/embeds"
 	"github.com/cupogo/andvari/models/comm"
 	"github.com/cupogo/andvari/models/oid"
+	"github.com/cupogo/andvari/utils"
 	"github.com/cupogo/andvari/utils/zlog"
 )
 
@@ -272,6 +273,8 @@ func TestOps(t *testing.T) {
 	slug := "eagle"
 	text := "hawk"
 	in := ClauseSet{Slug: &slug, Text: &text}
+	_, err = StoreWithSet[*Clause](ctx, db, in)
+	assert.NoError(t, err)
 	obj3, err := StoreWithSet[*Clause](ctx, db, in, slug, "slug")
 	t.Logf("obj: %+v", obj3)
 	assert.NoError(t, err)
@@ -288,10 +291,10 @@ func TestOps(t *testing.T) {
 	assert.Equal(t, obj3.ID, obj4.ID)
 	assert.Equal(t, obj3.Slug, obj4.Slug)
 
-	_, err = StoreWithSet[*Clause](ctx, db, in)
-	assert.NoError(t, err)
+	in = ClauseSet{Slug: utils.Refer("falcon"), Text: utils.Refer("lieying")}
 	_, err = StoreWithSet[*Clause](ctx, db, in, "")
 	assert.NoError(t, err)
+
 	_, err = StoreWithSet[*Clause](ctx, db, in, "", "slug")
 	assert.Error(t, err)
 }

@@ -121,10 +121,11 @@ func ModelWithPK(ctx context.Context, db IDB, obj Model, columns ...string) (err
 		return ErrEmptyPK
 	}
 
-	err = db.NewSelect().Model(obj).Column(columns...).WherePK().Scan(ctx)
+	q := db.NewSelect().Model(obj).Column(columns...).WherePK()
+	err = q.Scan(ctx)
 	if err != nil {
 		if err == ErrNoRows {
-			logger().Debugw("get model where pk no rows", "objID", obj.GetID())
+			logger().Debugw("get model where pk no rows", "name", q.GetTableName(), "objID", obj.GetID())
 			return ErrNotFound
 		}
 		logger().Warnw("get model where pk failed", "objID", obj.GetID(), "err", err)
@@ -284,11 +285,14 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 }
 
 func StoreSimple(ctx context.Context, db IDB, obj ModelChangeable, columns ...string) error {
-	if obj.IsZeroID() {
-		return DoInsert(ctx, db, obj)
+	if !obj.IsZeroID() {
+		exist, err := db.NewSelect().Model(obj).WherePK().Column(field.ID).Exists(ctx)
+		if err == nil && exist {
+			return DoUpdate(ctx, db, obj, columns...)
+		}
 	}
 
-	return DoUpdate(ctx, db, obj, columns...)
+	return DoInsert(ctx, db, obj)
 }
 
 type columnsFn func() []string
@@ -328,13 +332,15 @@ type ModelSetPtr[T any, U any] interface {
 // StoreWithSet[*U](ctx, db, in, code, "code") // update or create
 func StoreWithSet[T ModelSetPtr[U, V], U any, V any](ctx context.Context, db IDB, in V, vk ...string) (obj T, err error) {
 	obj = new(U)
+	var exist bool
 	argc := len(vk)
 	if argc > 1 && vk[1] != "" {
 		err = ModelWithUnique(ctx, db, obj, vk[1], vk[0])
+		exist = (err == nil)
 	} else if argc == 1 && obj.SetID(vk[0]) {
 		err = ModelWithPK(ctx, db, obj)
+		exist = (err == nil)
 	}
-	exist := (err == nil)
 
 	obj.SetWith(in)
 
