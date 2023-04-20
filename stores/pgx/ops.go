@@ -283,6 +283,7 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 	return callToAfterUpdateHooks(obj)
 }
 
+// Deprecated: use StoreWithSet[*M]()
 func StoreSimple(ctx context.Context, db IDB, obj ModelChangeable, columns ...string) error {
 	if obj.IsZeroID() {
 		return DoInsert(ctx, db, obj)
@@ -293,6 +294,7 @@ func StoreSimple(ctx context.Context, db IDB, obj ModelChangeable, columns ...st
 
 type columnsFn func() []string
 
+// Deprecated: use StoreWithSet[*M]()
 func StoreWithCall(ctx context.Context, db IDB, exist, obj ModelChangeable, csfn columnsFn, args ...string) (isn bool, err error) {
 	if !obj.IsZeroID() {
 		exist.SetID(obj.GetID())
@@ -311,6 +313,36 @@ func StoreWithCall(ctx context.Context, db IDB, exist, obj ModelChangeable, csfn
 		isn = true
 		err = DoInsert(ctx, db, obj)
 	}
+	return
+}
+
+type ModelSetPtr[T any, U any] interface {
+	Model
+	*T
+	SetWith(in U)
+}
+
+// StoreWithSet[*U] save a Model wish ModelSet
+func StoreWithSet[T ModelSetPtr[U, V], U any, V any](ctx context.Context, db IDB, in V, id string, keys ...string) (obj T, err error) {
+	obj = new(U)
+	if len(keys) > 0 && keys[0] != "" && keys[0] != field.ID {
+		err = ModelWithUnique(ctx, db, obj, keys[0], id)
+	} else {
+		if !obj.SetID(id) {
+			err = ErrEmptyPK
+			return
+		}
+		err = ModelWithPK(ctx, db, obj)
+	}
+
+	obj.SetWith(in)
+
+	if err == nil {
+		err = DoUpdate(ctx, db, obj)
+	} else {
+		err = DoInsert(ctx, db, obj)
+	}
+
 	return
 }
 
