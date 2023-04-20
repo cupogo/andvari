@@ -283,7 +283,6 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 	return callToAfterUpdateHooks(obj)
 }
 
-// Deprecated: use StoreWithSet[*M]()
 func StoreSimple(ctx context.Context, db IDB, obj ModelChangeable, columns ...string) error {
 	if obj.IsZeroID() {
 		return DoInsert(ctx, db, obj)
