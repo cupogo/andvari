@@ -74,6 +74,7 @@ type Clause struct {
 	comm.DefaultModel
 
 	ClauseBasic
+	comm.MetaField
 } // @name Clause
 
 type ClauseBasic struct {
@@ -109,9 +110,12 @@ func (z *Clause) SetWith(o ClauseSet) {
 	}
 }
 
+func dbOpModelMeta(ctx context.Context, db IDB, obj Model) error { return nil }
+
 func init() {
 	RegisterModel((*Clause)(nil))
 	RegisterDbFs(embeds.DBFS())
+	RegisterMetaUp(dbOpModelMeta)
 }
 
 type ClauseSpec struct {
@@ -262,7 +266,7 @@ func TestOps(t *testing.T) {
 	slug := "eagle"
 	text := "hawk"
 	in := ClauseSet{Slug: &slug, Text: &text}
-	obj3, err := StoreWithSet[*Clause](ctx, db, in, "slug", slug)
+	obj3, err := StoreWithSet[*Clause](ctx, db, in, slug, "slug")
 	t.Logf("obj: %+v", obj3)
 	assert.NoError(t, err)
 	assert.NotNil(t, obj3)
@@ -280,6 +284,6 @@ func TestOps(t *testing.T) {
 
 	_, err = StoreWithSet[*Clause](ctx, db, in, "")
 	assert.Error(t, err)
-	_, err = StoreWithSet[*Clause](ctx, db, in, "slug", "")
+	_, err = StoreWithSet[*Clause](ctx, db, in, "", "slug")
 	assert.Error(t, err)
 }

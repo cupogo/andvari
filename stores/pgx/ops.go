@@ -334,15 +334,31 @@ func StoreWithSet[T ModelSetPtr[U, V], U any, V any](ctx context.Context, db IDB
 		}
 		err = ModelWithPK(ctx, db, obj)
 	}
+	exist := (err == nil)
 
 	obj.SetWith(in)
 
-	if err == nil {
+	if err = DoMetaUp(ctx, db, obj); err != nil {
+		return
+	}
+
+	if exist {
 		err = DoUpdate(ctx, db, obj)
 	} else {
 		err = DoInsert(ctx, db, obj)
 	}
 
+	return
+}
+
+func DoMetaUp(ctx context.Context, db IDB, obj Model) (err error) {
+	if mm, ok := obj.(ModelMeta); ok {
+		for _, f := range metaUpFuncs {
+			if err = f(ctx, db, mm); err != nil {
+				return
+			}
+		}
+	}
 	return
 }
 
