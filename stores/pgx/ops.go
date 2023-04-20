@@ -322,15 +322,16 @@ type ModelSetPtr[T any, U any] interface {
 }
 
 // StoreWithSet[*U] save a Model wish ModelSet
-func StoreWithSet[T ModelSetPtr[U, V], U any, V any](ctx context.Context, db IDB, in V, id string, keys ...string) (obj T, err error) {
+// code examples:
+// StoreWithSet[*U](ctx, db, in) // create if no conflict
+// StoreWithSet[*U](ctx, db, in, id) // update or create
+// StoreWithSet[*U](ctx, db, in, code, "code") // update or create
+func StoreWithSet[T ModelSetPtr[U, V], U any, V any](ctx context.Context, db IDB, in V, vk ...string) (obj T, err error) {
 	obj = new(U)
-	if len(keys) > 0 && keys[0] != "" && keys[0] != field.ID {
-		err = ModelWithUnique(ctx, db, obj, keys[0], id)
-	} else {
-		if !obj.SetID(id) {
-			err = ErrEmptyPK
-			return
-		}
+	argc := len(vk)
+	if argc > 1 && vk[1] != "" {
+		err = ModelWithUnique(ctx, db, obj, vk[1], vk[0])
+	} else if argc == 1 && obj.SetID(vk[0]) {
 		err = ModelWithPK(ctx, db, obj)
 	}
 	exist := (err == nil)

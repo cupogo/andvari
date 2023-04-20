@@ -288,8 +288,10 @@ func TestOps(t *testing.T) {
 	assert.Equal(t, obj3.ID, obj4.ID)
 	assert.Equal(t, obj3.Slug, obj4.Slug)
 
+	_, err = StoreWithSet[*Clause](ctx, db, in)
+	assert.NoError(t, err)
 	_, err = StoreWithSet[*Clause](ctx, db, in, "")
-	assert.Error(t, err)
+	assert.NoError(t, err)
 	_, err = StoreWithSet[*Clause](ctx, db, in, "", "slug")
 	assert.Error(t, err)
 }
