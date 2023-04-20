@@ -63,6 +63,12 @@ func TestInit(t *testing.T) {
 	err = db.RunMigrations(ctx, fstest.MapFS{})
 	assert.NoError(t, err)
 
+	var opts []AlterOption
+	opts = append(opts, WithAlterAdd())
+	opts = append(opts, WithAlterDrop())
+	err = db.SyncSchema(ctx, opts...)
+	assert.NoError(t, err)
+
 	ListFS("init", os.Stderr)
 	ListFS("alter", os.Stderr)
 }
