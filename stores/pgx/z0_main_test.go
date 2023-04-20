@@ -46,8 +46,12 @@ func TestOpen(t *testing.T) {
 
 }
 
+const (
+	testDSN = "postgres://testing:testing1@localhost/testing?sslmode=disable"
+)
+
 func TestInit(t *testing.T) {
-	db, err := Open("postgres://testing:testing1@localhost/testing?sslmode=disable", "simple", false)
+	db, err := Open(testDSN, "simple", false)
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 
@@ -58,6 +62,9 @@ func TestInit(t *testing.T) {
 
 	err = db.RunMigrations(ctx, fstest.MapFS{})
 	assert.NoError(t, err)
+
+	ListFS("init", os.Stderr)
+	ListFS("alter", os.Stderr)
 }
 
 // Clause 条款
@@ -86,6 +93,22 @@ func (z *Clause) Creating() error {
 	return z.DefaultModel.Creating()
 }
 
+type ClauseSet struct {
+	Slug *string `extensions:"x-order=A" json:"slug"`
+	Text *string `extensions:"x-order=B" json:"text"`
+} // @name cms1ClauseSet
+
+func (z *Clause) SetWith(o ClauseSet) {
+	if o.Slug != nil && z.Slug != *o.Slug {
+		z.LogChangeValue("slug", z.Slug, o.Slug)
+		z.Slug = *o.Slug
+	}
+	if o.Text != nil && z.Text != *o.Text {
+		z.LogChangeValue("text", z.Text, o.Text)
+		z.Text = *o.Text
+	}
+}
+
 func init() {
 	RegisterModel((*Clause)(nil))
 	RegisterDbFs(embeds.DBFS())
@@ -108,7 +131,7 @@ func (spec *ClauseSpec) Sift(q *SelectQuery) *SelectQuery {
 }
 
 func TestOps(t *testing.T) {
-	db, err := Open("postgres://testing:testing1@localhost/testing?sslmode=disable", "mycfg", true)
+	db, err := Open(testDSN, "mycfg", true)
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 
@@ -181,6 +204,7 @@ func TestOps(t *testing.T) {
 	spec.Cates = append(spec.Cates, "dog", "sheep")
 	spec.Text = "test"
 	spec.Sort = "created DESC"
+	spec.Created = "0_day"
 	var data Clauses
 	total, err := db.List(ContextWithColumns(ctx, "text"), spec, &data)
 	assert.NoError(t, err)
@@ -234,4 +258,28 @@ func TestOps(t *testing.T) {
 	assert.NoError(t, err)
 	err = db.GetModel(ctx, exist, obj.ID, "text")
 	assert.NoError(t, err)
+
+	slug := "eagle"
+	text := "hawk"
+	in := ClauseSet{Slug: &slug, Text: &text}
+	obj3, err := StoreWithSet[*Clause](ctx, db, in, "slug", slug)
+	t.Logf("obj: %+v", obj3)
+	assert.NoError(t, err)
+	assert.NotNil(t, obj3)
+	assert.NotZero(t, obj3.ID)
+	assert.Equal(t, text, obj3.Text)
+	text = "kite"
+	in.Text = &text
+	obj4, err := StoreWithSet[*Clause](ctx, db, in, obj3.StringID())
+	assert.NoError(t, err)
+	assert.NotNil(t, obj4)
+	assert.NotZero(t, obj4.ID)
+	assert.Equal(t, text, obj4.Text)
+	assert.Equal(t, obj3.ID, obj4.ID)
+	assert.Equal(t, obj3.Slug, obj4.Slug)
+
+	_, err = StoreWithSet[*Clause](ctx, db, in, "")
+	assert.Error(t, err)
+	_, err = StoreWithSet[*Clause](ctx, db, in, "slug", "")
+	assert.Error(t, err)
 }
