@@ -325,7 +325,7 @@ type ModelSetPtr[T any, U any] interface {
 	SetWith(in U)
 }
 
-// StoreWithSet[*U] save a Model wish ModelSet
+// StoreWithSet[*U] save a Model wish ModelSet and value & key
 // code examples:
 // StoreWithSet[*U](ctx, db, in) // create if no conflict
 // StoreWithSet[*U](ctx, db, in, id) // update or create
@@ -344,9 +344,7 @@ func StoreWithSet[T ModelSetPtr[U, V], U any, V any](ctx context.Context, db IDB
 
 	obj.SetWith(in)
 
-	if err = DoMetaUp(ctx, db, obj); err != nil {
-		return
-	}
+	DoMetaUp(ctx, db, obj)
 
 	if exist {
 		err = DoUpdate(ctx, db, obj)
@@ -357,15 +355,12 @@ func StoreWithSet[T ModelSetPtr[U, V], U any, V any](ctx context.Context, db IDB
 	return
 }
 
-func DoMetaUp(ctx context.Context, db IDB, obj Model) (err error) {
+func DoMetaUp(ctx context.Context, db IDB, obj Model) {
 	if mm, ok := obj.(ModelMeta); ok {
 		for _, f := range metaUpFuncs {
-			if err = f(ctx, db, mm); err != nil {
-				return
-			}
+			f(ctx, db, mm)
 		}
 	}
-	return
 }
 
 func DoDelete(ctx context.Context, db IDB, table string, _id any) error {

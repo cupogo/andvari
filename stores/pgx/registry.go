@@ -56,7 +56,7 @@ func ListFS(cate string, w io.Writer) {
 	}
 }
 
-type MetaUpFn func(ctx context.Context, db IDB, obj Model) error
+type MetaUpFn func(ctx context.Context, db IDB, obj Model)
 
 var (
 	metaUpFuncs []MetaUpFn
