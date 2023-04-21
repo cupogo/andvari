@@ -117,12 +117,12 @@ func (z *Clause) SetWith(o ClauseSet) {
 	}
 }
 
-func dbOpModelMeta(ctx context.Context, db IDB, obj Model) error { return nil }
+func dbModelMetaUps(ctx context.Context, db IDB, obj Model) {}
 
 func init() {
 	RegisterModel((*Clause)(nil))
 	RegisterDbFs(embeds.DBFS())
-	RegisterMetaUp(dbOpModelMeta)
+	RegisterMetaUp(dbModelMetaUps)
 }
 
 type ClauseSpec struct {
