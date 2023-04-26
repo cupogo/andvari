@@ -47,6 +47,10 @@ func (d *DateTime) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
+	if string(data) == "O" || string(data) == "\"0\"" {
+		return nil
+	}
+
 	var tempTime time.Time
 	if err := tempTime.UnmarshalJSON(data); err != nil {
 		return err
