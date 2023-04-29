@@ -117,10 +117,17 @@ func (z *Article) Creating() error {
 ### database store open
 
 ```go
+
+RegisterModel((*cms1.Article)(nil))
+
 dsn := "postgres://testing:develop0@localhost/testing?sslmode=disable"
 tscfg := "zhcfg"
-debug := true
+debug := false
 db, err := pgx.Open(dsn ,tscfg, debug)
+
+// create all registered tables
+dropIt := false
+err = db.InitSchemas(ctx, dropIt)
 ```
 
 ### data access
@@ -176,7 +183,7 @@ func (s *contentStore) CreateArticle(ctx context.Context, in cms1.ArticleBasic) 
 		if err = dbBeforeSaveArticle(ctx, tx, obj); err != nil {
 			return err
 		}
-		dbOpModelMeta(ctx, tx, obj, obj.MetaDiff)
+		dbOpModelMeta(ctx, tx, obj)
 		err = dbInsert(ctx, tx, obj)
 		return err
 	})
