@@ -26,3 +26,11 @@ func IsSlice(slice any) bool {
 	v := reflect.ValueOf(slice)
 	return v.Kind() == reflect.Slice
 }
+
+func IsEmpty(v any) bool {
+	if s, ok := v.(string); ok {
+		return len(s) == 0
+	}
+
+	return IsZero(v)
+}
