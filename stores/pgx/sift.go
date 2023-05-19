@@ -145,7 +145,7 @@ func SiftLess(q *SelectQuery, field string, v any, isOr bool) (*SelectQuery, boo
 }
 
 func Sift(q *SelectQuery, field, op string, v any, isOr bool) (*SelectQuery, bool) {
-	if utils.IsZero(v) || len(field) == 0 {
+	if utils.IsEmpty(v) {
 		return q, false
 	}
 
