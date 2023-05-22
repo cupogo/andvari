@@ -23,3 +23,5 @@ CREATE TABLE IF NOT EXISTS bun_migrations (
 	migrated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(id)
 );
+
+SELECT SETVAL('bun_migrations_id_seq', (SELECT MAX(id) FROM bun_migrations));
