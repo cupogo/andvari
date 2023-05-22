@@ -114,6 +114,13 @@ func (z *Article) Creating() error {
 
 ```
 
+### database prepare testing
+```sql
+CREATE USER testing WITH LOGIN PASSWORD 'develop';
+CREATE DATABASE testing WITH OWNER = testing ENCODING = 'UTF8';
+GRANT ALL ON DATABASE testing TO testing;
+```
+
 ### database store open
 
 ```go
