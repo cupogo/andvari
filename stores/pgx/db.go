@@ -196,13 +196,15 @@ func (w *DB) ApplyTsQuery(q *SelectQuery, kw, sty string, args ...string) *Selec
 }
 
 // nolint
-func (w *DB) bulkExecAllFsSQLs(ctx context.Context) error {
+func (w *DB) bulkExecAllFsSQLs(ctx context.Context) (count int, err error) {
 	for _, dbfs := range alldbfs {
-		if err := BulkFsSQLs(ctx, w.DB, dbfs); err != nil {
-			return err
+		if n, err := BulkFsSQLs(ctx, w.DB, dbfs); err != nil {
+			return 0, err
+		} else {
+			count += n
 		}
 	}
-	return nil
+	return
 }
 
 func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
@@ -213,9 +215,9 @@ func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
 	if err := CreateModels(ctx, w.DB, dropIt, allmodels...); err != nil {
 		return err
 	}
-	logger().Infow("inited schema", "tables", len(allmodels))
-
-	return w.bulkExecAllFsSQLs(ctx)
+	count, err := w.bulkExecAllFsSQLs(ctx)
+	logger().Infow("inited schema", "tables", len(allmodels), "sqls", count)
+	return err
 }
 
 func (w *DB) SyncSchema(ctx context.Context, opts ...AlterOption) error {

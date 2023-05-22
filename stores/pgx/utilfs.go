@@ -26,8 +26,8 @@ func BatchDirSQLs(ctx context.Context, dbc IConn, dbfs fs.FS, patterns ...string
 	return nil
 }
 
-func BulkFsSQLs(ctx context.Context, dbc IConn, dbfs fs.FS) error {
-	return fs.WalkDir(dbfs, ".", func(name string, d fs.DirEntry, err error) error {
+func BulkFsSQLs(ctx context.Context, dbc IConn, dbfs fs.FS) (count int, err error) {
+	err = fs.WalkDir(dbfs, ".", func(name string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -39,8 +39,13 @@ func BulkFsSQLs(ctx context.Context, dbc IConn, dbfs fs.FS) error {
 			return nil
 		}
 
-		return ExecSQLfile(ctx, dbc, dbfs, name)
+		if err := ExecSQLfile(ctx, dbc, dbfs, name); err != nil {
+			return err
+		}
+		count++
+		return nil
 	})
+	return
 }
 
 func ExecSQLfile(ctx context.Context, dbc IConn, dbfs fs.FS, name string) error {
