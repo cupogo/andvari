@@ -113,12 +113,17 @@ func SiftOID(q *SelectQuery, field string, s string, isOr bool) (*SelectQuery, b
 	return q, false
 }
 
-// SiftEquel 完全相等
+// SiftEqual 完全相等
+func SiftEqual(q *SelectQuery, field string, v any, isOr bool) (*SelectQuery, bool) {
+	return Sift(q, field, "=", v, isOr)
+}
+
+// Deprecated: use SiftEqual
 func SiftEquel(q *SelectQuery, field string, v any, isOr bool) (*SelectQuery, bool) {
 	return Sift(q, field, "=", v, isOr)
 }
 
-// SiftICE ignore case equel 忽略大小写相等
+// SiftICE ignore case equal 忽略大小写相等
 func SiftICE(q *SelectQuery, field string, v string, isOr bool) (*SelectQuery, bool) {
 	if utils.IsZero(v) {
 		return q, false
