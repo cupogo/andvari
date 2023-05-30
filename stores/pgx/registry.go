@@ -45,12 +45,12 @@ func ListFS(cate string, w io.Writer) {
 		return
 	}
 	for i, f := range mfs {
-		fmt.Fprintln(w, i)
+		fmt.Fprintln(w, "listFS:", i)
 		if entries, err := fs.ReadDir(f, "."); err != nil {
 			logger().Infow("readDir fail", "err", err)
 		} else {
-			for _, ent := range entries {
-				fmt.Fprintln(w, ent.Name())
+			for j, ent := range entries {
+				fmt.Fprintln(w, j, ent.Name())
 			}
 		}
 	}

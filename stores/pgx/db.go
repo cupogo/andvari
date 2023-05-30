@@ -12,6 +12,7 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bunotel"
 	"github.com/uptrace/bun/migrate"
 	"github.com/uptrace/bun/schema"
 	"github.com/yalue/merged_fs"
@@ -67,7 +68,7 @@ type DB struct {
 	ftsEnabled    bool
 }
 
-func Open(dsn string, ftscfg string, debug bool) (*DB, error) {
+func Open(dsn string, ftscfg string, _ ...bool) (*DB, error) {
 	pgconn := pgdriver.NewConnector(pgdriver.WithDSN(dsn))
 	pgcfg := pgconn.Config()
 
@@ -90,14 +91,25 @@ func Open(dsn string, ftscfg string, debug bool) (*DB, error) {
 	}
 	logger().Debugw("connected OK", "db", db.String(), "addr", pgcfg.Addr, "db", pgcfg.Database, "user", pgcfg.User)
 
+	if s, ok := os.LookupEnv("PGX_BUN_OTEL"); ok && len(s) > 0 {
+		if s == "1" || s == "2" {
+			db.AddQueryHook(bunotel.NewQueryHook(
+				bunotel.WithDBName(pgcfg.Database),
+				bunotel.WithFormattedQueries(s == "2"),
+			))
+		}
+	}
+
+	if s, ok := os.LookupEnv("PGX_QUERY_DEBUG"); ok && len(s) > 0 {
+		if x, err := strconv.ParseBool(s); err == nil && x {
+			debugHook := &DebugHook{Verbose: true}
+			db.AddQueryHook(debugHook)
+		}
+	}
+
 	w := &DB{DB: db, scDft: pgcfg.User, scCrap: pgcfg.User + crapSuffix}
 	lastSchema = w.scDft
 	lastSchemaCrap = w.scCrap
-
-	if debug {
-		debugHook := &DebugHook{Verbose: true}
-		db.AddQueryHook(debugHook)
-	}
 
 	w.ftsConfig = ftscfg
 	w.ftsEnabled = CheckTsCfg(ctx, db, ftscfg)
