@@ -55,23 +55,23 @@ func (z *logger) Info(args ...interface{}) {
 	syslog.Print(args...)
 }
 func (z *logger) Printf(template string, args ...interface{}) {
-	syslog.Output(2, fmt.Sprintf(template, args...))
+	_ = syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Debugf(template string, args ...interface{}) {
-	syslog.Output(2, fmt.Sprintf(template, args...))
+	_ = syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Infof(template string, args ...interface{}) {
-	syslog.Output(2, fmt.Sprintf(template, args...))
+	_ = syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Warnf(template string, args ...interface{}) {
-	syslog.Output(2, fmt.Sprintf(template, args...))
+	_ = syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Errorf(template string, args ...interface{}) {
-	syslog.Output(2, fmt.Sprintf(template, args...))
+	_ = syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Panicf(template string, args ...interface{}) {
