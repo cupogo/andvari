@@ -1,6 +1,7 @@
 package zlog
 
 import (
+	"context"
 	"fmt"
 	syslog "log"
 )
@@ -9,22 +10,39 @@ type logger struct{}
 
 // dftLogger 默认实例
 var dftLogger Logger
+var dftLoggerX LoggerX
 
 func init() {
 	syslog.SetFlags(syslog.Ltime | syslog.Lshortfile)
-	dftLogger = &logger{}
+	lg := new(logger)
+	dftLogger = lg
+	dftLoggerX = lg
 }
 
 // Set ...
 func Set(logger Logger) {
 	if logger != nil {
 		dftLogger = logger
+		if lx, ok := logger.(LoggerX); ok {
+			dftLoggerX = lx
+		}
+	}
+}
+
+func SetX(logger LoggerX) {
+	if logger != nil {
+		dftLogger = logger
+		dftLoggerX = logger
 	}
 }
 
 // Get ...
 func Get() Logger {
 	return dftLogger
+}
+
+func GetX() LoggerX {
+	return dftLoggerX
 }
 
 // deprecated
@@ -37,23 +55,23 @@ func (z *logger) Info(args ...interface{}) {
 	syslog.Print(args...)
 }
 func (z *logger) Printf(template string, args ...interface{}) {
-	_ = syslog.Output(2, fmt.Sprintf(template, args...))
+	syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Debugf(template string, args ...interface{}) {
-	_ = syslog.Output(2, fmt.Sprintf(template, args...))
+	syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Infof(template string, args ...interface{}) {
-	_ = syslog.Output(2, fmt.Sprintf(template, args...))
+	syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Warnf(template string, args ...interface{}) {
-	_ = syslog.Output(2, fmt.Sprintf(template, args...))
+	syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Errorf(template string, args ...interface{}) {
-	_ = syslog.Output(2, fmt.Sprintf(template, args...))
+	syslog.Output(2, fmt.Sprintf(template, args...))
 }
 
 func (z *logger) Panicf(template string, args ...interface{}) {
@@ -86,6 +104,22 @@ func (z *logger) Panicw(msg string, keysAndValues ...interface{}) {
 
 func (z *logger) Fatalw(msg string, keysAndValues ...interface{}) {
 	syslog.Fatal(msg, keysAndValues)
+}
+
+func (z *logger) InfowContext(ctx context.Context, msg string, keysAndValues ...any) {
+	z.Infow(msg, keysAndValues...)
+}
+
+func (z *logger) WarnwContext(ctx context.Context, msg string, keysAndValues ...any) {
+	z.Warnw(msg, keysAndValues...)
+}
+
+func (z *logger) ErrorwContext(ctx context.Context, msg string, keysAndValues ...any) {
+	z.Errorw(msg, keysAndValues...)
+}
+
+func (z *logger) PanicwContext(ctx context.Context, msg string, keysAndValues ...any) {
+	z.Panicw(msg, keysAndValues...)
 }
 
 // func Debug(args ...interface{}) {
