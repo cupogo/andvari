@@ -73,14 +73,7 @@ func Open(dsn string, ftscfg string, _ ...bool) (*DB, error) {
 	pgcfg := pgconn.Config()
 
 	sqldb := sql.OpenDB(pgconn)
-	if s, ok := os.LookupEnv("PGX_MAX_OPEN_X"); ok && len(s) > 0 {
-		if x, err := strconv.Atoi(s); err == nil && x > 0 && x <= 4 {
-			maxOpenConns := x * runtime.GOMAXPROCS(0)
-			sqldb.SetMaxOpenConns(maxOpenConns)
-			sqldb.SetMaxIdleConns(maxOpenConns)
-			logger().Debugw("set max open = x * maxProcs", "x", x)
-		}
-	}
+	patchPool(sqldb)
 
 	db := bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns())
 
@@ -91,21 +84,8 @@ func Open(dsn string, ftscfg string, _ ...bool) (*DB, error) {
 	}
 	logger().Debugw("connected OK", "db", db.String(), "addr", pgcfg.Addr, "db", pgcfg.Database, "user", pgcfg.User)
 
-	if s, ok := os.LookupEnv("PGX_BUN_OTEL"); ok && len(s) > 0 {
-		if s == "1" || s == "2" {
-			db.AddQueryHook(bunotel.NewQueryHook(
-				bunotel.WithDBName(pgcfg.Database),
-				bunotel.WithFormattedQueries(s == "2"),
-			))
-		}
-	}
-
-	if s, ok := os.LookupEnv("PGX_QUERY_DEBUG"); ok && len(s) > 0 {
-		if x, err := strconv.ParseBool(s); err == nil && x {
-			debugHook := &DebugHook{Verbose: true}
-			db.AddQueryHook(debugHook)
-		}
-	}
+	patchHookOTEL(db, pgcfg.Database)
+	patchHookDebug(db)
 
 	w := &DB{DB: db, scDft: pgcfg.User, scCrap: pgcfg.User + crapSuffix}
 	lastSchema = w.scDft
@@ -284,4 +264,35 @@ func GetModelName(q QueryBase) string {
 	}
 
 	return q.GetTableName()
+}
+
+func patchPool(sqldb *sql.DB) {
+	if s, ok := os.LookupEnv("PGX_MAX_OPEN_X"); ok && len(s) > 0 {
+		if x, err := strconv.Atoi(s); err == nil && x > 0 && x <= 4 {
+			maxOpenConns := x * runtime.GOMAXPROCS(0)
+			sqldb.SetMaxOpenConns(maxOpenConns)
+			sqldb.SetMaxIdleConns(maxOpenConns)
+			logger().Debugw("set max open = x * maxProcs", "x", x)
+		}
+	}
+}
+
+func patchHookOTEL(db *bun.DB, dbname string) {
+	if s, ok := os.LookupEnv("PGX_BUN_OTEL"); ok && len(s) > 0 {
+		if s == "1" || s == "2" {
+			db.AddQueryHook(bunotel.NewQueryHook(
+				bunotel.WithDBName(dbname),
+				bunotel.WithFormattedQueries(s == "2"),
+			))
+		}
+	}
+}
+
+func patchHookDebug(db *bun.DB) {
+	if s, ok := os.LookupEnv("PGX_QUERY_DEBUG"); ok && len(s) > 0 {
+		if x, err := strconv.ParseBool(s); err == nil && x {
+			debugHook := &DebugHook{Verbose: true}
+			db.AddQueryHook(debugHook)
+		}
+	}
 }
