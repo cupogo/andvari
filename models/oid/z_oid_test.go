@@ -90,6 +90,7 @@ func TestCheck(t *testing.T) {
 	id, err := CheckID(int64(0))
 	assert.Error(t, err)
 	assert.Zero(t, id)
+	assert.True(t, id.IsZero())
 	assert.False(t, id.Valid())
 	assert.Empty(t, id.String())
 
@@ -116,11 +117,19 @@ func TestParse(t *testing.T) {
 	cat, id, err := Parse("")
 	assert.Error(t, err)
 	assert.Zero(t, id)
+	assert.True(t, id.IsZero())
+	assert.Empty(t, cat)
+
+	cat, id, err = Parse("0")
+	assert.Error(t, err)
+	assert.Zero(t, id)
+	assert.True(t, id.IsZero())
 	assert.Empty(t, cat)
 
 	cat, id, err = Parse("pe-39vg1q8y2mf4")
 	assert.NoError(t, err)
 	assert.NotZero(t, id)
+	assert.False(t, id.IsZero())
 	assert.NotEmpty(t, cat)
 
 	cat, id, err = Parse("39vg1q8y2mf4")

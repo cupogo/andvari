@@ -142,9 +142,10 @@ func parse(s string) (cat string, id OID, ok bool) {
 	if len(s) == 0 {
 		return
 	}
-	var b string
+	var a, b string
 	var ii IID
-	if cat, b, ok = strings.Cut(s, "-"); ok {
+	if a, b, ok = strings.Cut(s, "-"); ok {
+		cat = a
 		if ii, ok = idgen.ParseID(b); ok {
 			id = OID(ii)
 			return
