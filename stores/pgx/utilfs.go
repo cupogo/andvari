@@ -61,7 +61,7 @@ func ExecSQLfile(ctx context.Context, dbc IConn, dbfs fs.FS, name string) error 
 		if len(query) > 32 {
 			query = query[:32]
 		}
-		logger().Infow("exec sql fail", "query", query, "err", err)
+		logger().Infow("exec sql fail", "name", name, "query", query, "err", err)
 		return err
 	}
 	logger().Debugw("exec sql done", "name", name)
