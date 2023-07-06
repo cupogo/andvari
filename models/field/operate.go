@@ -15,12 +15,12 @@ const (
 
 func (z *OperateType) Decode(s string) error {
 	switch s {
-	case "1", "update":
-		*z = OperateTypeUpdate
-	case "2", "delete":
-		*z = OperateTypeDelete
-	case "4", "create":
+	case "1", "create":
 		*z = OperateTypeCreate
+	case "2", "update":
+		*z = OperateTypeUpdate
+	case "4", "delete":
+		*z = OperateTypeDelete
 	default:
 		return fmt.Errorf("invalid OperateType: %q", s)
 	}
@@ -28,12 +28,12 @@ func (z *OperateType) Decode(s string) error {
 }
 func (z OperateType) String() string {
 	switch z {
+	case OperateTypeCreate:
+		return "create"
 	case OperateTypeUpdate:
 		return "update"
 	case OperateTypeDelete:
 		return "delete"
-	case OperateTypeCreate:
-		return "create"
 	default:
 		return fmt.Sprintf("OperateType %d", int8(z))
 	}
