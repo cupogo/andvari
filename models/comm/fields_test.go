@@ -16,6 +16,11 @@ func TestIDField(t *testing.T) {
 
 	var f3 SerialField
 	assert.False(t, f3.SetID(""))
+	assert.False(t, f3.SetID(0))
+	assert.True(t, f3.SetID(1))
+	assert.True(t, f3.SetID(int16(1)))
+	assert.True(t, f3.SetID(int32(1)))
+	assert.True(t, f3.SetID(int64(1)))
 }
 
 func TestModel(t *testing.T) {

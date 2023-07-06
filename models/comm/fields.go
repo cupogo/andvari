@@ -194,11 +194,20 @@ func (f *SerialField) GetID() any {
 
 // SetID set id value of model's id field.
 func (f *SerialField) SetID(id any) bool {
-	if v, ok := id.(int); ok {
+	switch v := id.(type) {
+	case int:
 		f.ID = v
 		return v > 0
-	}
-	if v, ok := id.(string); ok {
+	case int16:
+		f.ID = int(v)
+		return v > 0
+	case int32:
+		f.ID = int(v)
+		return v > 0
+	case int64:
+		f.ID = int(v)
+		return v > 0
+	case string:
 		var err error
 		f.ID, _ = strconv.Atoi(v)
 		return err == nil && f.ID > 0
