@@ -15,18 +15,18 @@ type ObjType int16
 // consts
 const (
 	OtDefault    ObjType = iota
-	OtAccount            // 账号
-	OtCompany            // 公司、企业、组织
-	OtDepartment         // 部门
-	OtArticle            // 内容、文章、条款
-	OtTeam               // 小组、群
-	OtEvent              // 事件：任务、消息、日志等
-	OtToken              // 票据
-	OtPeople             // 人员: 客户信息、联系人、地址等
-	OtForm               // 表单: 配置、订单、票据等
-	OtGoods              // 东西: 设备、配件、软件等
-	OtFile               // 文件和文档等
-	OtImage              // 图片
+	OtAccount            //  1 账号
+	OtCompany            //  2 公司、企业、组织
+	OtDepartment         //  3 部门
+	OtArticle            //  4 内容、文章、条款
+	OtTeam               //  5 小组、群
+	OtEvent              //  6 事件：任务、消息、日志等
+	OtToken              //  7 票据
+	OtPeople             //  8 人员: 客户信息、联系人、地址等
+	OtForm               //  9 表单: 配置、订单、票据等
+	OtGoods              // 10 东西: 设备、配件、软件等
+	OtFile               // 11 文件和文档等
+	OtImage              // 12 图片
 	otLast
 )
 
