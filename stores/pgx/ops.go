@@ -170,7 +170,7 @@ func ModelWith(ctx context.Context, db IDB, obj Model, key, op string, val any, 
 func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	isZeroID := obj.IsZeroID()
 	// Call to saving hook
-	if err := callToBeforeCreateHooks(obj); err != nil {
+	if err := TryToBeforeCreateHooks(obj); err != nil {
 		return err
 	}
 
@@ -222,13 +222,13 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 		}
 	}
 
-	return callToAfterCreateHooks(obj)
+	return TryToAfterCreateHooks(obj)
 }
 
 func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 
 	// Call to saving hook
-	if err := callToBeforeUpdateHooks(obj); err != nil {
+	if err := TryToBeforeUpdateHooks(obj); err != nil {
 		logger().Infow("before update model fail", "obj", obj, "err", err)
 		return err
 	}
@@ -281,7 +281,7 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		vo.SetIsUpdate(true)
 	}
 
-	return callToAfterUpdateHooks(obj)
+	return TryToAfterUpdateHooks(obj)
 }
 
 func StoreSimple(ctx context.Context, db IDB, obj ModelChangeable, columns ...string) error {

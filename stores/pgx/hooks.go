@@ -31,7 +31,7 @@ type SavedHook interface {
 	Saved() error
 }
 
-func callToBeforeCreateHooks(model any) error {
+func TryToBeforeCreateHooks(model any) error {
 	if hook, ok := model.(CreatingHook); ok {
 		if err := hook.Creating(); err != nil {
 			return err
@@ -47,7 +47,7 @@ func callToBeforeCreateHooks(model any) error {
 	return nil
 }
 
-func callToBeforeUpdateHooks(model any) error {
+func TryToBeforeUpdateHooks(model any) error {
 	if hook, ok := model.(UpdatingHook); ok {
 		if err := hook.Updating(); err != nil {
 			return err
@@ -63,7 +63,7 @@ func callToBeforeUpdateHooks(model any) error {
 	return nil
 }
 
-func callToAfterCreateHooks(model any) error {
+func TryToAfterCreateHooks(model any) error {
 	if hook, ok := model.(CreatedHook); ok {
 		if err := hook.Created(); err != nil {
 			return err
@@ -79,7 +79,7 @@ func callToAfterCreateHooks(model any) error {
 	return nil
 }
 
-func callToAfterUpdateHooks(model any) error {
+func TryToAfterUpdateHooks(model any) error {
 	if hook, ok := model.(UpdatedHook); ok {
 		if err := hook.Updated(); err != nil {
 			return err
