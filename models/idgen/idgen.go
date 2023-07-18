@@ -37,7 +37,7 @@ func NewWithShard(shard int64) *IDGen {
 // generate 2048 unique numbers per millisecond.
 func (g *IDGen) NextWithTime(tm time.Time) int64 {
 	seq := atomic.AddInt64(&g.seq, 1) - 1
-	id := tm.UnixNano()/int64(time.Millisecond) - epoch
+	id := tm.UnixMilli() - epoch
 	id <<= 21
 	id |= g.shard << 11
 	id |= seq % (seqMask + 1)
