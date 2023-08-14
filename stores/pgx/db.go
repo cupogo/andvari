@@ -290,8 +290,8 @@ func patchHookOTEL(db *bun.DB, dbname string) {
 
 func patchHookDebug(db *bun.DB) {
 	if s, ok := os.LookupEnv("PGX_QUERY_DEBUG"); ok && len(s) > 0 {
-		if x, err := strconv.ParseBool(s); err == nil && x {
-			debugHook := &DebugHook{Verbose: true}
+		if x, err := strconv.ParseInt(s, 10, 32); err == nil && x > 0 {
+			debugHook := &DebugHook{Verbose: x > 1}
 			db.AddQueryHook(debugHook)
 		}
 	}
