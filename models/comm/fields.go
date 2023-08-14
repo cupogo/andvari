@@ -86,6 +86,10 @@ func (f *DateFields) SetCreated(ts any) bool {
 	return false
 }
 
+func (f *DateFields) GetCreated() time.Time {
+	return f.CreatedAt
+}
+
 // GetUpdated return time of updatedAt
 func (f *DateFields) GetUpdated() time.Time {
 	if f.UpdatedAt == nil {
