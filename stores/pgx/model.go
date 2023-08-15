@@ -44,3 +44,7 @@ type ModelMeta interface {
 type CreatedSetter interface {
 	SetCreated(ts any) bool
 }
+
+type ModelIdentity interface {
+	IdentityTable() string
+}

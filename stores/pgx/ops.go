@@ -51,10 +51,10 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 	}
 	_, err = query.Exec(ctx)
 	if err != nil {
-		logger().Errorw("create model failed", "name", query.GetTableName(), "err", err)
+		logger().Errorw("create model failed", "name", GetTableName(query, model), "err", err)
 		return
 	}
-	logger().Debugw("create model", "name", query.GetTableName())
+	logger().Debugw("create model", "name", GetTableName(query, model))
 	return
 }
 
@@ -125,7 +125,7 @@ func ModelWithPK(ctx context.Context, db IDB, obj Model, columns ...string) (err
 	err = q.Scan(ctx)
 	if err != nil {
 		if err == ErrNoRows {
-			logger().Debugw("get model where pk no rows", "name", q.GetTableName(), "objID", obj.GetID())
+			logger().Debugw("get model where pk no rows", "name", GetTableName(q, obj), "objID", obj.GetID())
 			return ErrNotFound
 		}
 		logger().Warnw("get model where pk failed", "objID", obj.GetID(), "err", err)
@@ -142,7 +142,7 @@ func ModelWithPKID(ctx context.Context, db IDB, obj Model, id any, columns ...st
 		return ModelWithPK(ctx, db, obj, columns...)
 	}
 
-	logger().Infow("invalid id", "id", id, "name", db.NewSelect().Model(obj).GetTableName())
+	logger().Infow("invalid id", "id", id, "name", GetTableName(db.NewSelect().Model(obj), obj))
 	return fmt.Errorf("invalid id: '%+v'", id)
 }
 
@@ -373,9 +373,9 @@ func OpDeleteInTrans(ctx context.Context, db IDB, scDft, scCrap string, tOrQ any
 		var name string
 		if s, ok := tOrQ.(string); ok {
 			table = s
-		} else if v, ok := tOrQ.(QueryBase); ok {
-			name = GetModelName(v)
-			table = v.GetTableName()
+		} else if q, ok := tOrQ.(QueryBase); ok {
+			name = GetModelName(q)
+			table = GetTableName(q, obj)
 		} else {
 			panic(fmt.Errorf("invalid %+v", tOrQ))
 		}
@@ -533,10 +533,10 @@ func oneWithOrder(ctx context.Context, db IDB, ord Order, obj Model, args ...any
 	err := q.Scan(ctx)
 	if err != nil {
 		if err == ErrNoRows {
-			logger().Debugw("get model with key no rows", "name", q.GetTableName(), "args", args)
+			logger().Debugw("get model with key no rows", "name", GetTableName(q, obj), "args", args)
 			return ErrNotFound
 		}
-		logger().Warnw("get model with key failed", "name", q.GetTableName(), "args", args, "err", err)
+		logger().Warnw("get model with key failed", "name", GetTableName(q, obj), "args", args, "err", err)
 
 		if err == ErrBadConn {
 			panic(err)
@@ -564,7 +564,7 @@ func QueryOne(db IDB, obj Model, args ...any) (*SelectQuery, bool) {
 		return q.Where(s, args[1:]...), true
 	}
 
-	logger().Infow("queryOne: invalid args", "name", q.GetTableName(), "args", args)
+	logger().Infow("queryOne: invalid args", "name", GetTableName(q, obj), "args", args)
 
 	return q, false
 }

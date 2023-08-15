@@ -266,6 +266,13 @@ func GetModelName(q QueryBase) string {
 	return q.GetTableName()
 }
 
+func GetTableName(q QueryBase, m any) string {
+	if v, ok := m.(ModelIdentity); ok {
+		return v.IdentityTable()
+	}
+	return q.GetTableName()
+}
+
 func patchPool(sqldb *sql.DB) {
 	if s, ok := os.LookupEnv("PGX_MAX_OPEN_X"); ok && len(s) > 0 {
 		if x, err := strconv.Atoi(s); err == nil && x > 0 && x <= 4 {
