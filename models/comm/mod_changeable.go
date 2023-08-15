@@ -15,6 +15,14 @@ type ChangeValue struct {
 
 type ChangeValues []ChangeValue
 
+func (cv ChangeValues) Keys() (keys []string) {
+	keys = make([]string, len(cv))
+	for i := range cv {
+		keys[i] = cv[i].Column
+	}
+	return
+}
+
 type ChangeMod struct {
 	cs   array.String
 	isUp bool
