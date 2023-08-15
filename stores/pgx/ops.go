@@ -41,7 +41,6 @@ func CreateModels(ctx context.Context, db IDB, dropIt bool, tables ...any) error
 }
 
 func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error) {
-	query := db.NewCreateTable().Model(model).IfNotExists()
 	if dropIt {
 		_, err = db.NewDropTable().Model(model).IfExists().Cascade().Exec(ctx)
 		if err != nil {
@@ -49,6 +48,12 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 			return
 		}
 	}
+	query := db.NewCreateTable().Model(model).IfNotExists()
+
+	if fk, ok := model.(ForeignKeyer); ok && fk.WithFK() {
+		query.WithForeignKeys()
+	}
+
 	_, err = query.Exec(ctx)
 	if err != nil {
 		logger().Errorw("create model failed", "name", GetTableName(query, model), "err", err)

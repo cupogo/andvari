@@ -45,6 +45,10 @@ type CreatedSetter interface {
 	SetCreated(ts any) bool
 }
 
+type ForeignKeyer interface {
+	WithFK() bool
+}
+
 type ModelIdentity interface {
 	IdentityTable() string
 }
