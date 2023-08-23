@@ -23,6 +23,21 @@ func (cv ChangeValues) Keys() (keys []string) {
 	return
 }
 
+func (cv ChangeValues) Filter(keys ...string) (vo ChangeValues) {
+	if len(keys) == 0 {
+		vo = cv
+		return
+	}
+	for _, k := range keys {
+		for _, c := range cv {
+			if c.Column == k {
+				vo = append(vo, c)
+			}
+		}
+	}
+	return
+}
+
 type ChangeMod struct {
 	cs   array.String
 	isUp bool
