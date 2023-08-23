@@ -175,7 +175,7 @@ func ModelWith(ctx context.Context, db IDB, obj Model, key, op string, val any, 
 func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	isZeroID := obj.IsZeroID()
 	// Call to saving hook
-	if err := TryToBeforeCreateHooks(obj); err != nil {
+	if err := TryToBeforeCreateHooks(ctx, obj); err != nil {
 		return err
 	}
 
@@ -233,7 +233,7 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 
 	// Call to saving hook
-	if err := TryToBeforeUpdateHooks(obj); err != nil {
+	if err := TryToBeforeUpdateHooks(ctx, obj); err != nil {
 		logger().Infow("before update model fail", "obj", obj, "err", err)
 		return err
 	}

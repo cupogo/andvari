@@ -1,5 +1,7 @@
 package pgx
 
+import "context"
+
 // CreatingHook call before saving new model into database
 type CreatingHook interface {
 	Creating() error
@@ -31,14 +33,37 @@ type SavedHook interface {
 	Saved() error
 }
 
-func TryToBeforeCreateHooks(model any) error {
-	if hook, ok := model.(CreatingHook); ok {
+// CreatingHookWithCtx is called before saving a new model to the database
+type CreatingHookX interface {
+	CreatingX(context.Context) error
+}
+
+// UpdatingHookX is called before updating a model
+type UpdatingHookX interface {
+	UpdatingX(context.Context) error
+}
+
+// SavingHookX is called before a model (new or existing) is saved to the database.
+type SavingHookX interface {
+	SavingX(context.Context) error
+}
+
+func TryToBeforeCreateHooks(ctx context.Context, model any) error {
+	if hook, ok := model.(CreatingHookX); ok {
+		if err := hook.CreatingX(ctx); err != nil {
+			return err
+		}
+	} else if hook, ok := model.(CreatingHook); ok {
 		if err := hook.Creating(); err != nil {
 			return err
 		}
 	}
 
-	if hook, ok := model.(SavingHook); ok {
+	if hook, ok := model.(SavingHookX); ok {
+		if err := hook.SavingX(ctx); err != nil {
+			return err
+		}
+	} else if hook, ok := model.(SavingHook); ok {
 		if err := hook.Saving(); err != nil {
 			return err
 		}
@@ -47,14 +72,22 @@ func TryToBeforeCreateHooks(model any) error {
 	return nil
 }
 
-func TryToBeforeUpdateHooks(model any) error {
-	if hook, ok := model.(UpdatingHook); ok {
+func TryToBeforeUpdateHooks(ctx context.Context, model any) error {
+	if hook, ok := model.(UpdatingHookX); ok {
+		if err := hook.UpdatingX(ctx); err != nil {
+			return err
+		}
+	} else if hook, ok := model.(UpdatingHook); ok {
 		if err := hook.Updating(); err != nil {
 			return err
 		}
 	}
 
-	if hook, ok := model.(SavingHook); ok {
+	if hook, ok := model.(SavingHookX); ok {
+		if err := hook.SavingX(ctx); err != nil {
+			return err
+		}
+	} else if hook, ok := model.(SavingHook); ok {
 		if err := hook.Saving(); err != nil {
 			return err
 		}
