@@ -53,6 +53,21 @@ func (m JsonKV) GetStr(key string) string {
 	return ""
 }
 
+func (m JsonKV) GetBool(key string) bool {
+	if v, ok := m[key]; ok {
+		if b, ok := v.(bool); ok {
+			return b
+		}
+		if n, ok := v.(int); ok {
+			return n == 1
+		}
+		if s, ok := v.(string); ok && len(s) > 0 {
+			return s[0] == 't' || s[0] == '1' || s[0] == 'y'
+		}
+	}
+	return false
+}
+
 // Set ...
 func (m JsonKV) Set(k string, v any) {
 	if m == nil {

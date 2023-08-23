@@ -83,5 +83,10 @@ func TestMetaModel(t *testing.T) {
 	} else {
 		t.Error("ERR")
 	}
+	if tmm.Meta.GetBool("b") {
+		t.Log("OK")
+	} else {
+		t.Error("ERR")
+	}
 
 }
