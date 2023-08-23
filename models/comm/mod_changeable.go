@@ -28,13 +28,15 @@ func (cv ChangeValues) Filter(keys ...string) (vo ChangeValues) {
 		vo = cv
 		return
 	}
-	for _, k := range keys {
-		for _, c := range cv {
-			if c.Column == k {
-				vo = append(vo, c)
+	vo = array.FilterFunc[ChangeValues](cv, func(e ChangeValue) bool {
+		for _, k := range keys {
+			if e.Column == k {
+				return true
 			}
 		}
-	}
+		return false
+	})
+
 	return
 }
 
