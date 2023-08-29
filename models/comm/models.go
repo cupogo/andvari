@@ -10,6 +10,9 @@ type DefaultModel struct {
 
 // Creating function call to it's inner fields defined hooks
 func (model *DefaultModel) Creating() error {
+	if model.IsZeroID() {
+		return ErrEmptyID
+	}
 	return model.DateFields.Creating()
 }
 
@@ -24,6 +27,14 @@ type DunceModel struct {
 	DateFields   `bson:",inline"`
 	CreatorField `bson:",inline"`
 	ChangeMod    `bson:",inline"`
+}
+
+// Creating function call to it's inner fields defined hooks
+func (model *DunceModel) Creating() error {
+	if model.IsZeroID() {
+		return ErrEmptyID
+	}
+	return model.DateFields.Creating()
 }
 
 // SerialModel struct contain model's default fields.
