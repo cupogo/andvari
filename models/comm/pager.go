@@ -56,3 +56,18 @@ func (p *PageSpec) GetTotal() int {
 func (p *PageSpec) SetTotal(n int) {
 	p.Total = n
 }
+
+func (p *PageSpec) GetPageCount() int {
+	return CalculatePageCount(p.Total, p.Limit)
+}
+
+func CalculatePageCount(total, limit int) int {
+	if limit < 1 {
+		return 0
+	}
+	pageCount := total / limit
+	if total%limit != 0 {
+		pageCount++
+	}
+	return pageCount
+}
