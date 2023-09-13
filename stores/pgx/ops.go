@@ -219,8 +219,9 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 		return err
 	}
 
-	logger().Debugw("insert model ok", "name", name, "id", obj.GetID())
-	if ov, ok := obj.(Changeable); ok && !ov.DisableLog() && operateModelLogFn != nil && isZeroID {
+	logger().Debugw("insert model ok", "name", name, "id", obj.GetID(), "argc", argc)
+	if ov, ok := obj.(Changeable); ok && !ov.DisableLog() && operateModelLogFn != nil &&
+		(isZeroID || argc == 0) {
 		err := operateModelLogFn(ctx, db, name, OperateTypeCreate, obj)
 		if err != nil {
 			logger().Infow("call create operateModelLogFn fail", "name", name, "err", err)

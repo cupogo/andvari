@@ -198,7 +198,7 @@ func (s *contentStore) CreateArticle(ctx context.Context, in cms1.ArticleBasic) 
 }
 func (s *contentStore) UpdateArticle(ctx context.Context, id string, in cms1.ArticleSet) error {
 	exist := new(cms1.Article)
-	if err := getModelWithPKID(ctx, s.w.db, exist, id); err != nil {
+	if err := dbGetWithPKID(ctx, s.w.db, exist, id); err != nil {
 		return err
 	}
 	_ = exist.SetWith(in)
@@ -212,7 +212,7 @@ func (s *contentStore) UpdateArticle(ctx context.Context, id string, in cms1.Art
 }
 func (s *contentStore) DeleteArticle(ctx context.Context, id string) error {
 	obj := new(cms1.Article)
-	if err := getModelWithPKID(ctx, s.w.db, obj, id); err != nil {
+	if err := dbGetWithPKID(ctx, s.w.db, obj, id); err != nil {
 		return err
 	}
 	return s.w.db.RunInTx(ctx, nil, func(ctx context.Context, tx pgTx) (err error) {
