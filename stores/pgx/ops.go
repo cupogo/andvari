@@ -597,3 +597,18 @@ func ApplyQueryContext(ctx context.Context, q *SelectQuery) *SelectQuery {
 	}
 	return q
 }
+
+// Count for a model with or without conditions
+// n := Count(ctx, db, (*User)(nil)) // all count
+// n := Count(ctx, db, (*User)(nil), "type = 1")
+// n := Count(ctx, db, (*User)(nil), "status = ?", "active")
+func Count(ctx context.Context, db IDB, obj Model, args ...any) (count int) {
+	q := db.NewSelect().Model(obj)
+	if len(args) > 0 {
+		if s, ok := args[0].(string); ok {
+			q.Where(s, args[1:]...)
+		}
+	}
+	count, _ = q.Count(ctx)
+	return
+}

@@ -270,6 +270,8 @@ func TestOps(t *testing.T) {
 	err = db.GetModel(ctx, exist, obj.ID, "text")
 	assert.NoError(t, err)
 
+	assert.NotZero(t, Count(ctx, db, (*Clause)(nil), "TRUE"))
+
 	slug := "eagle"
 	text := "hawk"
 	in := ClauseSet{Slug: &slug, Text: &text}
