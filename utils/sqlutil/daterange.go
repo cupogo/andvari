@@ -147,7 +147,7 @@ func (dr *DateRange) parse2(a, b string) (err error) {
 	if err != nil {
 		return
 	}
-	dr.End = dr.End.Add(time.Hour * 24)
+	dr.End = dr.End.Add(time.Hour*24 - time.Millisecond)
 
 	return
 }
