@@ -55,3 +55,13 @@ func SliceRidZero[T comparable](in []T) []T {
 
 	return out
 }
+
+func ParseBool(s string) (r bool, ok bool) {
+	switch s {
+	case "1", "t", "T", "true", "TRUE", "True", "y", "Y", "yes", "Yes", "YES":
+		return true, true
+	case "0", "f", "F", "false", "FALSE", "False", "n", "N", "no", "No", "NO":
+		return false, true
+	}
+	return
+}
