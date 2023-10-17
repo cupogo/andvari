@@ -17,8 +17,8 @@ type IDField struct {
 // DateFields struct contain `createdAt` and `updatedAt`
 // fields that autofill on insert/update model.
 type DateFields struct {
-	CreatedAt time.Time  `bson:"created" json:"createdAt" form:"created" bun:"created,notnull,default:now()" pg:"created,notnull,default:now()" extensions:"x-order=["` // 创建时间
-	UpdatedAt *time.Time `bson:"updated" json:"updatedAt,omitempty" form:"updated" bun:"updated" pg:"updated" extensions:"x-order=]"`                                   // 变更时间
+	CreatedAt time.Time  `bson:"created" json:"createdAt" form:"created" bun:"created,notnull,type:timestamptz,default:now()" pg:"created,notnull,default:now()" extensions:"x-order=["` // 创建时间
+	UpdatedAt *time.Time `bson:"updated" json:"updatedAt,omitempty" form:"updated" bun:"updated,type:timestamptz" pg:"updated" extensions:"x-order=]"`                                   // 变更时间
 }
 
 // PrepareID method prepare id value to using it as id in filtering,...
@@ -142,7 +142,7 @@ func (f *OwnerField) OwnerEmpty() bool {
 }
 
 type IDFieldStr struct {
-	ID string `bson:"_id,omitempty" json:"id" form:"id" bun:",pk" pg:",pk" extensions:"x-order=/"` // 主键
+	ID string `bson:"_id,omitempty" json:"id" form:"id" bun:",pk,type:name" pg:",pk,type:name" extensions:"x-order=/"` // 主键
 }
 
 func (f *IDFieldStr) PrepareID(id any) (any, error) {
