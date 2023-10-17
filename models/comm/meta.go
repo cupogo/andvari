@@ -191,7 +191,7 @@ func MetaDiffAddKVs(in *MetaDiff, args ...any) *MetaDiff {
 
 	for i := 0; i < len(args); i += 2 {
 		key, val := args[i], args[i+1]
-		if keyStr, ok := key.(string); ok {
+		if keyStr, ok := key.(string); ok && len(keyStr) > 0 {
 			in.AddKV(keyStr, val)
 		}
 	}
