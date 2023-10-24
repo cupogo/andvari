@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+
+	"github.com/cupogo/andvari/models/comm"
 )
 
 var (
@@ -64,4 +66,40 @@ var (
 
 func RegisterMetaUp(fns ...MetaUpFn) {
 	metaUpFuncs = append(metaUpFuncs, fns...)
+}
+
+type LoadFn func(ctx context.Context, db IDB, id any, cs ...string) (comm.Model, error)
+
+var (
+	loaders = map[string]LoadFn{}
+)
+
+func RegisterLoader(model string, fn LoadFn) {
+	if len(model) > 0 {
+		loaders[model] = fn
+	}
+}
+
+func LoadModel(ctx context.Context, db IDB, model string, id any, cs ...string) (obj comm.Model, err error) {
+	for k, fn := range loaders {
+		if k == model {
+			return fn(ctx, db, id, cs...)
+		}
+	}
+	err = fmt.Errorf("load model fail: %s#%s not found", model, id)
+	return
+}
+
+type ModelPtr[T any] interface {
+	comm.Model
+	*T
+}
+
+func GetModelByID[P ModelPtr[T], T any](ctx context.Context, db IDB, id any, cs ...string) (comm.Model, error) {
+	var z P = new(T)
+	err := ModelWithPKID(ctx, db, z, id, cs...)
+	if err == nil {
+		return z, nil
+	}
+	return nil, err
 }
