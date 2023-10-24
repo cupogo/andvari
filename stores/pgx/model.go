@@ -2,19 +2,10 @@ package pgx
 
 import "github.com/cupogo/andvari/models/comm"
 
+type Model = comm.Model
 type Changeable = comm.Changeable
-
-// 基于主键 ID 的基础模型
-type Model interface {
-	GetID() any
-	SetID(id any) bool
-	IsZeroID() bool
-}
-
-type ModelChangeable interface {
-	Model
-	Changeable
-}
+type ModelChangeable = comm.ModelChangeable
+type ModelMeta = comm.ModelMeta
 
 type Sortable interface {
 	GetSort() string
@@ -32,15 +23,6 @@ type TextSearchable interface {
 	SetTsColumns(cols ...string)
 }
 
-type ModelMeta interface {
-	Model
-	Changeable
-
-	MetaGet(key string) (v any, ok bool)
-	MetaSet(key string, value any)
-	MetaUnset(key string)
-}
-
 type CreatedSetter interface {
 	SetCreated(ts any) bool
 }
@@ -50,5 +32,6 @@ type ForeignKeyer interface {
 }
 
 type ModelIdentity interface {
+	IdentityModel() string
 	IdentityTable() string
 }

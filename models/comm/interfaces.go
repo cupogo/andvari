@@ -18,7 +18,11 @@ type Model interface {
 	SetID(id any) bool
 	PrepareID(id any) (any, error) // for mongodb only! // obsoleted soon
 	IsZeroID() bool
+}
+
+type ModelChangeable interface {
 	Changeable
+	Model
 }
 
 // ModelCreator 可设置创建者的基础模型
@@ -36,12 +40,6 @@ type ModelOwner interface {
 	OwnerEmpty() bool
 }
 
-var (
-	_ ModelCreator = (*DefaultModel)(nil)
-	_ ModelCreator = (*DunceModel)(nil)
-	_ ModelCreator = (*SerialModel)(nil)
-)
-
 type ModelMetaMerger interface {
 	MergeMeta(other Meta)
 }
@@ -51,6 +49,7 @@ type ModelMetaUp interface {
 }
 
 type ModelMeta interface {
+	Changeable
 	Model
 
 	MetaGet(key string) (v any, ok bool)

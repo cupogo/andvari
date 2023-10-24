@@ -1,5 +1,15 @@
 package comm
 
+var (
+	_ ModelCreator = (*DefaultModel)(nil)
+	_ ModelCreator = (*DunceModel)(nil)
+	_ ModelCreator = (*SerialModel)(nil)
+
+	_ ModelChangeable = (*DefaultModel)(nil)
+	_ ModelChangeable = (*DunceModel)(nil)
+	_ ModelChangeable = (*SerialModel)(nil)
+)
+
 // DefaultModel struct contain model's default fields.
 type DefaultModel struct {
 	IDField      `bson:",inline"`
