@@ -5,10 +5,10 @@ go 1.20
 require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.4
-	github.com/uptrace/bun v1.1.15
-	github.com/uptrace/bun/dialect/pgdialect v1.1.15
-	github.com/uptrace/bun/driver/pgdriver v1.1.15
-	github.com/uptrace/bun/extra/bunotel v1.1.15
+	github.com/uptrace/bun v1.1.16
+	github.com/uptrace/bun/dialect/pgdialect v1.1.16
+	github.com/uptrace/bun/driver/pgdriver v1.1.16
+	github.com/uptrace/bun/extra/bunotel v1.1.16
 	github.com/yalue/merged_fs v1.2.3
 	go.uber.org/zap v1.25.0
 )
