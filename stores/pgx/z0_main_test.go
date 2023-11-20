@@ -100,6 +100,9 @@ func (z *Clause) Creating() error {
 
 	return z.DefaultModel.Creating()
 }
+func (_ *Clause) IdentityLabel() string { return "clause" }
+func (_ *Clause) IdentityModel() string { return "clause" }
+func (_ *Clause) IdentityTable() string { return "cms_clause" }
 
 type ClauseSet struct {
 	Slug *string `extensions:"x-order=A" json:"slug"`

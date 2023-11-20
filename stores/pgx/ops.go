@@ -56,10 +56,10 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 
 	_, err = query.Exec(ctx)
 	if err != nil {
-		logger().Errorw("create model failed", "name", GetTableName(query, model), "err", err)
+		logger().Errorw("create model failed", "name", ModelName(model), "err", err)
 		return
 	}
-	logger().Debugw("create model", "name", GetTableName(query, model))
+	logger().Debugw("create model", "name", ModelName(model))
 	return
 }
 
@@ -220,13 +220,8 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	}
 
 	logger().Debugw("insert model ok", "name", name, "id", obj.GetID(), "argc", argc)
-	if ov, ok := obj.(Changeable); ok && !ov.DisableLog() && operateModelLogFn != nil &&
-		(argc == 0) {
-		err := operateModelLogFn(ctx, db, name, OperateTypeCreate, obj)
-		if err != nil {
-			logger().Infow("call create operateModelLogFn fail", "name", name, "err", err)
-		}
-	}
+
+	dbLogModelOp(ctx, db, OperateTypeCreate, obj, argc == 0)
 
 	return TryToAfterCreateHooks(obj)
 }
@@ -274,12 +269,8 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		return err
 	}
 
-	if ov, ok := obj.(Changeable); ok && !ov.DisableLog() && operateModelLogFn != nil {
-		err := operateModelLogFn(ctx, db, name, OperateTypeUpdate, obj)
-		if err != nil {
-			logger().Infow("call update operateModelLogFn fail", "name", name, "err", err)
-		}
-	}
+	dbLogModelOp(ctx, db, OperateTypeUpdate, obj)
+
 	logger().Debugw("update model ok", "name", name,
 		"id", obj.GetID(), "columns", columns)
 
@@ -373,34 +364,32 @@ func DoDelete(ctx context.Context, db IDB, table string, _id any) error {
 	return DoDeleteT(ctx, db, LastSchema(), LastSchemaCrap(), table, _id)
 }
 
+func DoDeleteM(ctx context.Context, db IDB, scDft, scCrap string, obj ModelIdentity) error {
+	if obj.IsZeroID() {
+		return ErrEmptyPK
+	}
+	err := DoDeleteT(ctx, db, scDft, scCrap, obj.IdentityTable(), obj.GetID())
+	if err == nil {
+		dbLogModelOp(ctx, db, OperateTypeDelete, obj)
+	}
+	return err
+}
+
 func OpDeleteInTrans(ctx context.Context, db IDB, scDft, scCrap string, tOrQ any, obj any) error {
 	return db.RunInTx(ctx, nil, func(ctx context.Context, tx Tx) error {
 		var table string
-		var name string
 		if s, ok := tOrQ.(string); ok {
 			table = s
 		} else if q, ok := tOrQ.(QueryBase); ok {
-			name = GetModelName(q)
-			table = GetTableName(q, obj)
+			table = q.GetTableName()
 		} else {
 			panic(fmt.Errorf("invalid %+v", tOrQ))
 		}
-		var id any
-		if v, ok := obj.(Model); ok {
-			id = v.GetID()
-		} else {
-			id = obj
+		if mi, ok := obj.(ModelIdentity); ok {
+			return DoDeleteM(ctx, db, scDft, scCrap, mi)
 		}
-		if err := DoDeleteT(ctx, tx, scDft, scCrap, table, id); err != nil {
-			return err
-		}
-		if ov, ok := obj.(ModelChangeable); ok && !ov.DisableLog() && operateModelLogFn != nil && len(name) > 0 {
-			err := operateModelLogFn(ctx, db, name, OperateTypeDelete, ov)
-			if err != nil {
-				logger().Infow("call delete operateModelLogFn fail", "name", name, "err", err)
-			}
-		}
-		return nil
+
+		return DoDeleteT(ctx, tx, scDft, scCrap, table, obj)
 	})
 }
 
