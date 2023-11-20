@@ -31,7 +31,13 @@ type ForeignKeyer interface {
 	WithFK() bool
 }
 
-type ModelIdentity interface {
+type Identitier interface {
+	IdentityLabel() string
 	IdentityModel() string
 	IdentityTable() string
+}
+
+type ModelIdentity interface {
+	Model
+	Identitier
 }
