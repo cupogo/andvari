@@ -142,12 +142,13 @@ func (w *DB) GetModel(ctx context.Context, obj Model, id any, columns ...string)
 	return
 }
 
-func (w *DB) DeleteModel(ctx context.Context, obj Model, id any) error {
+func (w *DB) DeleteModel(ctx context.Context, obj ModelIdentity, id any) error {
 	if !obj.SetID(id) || obj.IsZeroID() {
 		return ErrEmptyPK
 	}
-	q := w.NewDelete().Model(obj)
-	return OpDeleteInTrans(ctx, w.DB, w.Schema(), w.SchemaCrap(), q, obj)
+	return w.DB.RunInTx(ctx, nil, func(ctx context.Context, tx Tx) error {
+		return DoDeleteM(ctx, tx, w.scDft, w.scCrap, obj)
+	})
 }
 
 func (w *DB) UndeleteModel(ctx context.Context, obj Model, id any) error {
@@ -257,24 +258,20 @@ type QueryBase interface {
 	Operation() string
 }
 
-func GetModelName(q QueryBase) string {
+func ModelNameByQ(q QueryBase) string {
 	if md := q.GetModel(); md != nil {
 		if tm, ok := md.(bun.TableModel); ok {
 			return tm.Table().TypeName
+		}
+		if v, ok := md.(ModelIdentity); ok {
+			return v.IdentityModel()
 		}
 	}
 
 	return q.GetTableName()
 }
 
-func GetTableName(q QueryBase, m any) string {
-	if v, ok := m.(ModelIdentity); ok {
-		return v.IdentityTable()
-	}
-	return q.GetTableName()
-}
-
-func ModelName(m Model) string {
+func ModelName(m any) string {
 	if v, ok := m.(ModelIdentity); ok {
 		return v.IdentityModel()
 	}
