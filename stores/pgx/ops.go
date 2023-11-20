@@ -130,10 +130,10 @@ func ModelWithPK(ctx context.Context, db IDB, obj Model, columns ...string) (err
 	err = q.Scan(ctx)
 	if err != nil {
 		if err == ErrNoRows {
-			logger().Debugw("get model where pk no rows", "name", GetTableName(q, obj), "objID", obj.GetID())
+			logger().Debugw("get model where pk no rows", "name", ModelName(obj), "objID", obj.GetID())
 			return ErrNotFound
 		}
-		logger().Warnw("get model where pk failed", "objID", obj.GetID(), "err", err)
+		logger().Warnw("get model where pk failed", "name", ModelName(obj), "objID", obj.GetID(), "err", err)
 		if err == ErrBadConn {
 			panic(err)
 		}
@@ -147,7 +147,7 @@ func ModelWithPKID(ctx context.Context, db IDB, obj Model, id any, columns ...st
 		return ModelWithPK(ctx, db, obj, columns...)
 	}
 
-	logger().Infow("invalid id", "id", id, "name", GetTableName(db.NewSelect().Model(obj), obj))
+	logger().Infow("invalid id", "id", id, "name", ModelName(obj))
 	return fmt.Errorf("invalid id: '%+v'", id)
 }
 
@@ -156,16 +156,16 @@ func ModelWithUnique(ctx context.Context, db IDB, obj Model, key string, val any
 }
 func ModelWith(ctx context.Context, db IDB, obj Model, key, op string, val any, cols ...string) error {
 	if val == nil || val == 0 || val == "" || op == "" {
-		logger().Infow("empty param", "key", key, "op", op, "val", val)
+		logger().Infow("modelWith: empty param", "name", ModelName(obj), "key", key, "op", op, "val", val)
 		return ErrEmptyKey
 	}
 	err := db.NewSelect().Model(obj).Column(cols...).Where("? "+op+" ?", Ident(key), val).Limit(1).Scan(ctx)
 	if err == ErrNoRows {
-		logger().Debugw("get model with key no rows", "key", key, "op", op, "val", val)
+		logger().Debugw("modelWith: no rows", "name", ModelName(obj), "key", key, "op", op, "val", val)
 		return ErrNotFound
 	}
 	if err != nil {
-		logger().Warnw("get model with key failed", "key", key, "op", op, "val", val, "err", err)
+		logger().Warnw("modelWith: failed", "name", ModelName(obj), "key", key, "op", op, "val", val, "err", err)
 		return err
 	}
 	return nil
@@ -213,7 +213,7 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	}
 	q.Returning(field.ID)
 
-	name := GetModelName(q)
+	name := ModelName(obj)
 	if _, err := q.Exec(ctx); err != nil {
 		logger().Infow("insert model fail", "name", name, "obj", obj, "err", err)
 		return err
@@ -267,7 +267,7 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		}
 	}
 
-	name := GetModelName(q)
+	name := ModelName(obj)
 	if _, err := q.WherePK().Exec(ctx); err != nil {
 		logger().Infow("update model fail", "name", name,
 			"obj", obj, "columns", columns, "err", err)
@@ -437,7 +437,7 @@ func DoUndeleteT(ctx context.Context, db IDB, scDft, scCrap string, table string
 type MetaValueFunc func(ctx context.Context, id oid.OID) (any, error)
 
 func OpModelMetaSet(ctx context.Context, mm ModelMeta, key string, id oid.OID, fn MetaValueFunc) error {
-	if !id.IsZero() {
+	if id.Valid() {
 		if val, err := fn(ctx, id); err != nil {
 			return err
 		} else if !utils.IsZero(val) {
@@ -539,10 +539,10 @@ func oneWithOrder(ctx context.Context, db IDB, ord Order, obj Model, args ...any
 	err := q.Scan(ctx)
 	if err != nil {
 		if err == ErrNoRows {
-			logger().Debugw("get model with key no rows", "name", GetTableName(q, obj), "args", args)
+			logger().Debugw("get model with key no rows", "name", ModelName(obj), "args", args)
 			return ErrNotFound
 		}
-		logger().Warnw("get model with key failed", "name", GetTableName(q, obj), "args", args, "err", err)
+		logger().Warnw("get model with key failed", "name", ModelName(obj), "args", args, "err", err)
 
 		if err == ErrBadConn {
 			panic(err)
@@ -570,7 +570,7 @@ func QueryOne(db IDB, obj Model, args ...any) (*SelectQuery, bool) {
 		return q.Where(s, args[1:]...), true
 	}
 
-	logger().Infow("queryOne: invalid args", "name", GetTableName(q, obj), "args", args)
+	logger().Infow("queryOne: invalid args", "name", ModelName(obj), "args", args)
 
 	return q, false
 }

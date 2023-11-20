@@ -6,6 +6,7 @@ import (
 	"database/sql/driver"
 	"io/fs"
 	"os"
+	"reflect"
 	"runtime"
 	"strconv"
 
@@ -273,6 +274,14 @@ func GetTableName(q QueryBase, m any) string {
 	return q.GetTableName()
 }
 
+func ModelName(m Model) string {
+	if v, ok := m.(ModelIdentity); ok {
+		return v.IdentityModel()
+	}
+	typ := reflect.TypeOf(m).Elem()
+	return indirectType(typ).Name()
+}
+
 func patchPool(sqldb *sql.DB) {
 	if s, ok := os.LookupEnv("PGX_MAX_OPEN_X"); ok && len(s) > 0 {
 		if x, err := strconv.Atoi(s); err == nil && x > 0 && x <= 4 {
@@ -302,4 +311,11 @@ func patchHookDebug(db *bun.DB) {
 			db.AddQueryHook(debugHook)
 		}
 	}
+}
+
+func indirectType(t reflect.Type) reflect.Type {
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return t
 }
