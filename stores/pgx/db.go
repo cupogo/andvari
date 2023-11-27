@@ -33,7 +33,7 @@ type SelectQuery = bun.SelectQuery
 type QueryAppender = schema.QueryAppender
 type PGError = pgdriver.Error
 
-type QueryApplierFn func(q *SelectQuery) *SelectQuery
+type QueryApplierFn = func(q *SelectQuery) *SelectQuery
 
 var (
 	ErrBadConn = driver.ErrBadConn

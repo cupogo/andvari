@@ -58,7 +58,7 @@ func ListFS(cate string, w io.Writer) {
 	}
 }
 
-type MetaUpFn func(ctx context.Context, db IDB, obj Model)
+type MetaUpFn = func(ctx context.Context, db IDB, obj Model)
 
 var (
 	metaUpFuncs []MetaUpFn
@@ -68,7 +68,7 @@ func RegisterMetaUp(fns ...MetaUpFn) {
 	metaUpFuncs = append(metaUpFuncs, fns...)
 }
 
-type LoadFn func(ctx context.Context, db IDB, id any, cs ...string) (comm.Model, error)
+type LoadFn = func(ctx context.Context, db IDB, id any, cs ...string) (comm.Model, error)
 
 var (
 	loaders = map[string]LoadFn{}

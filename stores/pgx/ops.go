@@ -292,7 +292,7 @@ func StoreSimple(ctx context.Context, db IDB, obj ModelChangeable, columns ...st
 	return DoInsert(ctx, db, obj)
 }
 
-type columnsFn func() []string
+type columnsFn = func() []string
 
 // Deprecated: use StoreWithSet[*M]()
 func StoreWithCall(ctx context.Context, db IDB, exist, obj ModelChangeable, csfn columnsFn, args ...string) (isn bool, err error) {
@@ -323,12 +323,13 @@ type ModelSetPtr[T any, U any] interface {
 }
 
 // StoreWithSet[*U] save a Model wish ModelSet and value & key
+// Note: It is not recommended to have only basic field definitions in the object.
 // code examples:
 // StoreWithSet[*U](ctx, db, in) // create if no conflict
 // StoreWithSet[*U](ctx, db, in, id) // update or create
 // StoreWithSet[*U](ctx, db, in, code, "code") // update or create
-func StoreWithSet[T ModelSetPtr[U, V], U any, V any](ctx context.Context, db IDB, in V, vk ...string) (obj T, err error) {
-	obj = new(U)
+func StoreWithSet[P ModelSetPtr[T, U], T any, U any](ctx context.Context, db IDB, in U, vk ...string) (obj P, err error) {
+	obj = new(T)
 	var exist bool
 	argc := len(vk)
 	if argc > 1 && vk[1] != "" {
