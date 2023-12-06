@@ -302,4 +302,8 @@ func TestOps(t *testing.T) {
 
 	_, err = StoreWithSet[*Clause](ctx, db, in, "", "slug")
 	assert.Error(t, err)
+
+	count, err := QueryList(ctx, db, nil, &data2).Count(ctx)
+	assert.NoError(t, err)
+	assert.NotZero(t, count)
 }

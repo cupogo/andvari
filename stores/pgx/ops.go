@@ -234,12 +234,13 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		return err
 	}
 
+	name := ModelName(obj)
 	if vo, ok := obj.(Changeable); ok {
 		if len(columns) > 0 {
 			vo.SetChange(columns...)
 		}
 		if vo.CountChange() == 0 {
-			logger().Infow("unchange", "id", obj.GetID())
+			logger().Infow("unchange", "name", name, "id", obj.GetID())
 			return nil
 		}
 
@@ -262,7 +263,6 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		}
 	}
 
-	name := ModelName(obj)
 	if _, err := q.WherePK().Exec(ctx); err != nil {
 		logger().Infow("update model fail", "name", name,
 			"obj", obj, "columns", columns, "err", err)
@@ -571,7 +571,7 @@ func QueryList(ctx context.Context, db IDB, spec Sifter, dataptr any) *SelectQue
 	if v, ok := spec.(SifterX); ok {
 		q = v.SiftX(ctx, q)
 	}
-	if !spec.IsSifted() {
+	if spec != nil && !spec.IsSifted() {
 		q = spec.Sift(q)
 	}
 
