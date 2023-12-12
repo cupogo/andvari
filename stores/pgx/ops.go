@@ -253,14 +253,19 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 
 	q := db.NewUpdate().Model(obj).Column(columns...)
 	if tso, ok := obj.(TextSearchable); ok {
-		cfg := tso.GetTsConfig()
-		cols := tso.GetTsColumns()
-		if len(cfg) > 0 && len(cols) > 0 {
-			for _, co := range columns {
-				q.Set(co + " = ?" + co)
+		if cfg := tso.GetTsConfig(); len(cfg) > 0 {
+			if ktg, ok := tso.(KeywordTextGetter); ok {
+				if txt := ktg.GetKeywordText(); len(txt) > 0 {
+					q.Set("ts_vec = to_tsvector(?, ?)", cfg, txt)
+				}
+			} else if cols := tso.GetTsColumns(); len(cols) > 0 {
+				for _, co := range columns {
+					q.Set(co + " = ?" + co)
+				}
+				q.Set("ts_vec = to_tsvector(?, jsonb_build_array("+strings.Join(cols, ",")+"))", cfg)
 			}
-			q.Set("ts_vec = to_tsvector(?, jsonb_build_array("+strings.Join(cols, ",")+"))", cfg)
 		}
+
 	}
 
 	if _, err := q.WherePK().Exec(ctx); err != nil {
@@ -431,7 +436,7 @@ func OpModelMetaSet(ctx context.Context, mm ModelMeta, key string, id oid.OID, f
 		if val, err := fn(ctx, id); err != nil {
 			return err
 		} else if !utils.IsZero(val) {
-			logger().Debugw("set meta", key, val)
+			// logger().Debugw("set meta", key, val)
 			mm.MetaSet(key, val)
 			mm.SetChange(field.Meta)
 		}
@@ -529,10 +534,10 @@ func oneWithOrder(ctx context.Context, db IDB, ord Order, obj Model, args ...any
 	err := q.Scan(ctx)
 	if err != nil {
 		if err == ErrNoRows {
-			logger().Debugw("get model with key no rows", "name", ModelName(obj), "args", args)
+			// logger().Debugw("get model with key no rows", "name", ModelName(obj), "args", args)
 			return ErrNotFound
 		}
-		logger().Warnw("get model with key failed", "name", ModelName(obj), "args", args, "err", err)
+		logger().Infow("get model with key failed", "name", ModelName(obj), "args", args, "err", err)
 
 		if err == ErrBadConn {
 			panic(err)

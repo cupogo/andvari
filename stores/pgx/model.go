@@ -23,6 +23,10 @@ type TextSearchable interface {
 	SetTsColumns(cols ...string)
 }
 
+type KeywordTextGetter interface {
+	GetKeywordText() string
+}
+
 type CreatedSetter interface {
 	SetCreated(ts any) bool
 }
