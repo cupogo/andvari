@@ -6,6 +6,7 @@ type Model = comm.Model
 type Changeable = comm.Changeable
 type ModelChangeable = comm.ModelChangeable
 type ModelMeta = comm.ModelMeta
+type KeywordTextGetter = comm.KeywordTextGetter
 
 type Sortable interface {
 	GetSort() string
@@ -21,10 +22,6 @@ type TextSearchable interface {
 	GetTsConfig() string
 	GetTsColumns() []string
 	SetTsColumns(cols ...string)
-}
-
-type KeywordTextGetter interface {
-	GetKeywordText() string
 }
 
 type CreatedSetter interface {

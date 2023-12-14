@@ -60,3 +60,7 @@ type ModelMeta interface {
 	ModelMetaMerger
 	ModelMetaUp
 }
+
+type KeywordTextGetter interface {
+	GetKeywordText() string
+}
