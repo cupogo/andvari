@@ -45,3 +45,5 @@ type ModelIdentity interface {
 	Model
 	Identitier
 }
+
+type IsUpdateSetter interface{ SetIsUpdate(v bool) }

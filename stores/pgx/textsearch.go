@@ -82,7 +82,7 @@ func CheckTsCfg(ctx context.Context, db IDB, ftsConfig string) bool {
 			return true
 		}
 	} else {
-		logger().Infow("select ts config fail", "tscfg", ftsConfig, "err", err)
+		logger().Infow("fts checked fail", "tscfg", ftsConfig, "err", err)
 	}
 	return false
 }

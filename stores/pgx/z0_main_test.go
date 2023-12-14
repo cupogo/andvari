@@ -145,7 +145,7 @@ func (spec *ClauseSpec) Sift(q *SelectQuery) *SelectQuery {
 }
 
 func TestOps(t *testing.T) {
-	db, err := Open(testDSN, "mycfg", true)
+	db, err := Open(testDSN, envOr("PGX_TEST_TS_CFG", "mycfg"), true)
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 
@@ -306,4 +306,12 @@ func TestOps(t *testing.T) {
 	count, err := QueryList(ctx, db, nil, &data2).Count(ctx)
 	assert.NoError(t, err)
 	assert.NotZero(t, count)
+}
+
+func envOr(key, dft string) string {
+	v := os.Getenv(key)
+	if v == "" {
+		return dft
+	}
+	return v
 }

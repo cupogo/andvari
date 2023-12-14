@@ -189,7 +189,25 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 		}
 	}
 
+	name := ModelName(obj)
 	q := db.NewInsert().Model(obj)
+	if tso, ok := obj.(TextSearchable); ok {
+		cfg := tso.GetTsConfig()
+		if len(cfg) == 0 {
+			if cfg = LastFTSConfig(); len(cfg) > 0 {
+				q.Value("ts_cfg", "?", cfg)
+			}
+		}
+		if LastFTSEnabled() {
+			if ktg, ok := tso.(KeywordTextGetter); ok {
+				if txt := ktg.GetKeywordText(); len(txt) > 0 {
+					q.Value("ts_vec", "to_tsvector(?, ?)", cfg, txt)
+				} else {
+					logger().Infow("WARN empty ktg", "cfg", cfg, "name", name)
+				}
+			}
+		}
+	}
 	argc := len(args)
 	if argc > 0 {
 		unikey := field.ID
@@ -213,7 +231,6 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	}
 	q.Returning(field.ID)
 
-	name := ModelName(obj)
 	if _, err := q.Exec(ctx); err != nil {
 		logger().Infow("insert model fail", "name", name, "obj", obj, "err", err)
 		return err
@@ -253,10 +270,18 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 
 	q := db.NewUpdate().Model(obj).Column(columns...)
 	if tso, ok := obj.(TextSearchable); ok {
-		if cfg := tso.GetTsConfig(); len(cfg) > 0 {
+		cfg := tso.GetTsConfig()
+		if len(cfg) == 0 {
+			if cfg = LastFTSConfig(); len(cfg) > 0 {
+				q.Set("ts_cfg = ?", cfg)
+			}
+		}
+		if LastFTSEnabled() {
 			if ktg, ok := tso.(KeywordTextGetter); ok {
 				if txt := ktg.GetKeywordText(); len(txt) > 0 {
 					q.Set("ts_vec = to_tsvector(?, ?)", cfg, txt)
+				} else {
+					logger().Infow("WARN empty ktg", "cfg", cfg, "name", name)
 				}
 			} else if cols := tso.GetTsColumns(); len(cols) > 0 {
 				for _, co := range columns {
@@ -264,22 +289,24 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 				}
 				q.Set("ts_vec = to_tsvector(?, jsonb_build_array("+strings.Join(cols, ",")+"))", cfg)
 			}
+		} else {
+			logger().Infow("WARN empty tso", "cfg", cfg, "name", name)
 		}
 
 	}
 
 	if _, err := q.WherePK().Exec(ctx); err != nil {
-		logger().Infow("update model fail", "name", name,
+		logger().Infow("update fail", "name", name,
 			"obj", obj, "columns", columns, "err", err)
 		return err
 	}
 
 	dbLogModelOp(ctx, db, OperateTypeUpdate, obj)
 
-	logger().Debugw("update model ok", "name", name,
+	logger().Debugw("update ok", "name", name,
 		"id", obj.GetID(), "columns", columns)
 
-	if vo, ok := obj.(interface{ SetIsUpdate(v bool) }); ok {
+	if vo, ok := obj.(IsUpdateSetter); ok {
 		vo.SetIsUpdate(true)
 	}
 
