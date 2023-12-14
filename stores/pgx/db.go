@@ -51,6 +51,8 @@ const (
 var (
 	lastSchema     string
 	lastSchemaCrap string
+	lastFTScfg     string
+	lastFTSok      bool
 )
 
 func LastSchema() string {
@@ -61,12 +63,20 @@ func LastSchemaCrap() string {
 	return lastSchemaCrap
 }
 
+func LastFTSConfig() string {
+	return lastFTScfg
+}
+
+func LastFTSEnabled() bool {
+	return lastFTSok
+}
+
 type DB struct {
 	*bun.DB
 
 	scDft, scCrap string // default and trash schemas
-	ftsConfig     string
-	ftsEnabled    bool
+	ftsCfg        string
+	ftsOk         bool
 }
 
 func Open(dsn string, ftscfg string, _ ...bool) (*DB, error) {
@@ -88,12 +98,16 @@ func Open(dsn string, ftscfg string, _ ...bool) (*DB, error) {
 	patchHookOTEL(db, pgcfg.Database)
 	patchHookDebug(db)
 
-	w := &DB{DB: db, scDft: pgcfg.User, scCrap: pgcfg.User + crapSuffix}
+	w := &DB{DB: db,
+		scDft:  pgcfg.User,
+		scCrap: pgcfg.User + crapSuffix,
+		ftsCfg: ftscfg,
+		ftsOk:  CheckTsCfg(ctx, db, ftscfg),
+	}
 	lastSchema = w.scDft
 	lastSchemaCrap = w.scCrap
-
-	w.ftsConfig = ftscfg
-	w.ftsEnabled = CheckTsCfg(ctx, db, ftscfg)
+	lastFTScfg = w.ftsCfg
+	lastFTSok = w.ftsOk
 
 	if err := EnsureSchema(ctx, db, w.scDft); err != nil {
 		return nil, err
@@ -182,11 +196,11 @@ func (w *DB) OpUndeleteOID(ctx context.Context, table string, id string) error {
 }
 
 func (w *DB) GetTsCfg() (string, bool) {
-	return w.ftsConfig, w.ftsEnabled
+	return w.ftsCfg, w.ftsOk
 }
 
 func (w *DB) ApplyTsQuery(q *SelectQuery, kw, sty string, args ...string) *SelectQuery {
-	return DoApplyTsQuery(w.ftsEnabled, w.ftsConfig, q, kw, sty, args...)
+	return DoApplyTsQuery(w.ftsOk, w.ftsCfg, q, kw, sty, args...)
 }
 
 // nolint
