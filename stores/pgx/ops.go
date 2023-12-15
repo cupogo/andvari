@@ -284,7 +284,7 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 					logger().Infow("WARN empty ktg", "cfg", cfg, "name", name)
 				}
 			} else if cols := tso.GetTsColumns(); len(cols) > 0 {
-				for _, co := range columns {
+				for _, co := range cols {
 					q.Set(co + " = ?" + co)
 				}
 				q.Set("ts_vec = to_tsvector(?, jsonb_build_array("+strings.Join(cols, ",")+"))", cfg)

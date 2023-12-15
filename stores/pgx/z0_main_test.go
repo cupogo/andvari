@@ -266,12 +266,14 @@ func TestOps(t *testing.T) {
 	assert.Error(t, err)
 	err = db.GetModel(ctx, exist, "not-found")
 	assert.Error(t, err)
+
 	err = db.GetModel(ContextWithColumns(ctx, "text"), exist, obj.ID)
 	assert.NoError(t, err)
 	err = db.GetModel(ContextWithExcludes(ctx, "text"), exist, obj.ID)
 	assert.NoError(t, err)
 	err = db.GetModel(ctx, exist, obj.ID, "text")
 	assert.NoError(t, err)
+	assert.Equal(t, "test2", exist.Text)
 
 	assert.NotZero(t, Count(ctx, db, (*Clause)(nil), "TRUE"))
 
