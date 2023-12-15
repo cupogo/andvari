@@ -273,26 +273,26 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		cfg := tso.GetTsConfig()
 		if len(cfg) == 0 {
 			if cfg = LastFTSConfig(); len(cfg) > 0 {
-				q.Set("ts_cfg = ?", cfg)
+				q.Column("ts_cfg").Value("ts_cfg", "?", cfg)
 			}
 		}
 		if LastFTSEnabled() {
 			if ktg, ok := tso.(KeywordTextGetter); ok {
 				if txt := ktg.GetKeywordText(); len(txt) > 0 {
-					q.Set("ts_vec = to_tsvector(?, ?)", cfg, txt)
+					q.Column("ts_vec").Value("ts_vec", "to_tsvector(?, ?)", cfg, txt)
+					// logger().Debugw("ktg", "txt", txt)
 				} else {
 					logger().Infow("WARN empty ktg", "cfg", cfg, "name", name)
 				}
 			} else if cols := tso.GetTsColumns(); len(cols) > 0 {
 				for _, co := range cols {
-					q.Set(co + " = ?" + co)
+					q.Value(co, "?"+co)
 				}
-				q.Set("ts_vec = to_tsvector(?, jsonb_build_array("+strings.Join(cols, ",")+"))", cfg)
+				q.Column("ts_vec").Value("ts_vec", "to_tsvector(?, jsonb_build_array("+strings.Join(cols, ",")+"))", cfg)
 			}
 		} else {
 			logger().Infow("WARN empty tso", "cfg", cfg, "name", name)
 		}
-
 	}
 
 	if _, err := q.WherePK().Exec(ctx); err != nil {
