@@ -25,6 +25,8 @@ func TestMain(m *testing.M) {
 	sugar := lgr.Sugar()
 	zlog.Set(sugar)
 
+	os.Setenv("DB_ALLOW_LEFT_WILDCARD", "1")
+
 	ret := m.Run()
 
 	os.Exit(ret)

@@ -1,20 +1,34 @@
 package sqlutil
 
 import (
+	"os"
 	"strings"
+
+	"github.com/cupogo/andvari/utils"
 )
 
 var (
 	cleaningReplacer = strings.NewReplacer("%", "", "--", "", ";", "", "'", "", "\"", "")
 	wildcardReplacer = strings.NewReplacer("*", "%", "?", "_")
+
+	allowLeftWildcard bool
 )
+
+func init() {
+	if s, ok := os.LookupEnv("DB_ALLOW_LEFT_WILDCARD"); ok && len(s) > 0 {
+		allowLeftWildcard, _ = utils.ParseBool(s)
+	}
+}
 
 // CleanWildcard 清除字串中的无效SQL字符，并去除开头的通配符
 func CleanWildcard(s string) string {
 	s = cleaningReplacer.Replace(s)
-	s = strings.TrimLeftFunc(s, func(c rune) bool {
-		return c == '*' || c == '_' || c == '?'
-	})
+	if !allowLeftWildcard {
+		s = strings.TrimLeftFunc(s, func(c rune) bool {
+			return c == '*' || c == '_' || c == '?'
+		})
+	}
+
 	s = wildcardReplacer.Replace(s)
 
 	return s
@@ -44,8 +58,14 @@ func ClearKV(k, v string) (ck string, cv string) {
 // MendValue 针对SQL查询字符值进行修补
 func MendValue(v string) (cv string) {
 	cv = CleanWildcard(v)
-	if !strings.HasSuffix(v, "%") && !strings.HasSuffix(v, "_") {
+	if !strings.HasSuffix(cv, "%") && !strings.HasSuffix(cv, "_") {
 		cv = cv + "%"
 	}
+	if allowLeftWildcard {
+		if !strings.HasPrefix(cv, "%") && !strings.HasPrefix(cv, "_") {
+			cv = "%" + cv
+		}
+	}
+
 	return
 }
