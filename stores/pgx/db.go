@@ -199,6 +199,7 @@ func (w *DB) GetTsCfg() (string, bool) {
 	return w.ftsCfg, w.ftsOk
 }
 
+// Deprecated: use TextSearchSpec.Sift
 func (w *DB) ApplyTsQuery(q *SelectQuery, kw, sty string, args ...string) *SelectQuery {
 	return DoApplyTsQuery(w.ftsOk, w.ftsCfg, q, kw, sty, args...)
 }

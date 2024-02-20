@@ -201,6 +201,11 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 		if LastFTSEnabled() {
 			if ktg, ok := tso.(KeywordTextGetter); ok {
 				if txt := ktg.GetKeywordText(); len(txt) > 0 {
+					if vck, ok := tso.(IColumnKeyword); ok {
+						if col := vck.ColumnKeyword(); len(col) > 0 {
+							q.Value(col, "?", txt)
+						}
+					}
 					q.Value("ts_vec", "to_tsvector(?, ?)", cfg, txt)
 				} else {
 					logger().Infow("WARN empty ktg", "cfg", cfg, "name", name)
@@ -279,6 +284,11 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		if LastFTSEnabled() {
 			if ktg, ok := tso.(KeywordTextGetter); ok {
 				if txt := ktg.GetKeywordText(); len(txt) > 0 {
+					if vck, ok := tso.(IColumnKeyword); ok {
+						if col := vck.ColumnKeyword(); len(col) > 0 {
+							q.Column(col).Value(col, "?", txt)
+						}
+					}
 					q.Column("ts_vec").Value("ts_vec", "to_tsvector(?, ?)", cfg, txt)
 					// logger().Debugw("ktg", "txt", txt)
 				} else {

@@ -17,6 +17,7 @@ type TextSearchSpec struct {
 	enabled bool
 
 	fallbacks []string // columns
+	bothmatch bool     // both left and right match '%abc%'
 
 	// 关键词搜索
 	SearchKeyWord string `json:"skw,omitempty" form:"skw" extensions:"x-order=8"`
@@ -32,9 +33,13 @@ func (tss *TextSearchSpec) SetTsFallback(cols ...string) {
 	tss.fallbacks = cols
 }
 
-// deprecated
+// Deprecated: use SetTsFallback
 func (tss *TextSearchSpec) SetFallback(cols ...string) {
 	tss.fallbacks = cols
+}
+
+func (tss *TextSearchSpec) SetBothMatch(yn bool) {
+	tss.bothmatch = yn
 }
 
 func HideTsColumn(q *SelectQuery) *SelectQuery {
@@ -45,25 +50,32 @@ func (tss *TextSearchSpec) Sift(q *SelectQuery) *SelectQuery {
 	if tss.enabled {
 		q = HideTsColumn(q)
 	}
-	return DoApplyTsQuery(tss.enabled, tss.cfgname, q,
-		tss.SearchKeyWord, tss.SearchStyle, tss.fallbacks...)
-}
-
-func DoApplyTsQuery(enabled bool, cfgname string, q *SelectQuery, kw, sty string, cols ...string) *SelectQuery {
-	if len(kw) == 0 {
+	if len(tss.SearchKeyWord) == 0 {
 		return q
 	}
-	return q.WhereGroup(" AND ", func(_q *SelectQuery) *SelectQuery {
-		if len(cols) > 0 && len(cols[0]) > 0 {
-			for _, col := range cols {
-				_q.WhereOr("? iLIKE ?", Ident(col), sqlutil.MendValue(kw))
+	return q.WhereGroup(" AND ", func(sq *SelectQuery) *SelectQuery {
+		if len(tss.fallbacks) > 0 && len(tss.fallbacks[0]) > 0 {
+			for _, col := range tss.fallbacks {
+				sq.WhereOr("? iLIKE ?", Ident(col), sqlutil.MendValue(tss.SearchKeyWord, tss.bothmatch))
 			}
 		}
-		if enabled {
-			_q.WhereOr("? @@ "+getTsQuery(cfgname, sty, kw), Ident(textVec))
+		if tss.enabled {
+			sq.WhereOr("? @@ "+getTsQuery(tss.cfgname, tss.SearchStyle, tss.SearchKeyWord), Ident(textVec))
 		}
-		return _q
+		return sq
 	})
+}
+
+// Deprecated: use TextSearchSpec.Sift
+func DoApplyTsQuery(enabled bool, cfgname string, q *SelectQuery, kw, sty string, cols ...string) *SelectQuery {
+	tss := TextSearchSpec{
+		cfgname:       cfgname,
+		enabled:       enabled,
+		SearchKeyWord: kw,
+		SearchStyle:   sty,
+		fallbacks:     cols,
+	}
+	return tss.Sift(q)
 }
 
 func getTsQuery(tscfg string, sty, kw string) string {

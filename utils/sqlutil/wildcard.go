@@ -21,9 +21,10 @@ func init() {
 }
 
 // CleanWildcard 清除字串中的无效SQL字符，并去除开头的通配符
-func CleanWildcard(s string) string {
+func CleanWildcard(s string, opt ...bool) string {
 	s = cleaningReplacer.Replace(s)
-	if !allowLeftWildcard {
+	fulike := len(opt) > 0 && opt[0]
+	if !allowLeftWildcard && !fulike {
 		s = strings.TrimLeftFunc(s, func(c rune) bool {
 			return c == '*' || c == '_' || c == '?'
 		})
@@ -56,12 +57,12 @@ func ClearKV(k, v string) (ck string, cv string) {
 }
 
 // MendValue 针对SQL查询字符值进行修补
-func MendValue(v string) (cv string) {
-	cv = CleanWildcard(v)
+func MendValue(v string, opt ...bool) (cv string) {
+	cv = CleanWildcard(v, opt...)
 	if !strings.HasSuffix(cv, "%") && !strings.HasSuffix(cv, "_") {
 		cv = cv + "%"
 	}
-	if allowLeftWildcard {
+	if allowLeftWildcard || len(opt) > 0 && opt[0] {
 		if !strings.HasPrefix(cv, "%") && !strings.HasPrefix(cv, "_") {
 			cv = "%" + cv
 		}
