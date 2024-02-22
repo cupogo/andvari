@@ -37,8 +37,10 @@ func (z OperateType) String() string {
 		return "update"
 	case OperateTypeDelete:
 		return "delete"
+	case OperateTypeCustom:
+		return "custom"
 	default:
-		return fmt.Sprintf("OperateType %d", int8(z))
+		return fmt.Sprintf("OperateType%02x", int8(z))
 	}
 }
 func (z OperateType) MarshalText() ([]byte, error) {
