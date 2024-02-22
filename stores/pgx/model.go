@@ -43,7 +43,10 @@ type ModelIdentity interface {
 	Identitier
 }
 
-type IsUpdateSetter interface{ SetIsUpdate(v bool) }
+type IsUpdateSetter interface {
+	IsUpdate() bool
+	SetIsUpdate(v bool)
+}
 
 type IColumnKeyword interface {
 	ColumnKeyword() string

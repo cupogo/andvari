@@ -250,6 +250,10 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 
 func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 
+	if vo, ok := obj.(IsUpdateSetter); ok && !vo.IsUpdate() {
+		vo.SetIsUpdate(true)
+	}
+
 	// Call to saving hook
 	if err := TryToBeforeUpdateHooks(ctx, obj); err != nil {
 		logger().Infow("before update model fail", "obj", obj, "err", err)
@@ -315,10 +319,6 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 
 	logger().Debugw("update ok", "name", name,
 		"id", obj.GetID(), "columns", columns)
-
-	if vo, ok := obj.(IsUpdateSetter); ok {
-		vo.SetIsUpdate(true)
-	}
 
 	return TryToAfterUpdateHooks(obj)
 }
