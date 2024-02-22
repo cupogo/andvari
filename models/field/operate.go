@@ -11,6 +11,7 @@ const (
 	OperateTypeCreate OperateType = 1 << iota //  1 新增
 	OperateTypeUpdate                         //  2 修改
 	OperateTypeDelete                         //  4 删除
+	OperateTypeCustom                         //  8 手动或其他
 )
 
 func (z *OperateType) Decode(s string) error {
@@ -21,6 +22,8 @@ func (z *OperateType) Decode(s string) error {
 		*z = OperateTypeUpdate
 	case "4", "delete":
 		*z = OperateTypeDelete
+	case "8", "custom", "other":
+		*z = OperateTypeCustom
 	default:
 		return fmt.Errorf("invalid OperateType: %q", s)
 	}
