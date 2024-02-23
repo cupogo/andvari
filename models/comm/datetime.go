@@ -22,6 +22,30 @@ func AsTime(ts any) (time.Time, bool) {
 	}
 }
 
+type TimeValue interface {
+	IsZero() bool
+	Format(layout string) string
+}
+
+func AsDateTime(tv any) (DateTime, bool) {
+	switch t := tv.(type) {
+	case time.Time:
+		return NewDateTimeFromTime(t), true
+	case *time.Time:
+		return NewDateTimeFromTime(*t), true
+	case DateTime:
+		return t, true
+	case *DateTime:
+		return *t, true
+	case ITime:
+		return NewDateTimeFromTime(t.Time()), true
+	case int64:
+		return DateTime(t), true
+	default:
+		return 0, false
+	}
+}
+
 // copy and optimize from go.mongodb.org/mongo-driver/bson/primitive
 
 // DateTime represents the BSON datetime value.
