@@ -315,12 +315,15 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 		return err
 	}
 
-	dbLogModelOp(ctx, db, OperateTypeUpdate, obj)
-
 	logger().Debugw("update ok", "name", name,
 		"id", obj.GetID(), "columns", columns)
 
-	return TryToAfterUpdateHooks(obj)
+	if err := TryToAfterUpdateHooks(obj); err != nil {
+		return err
+	}
+
+	dbLogModelOp(ctx, db, OperateTypeUpdate, obj)
+	return nil
 }
 
 func StoreSimple(ctx context.Context, db IDB, obj ModelChangeable, columns ...string) error {
