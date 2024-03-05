@@ -13,12 +13,12 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
-	"github.com/uptrace/bun/extra/bunotel"
 	"github.com/uptrace/bun/migrate"
 	"github.com/uptrace/bun/schema"
 	"github.com/yalue/merged_fs"
 
 	"github.com/cupogo/andvari/models/oid"
+	"github.com/cupogo/andvari/stores/pgx/bunotel"
 )
 
 type IConn = bun.IConn
