@@ -46,4 +46,8 @@ func TestZero(t *testing.T) {
 	assert.True(t, IsZero(i))
 	var s string
 	assert.True(t, IsZero(s))
+	assert.True(t, IsEmpty(s))
+	s = "0"
+	assert.False(t, IsZero(s))
+	assert.False(t, IsEmpty(s))
 }
