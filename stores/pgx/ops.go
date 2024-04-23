@@ -115,7 +115,7 @@ func QueryPager(ctx context.Context, p Pager, q *SelectQuery) (count int, err er
 		p.SetTotal(count)
 	}
 	if err != nil && err == sql.ErrNoRows {
-		err = ErrNotFound
+		err = fmt.Errorf("query pager fail: %w", ErrNotFound)
 	}
 
 	return
@@ -129,15 +129,16 @@ func ModelWithPK(ctx context.Context, db IDB, obj Model, columns ...string) (err
 	q := db.NewSelect().Model(obj).Column(columns...).WherePK()
 	err = q.Scan(ctx)
 	if err != nil {
+		name := ModelName(obj)
 		if err == ErrNoRows {
-			logger().Debugw("get model where pk no rows", "name", ModelName(obj), "objID", obj.GetID())
-			return ErrNotFound
+			logger().Debugw("get model where pk no rows", "name", name, "objID", obj.GetID())
+			return fmt.Errorf("model %s with pk %v: %w", name, obj.GetID(), ErrNotFound)
 		}
 		logger().Warnw("get model where pk failed", "name", ModelName(obj), "objID", obj.GetID(), "err", err)
 		if err == ErrBadConn {
 			panic(err)
 		}
-		return
+		return fmt.Errorf("model %s with pk %v: %w", name, obj.GetID(), err)
 	}
 	return
 }
@@ -155,18 +156,20 @@ func ModelWithUnique(ctx context.Context, db IDB, obj Model, key string, val any
 	return ModelWith(ctx, db, obj, key, "=", val, cols...)
 }
 func ModelWith(ctx context.Context, db IDB, obj Model, key, op string, val any, cols ...string) error {
+	name := ModelName(obj)
 	if val == nil || val == 0 || val == "" || op == "" {
-		logger().Infow("modelWith: empty param", "name", ModelName(obj), "key", key, "op", op, "val", val)
-		return ErrEmptyKey
+		logger().Infow("modelWith: empty param", "name", name, "key", key, "op", op, "val", val)
+		return fmt.Errorf("model %s with: %w", name, ErrEmptyKey)
 	}
+
 	err := db.NewSelect().Model(obj).Column(cols...).Where("? "+op+" ?", Ident(key), val).Limit(1).Scan(ctx)
-	if err == ErrNoRows {
-		logger().Debugw("modelWith: no rows", "name", ModelName(obj), "key", key, "op", op, "val", val)
-		return ErrNotFound
-	}
 	if err != nil {
-		logger().Warnw("modelWith: failed", "name", ModelName(obj), "key", key, "op", op, "val", val, "err", err)
-		return err
+		if err == ErrNoRows {
+			logger().Debugw("modelWith: no rows", "name", name, "key", key, "op", op, "val", val)
+			return fmt.Errorf("model %s with %s %s %v: %w", name, key, op, val, ErrNotFound)
+		}
+		logger().Warnw("modelWith: failed", "name", name, "key", key, "op", op, "val", val, "err", err)
+		return fmt.Errorf("model %s with %s %s %v: %w", name, key, op, val, err)
 	}
 	return nil
 }
@@ -238,7 +241,7 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 
 	if _, err := q.Exec(ctx); err != nil {
 		logger().Infow("insert model fail", "name", name, "obj", obj, "err", err)
-		return err
+		return fmt.Errorf("create %s fail: %w", name, err)
 	}
 
 	logger().Debugw("insert model ok", "name", name, "id", obj.GetID(), "argc", argc)
@@ -312,7 +315,7 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 	if _, err := q.WherePK().Exec(ctx); err != nil {
 		logger().Infow("update fail", "name", name,
 			"obj", obj, "columns", columns, "err", err)
-		return err
+		return fmt.Errorf("update %s fail: %w", name, err)
 	}
 
 	logger().Debugw("update ok", "name", name,
@@ -575,7 +578,7 @@ func oneWithOrder(ctx context.Context, db IDB, ord Order, obj Model, args ...any
 	if err != nil {
 		if err == ErrNoRows {
 			// logger().Debugw("get model with key no rows", "name", ModelName(obj), "args", args)
-			return ErrNotFound
+			return fmt.Errorf("oneWithOrder: %s: %w", ModelName(obj), ErrNotFound)
 		}
 		logger().Infow("get model with key failed", "name", ModelName(obj), "args", args, "err", err)
 
