@@ -213,7 +213,7 @@ func (f *SerialField) SetID(id any) bool {
 		return v > 0
 	case string:
 		var err error
-		f.ID, _ = strconv.Atoi(v)
+		f.ID, err = strconv.Atoi(v)
 		return err == nil && f.ID > 0
 	}
 	return false
