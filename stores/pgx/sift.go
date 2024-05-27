@@ -124,19 +124,22 @@ func SiftEquel(q *SelectQuery, field string, v any, isOr bool) (*SelectQuery, bo
 }
 
 // SiftICE ignore case equal 忽略大小写相等
-func SiftICE(q *SelectQuery, field string, v string, isOr bool) (*SelectQuery, bool) {
+func SiftICE(q *SelectQuery, field string, v string, opt ...bool) (*SelectQuery, bool) {
 	if utils.IsZero(v) {
 		return q, false
 	}
-	return Sift(q, field, "ILIKE", sqlutil.CleanWildcard(v), isOr)
+	return Sift(q, field, "ILIKE", sqlutil.CleanWildcard(v, len(opt) > 1 && opt[1]),
+		len(opt) > 0 && opt[0])
 }
 
 // SiftMatch ignore case match 忽略大小写并匹配前缀
-func SiftMatch(q *SelectQuery, field string, v string, isOr bool) (*SelectQuery, bool) {
+func SiftMatch(q *SelectQuery, field string, v string, opt ...bool) (*SelectQuery, bool) {
 	if utils.IsZero(v) {
 		return q, false
 	}
-	return Sift(q, field, "ILIKE", sqlutil.MendValue(v), isOr)
+
+	return Sift(q, field, "ILIKE", sqlutil.MendValue(v, len(opt) > 1 && opt[1]),
+		len(opt) > 0 && opt[0])
 }
 
 // SiftGreat 大于
