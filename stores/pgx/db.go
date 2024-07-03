@@ -79,35 +79,51 @@ type DB struct {
 	ftsOk         bool
 }
 
-func Open(dsn string, ftscfg string, _ ...bool) (*DB, error) {
+func OpenDB(dsn string) (db *bun.DB, user string, err error) {
 	pgconn := pgdriver.NewConnector(pgdriver.WithDSN(dsn))
 	pgcfg := pgconn.Config()
 
 	sqldb := sql.OpenDB(pgconn)
 	patchPool(sqldb)
 
-	db := bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns())
+	db = bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns())
 
-	ctx := context.Background()
-	if err := db.PingContext(ctx); err != nil {
+	if err = db.Ping(); err != nil {
 		logger().Infow("connect fail", "addr", pgcfg.Addr, "db", pgcfg.Database, "user", pgcfg.User, "err", err)
-		return nil, err
+		return
 	}
 	logger().Debugw("connected OK", "db", db.String(), "addr", pgcfg.Addr, "db", pgcfg.Database, "user", pgcfg.User)
 
 	patchHookOTEL(db, pgcfg.Database)
 	patchHookDebug(db)
 
+	user = pgcfg.User
+
+	return
+}
+
+// Open database with ftscfg
+func Open(dsn string, ftscfg string, _ ...bool) (*DB, error) {
+	db, user, err := OpenDB(dsn)
+	if err != nil {
+		return nil, err
+	}
+	ctx := context.Background()
+
 	w := &DB{DB: db,
-		scDft:  pgcfg.User,
-		scCrap: pgcfg.User + crapSuffix,
+		scDft:  user,
+		scCrap: user + crapSuffix,
 		ftsCfg: ftscfg,
 		ftsOk:  CheckTsCfg(ctx, db, ftscfg),
 	}
+
 	lastSchema = w.scDft
 	lastSchemaCrap = w.scCrap
-	lastFTScfg = w.ftsCfg
-	lastFTSok = w.ftsOk
+
+	if len(ftscfg) > 0 {
+		lastFTScfg = w.ftsCfg
+		lastFTSok = w.ftsOk
+	}
 
 	if err := EnsureSchema(ctx, db, w.scDft); err != nil {
 		return nil, err

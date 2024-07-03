@@ -38,12 +38,12 @@ func TestMain(m *testing.M) {
 func TestOpen(t *testing.T) {
 	dsn := "postgres://testing@localhost"
 	ftscfg := ""
-	db, err := Open(dsn, ftscfg, false)
+	db, err := Open(dsn, ftscfg)
 	assert.Error(t, err)
 	assert.Nil(t, db)
 
 	dsn = "postgres://testing:testing1@localhost/postgres?sslmode=disable"
-	db, err = Open(dsn, ftscfg, false)
+	db, err = Open(dsn, ftscfg)
 	assert.Error(t, err)
 	assert.Nil(t, db)
 
@@ -54,7 +54,7 @@ const (
 )
 
 func TestInit(t *testing.T) {
-	db, err := Open(testDSN, "simple", false)
+	db, err := Open(testDSN, "simple")
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 
@@ -87,9 +87,9 @@ type Clause struct {
 } // @name Clause
 
 type ClauseBasic struct {
-	Slug  string   `bun:"slug,notnull,type:name,unique" json:"slug" pg:"slug,notnull"`
-	Text  string   `bun:"text,notnull,type:text" form:"text" json:"text" pg:"text,notnull"`
-	Cates []string `bun:"cates,notnull,type:jsonb" form:"cats" json:"cats" pg:"cates,notnull,type:jsonb"`
+	Slug  string   `bun:"slug,notnull,type:name,unique" json:"slug" `
+	Text  string   `bun:"text,notnull,type:text" form:"text" json:"text" `
+	Cates []string `bun:"cates,notnull,type:jsonb" form:"cats" json:"cats" `
 } // @name ClauseBasic
 
 type Clauses []Clause
@@ -147,7 +147,7 @@ func (spec *ClauseSpec) Sift(q *SelectQuery) *SelectQuery {
 }
 
 func TestOps(t *testing.T) {
-	db, err := Open(testDSN, envOr("PGX_TEST_TS_CFG", "mycfg"), true)
+	db, err := Open(testDSN, envOr("PGX_TEST_TS_CFG", "mycfg"))
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 
