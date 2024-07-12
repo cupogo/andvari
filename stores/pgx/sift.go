@@ -20,10 +20,22 @@ type SifterX interface {
 	SiftX(ctx context.Context, q *SelectQuery) *SelectQuery
 }
 
+type Columner interface {
+	Column(...string)
+	HasColumn() bool
+}
+
+type ExcludeColumner interface {
+	ExcludeColumn(...string)
+	HasExcludeColumn() bool
+}
+
 type ListArg interface {
 	Pager
 	Sifter
 	Deleted() bool
+	Columner
+	ExcludeColumner
 }
 
 // StringsDiff 字串增减操作
@@ -47,6 +59,9 @@ type ModelSpec struct {
 	// IsDelete 查询删除的记录
 	IsDelete bool `form:"isDelete" json:"isDelete"  extensions:"x-order=5"`
 
+	colinc []string
+	colexc []string
+
 	sifted bool
 } // @name DefaultSpec
 
@@ -68,11 +83,32 @@ func (md *ModelSpec) CanSort(key string) bool {
 	}
 }
 
+func (md *ModelSpec) Column(cols ...string) {
+	md.colinc = append(md.colinc, cols...)
+}
+
+func (md *ModelSpec) HasColumn() bool {
+	return len(md.colinc) > 0
+}
+
+func (md *ModelSpec) ExcludeColumn(cols ...string) {
+	md.colexc = append(md.colexc, cols...)
+}
+
+func (md *ModelSpec) HasExcludeColumn() bool {
+	return len(md.colexc) > 0
+}
+
 func (md *ModelSpec) Deleted() bool {
 	return md.IsDelete
 }
 
 func (md *ModelSpec) Sift(q *SelectQuery) *SelectQuery {
+	if len(md.colexc) > 0 {
+		q.ExcludeColumn(md.colexc...)
+	} else if len(md.colinc) > 0 {
+		q.Column(md.colinc...)
+	}
 	if len(md.IDs) > 0 {
 		q.Where("?TableAlias.id in (?)", In(md.IDs))
 	} else if md.IDsStr.Valid() {

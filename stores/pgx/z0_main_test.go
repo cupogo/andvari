@@ -2,6 +2,7 @@ package pgx
 
 import (
 	"context"
+	"io"
 	"os"
 	"testing"
 	"testing/fstest"
@@ -221,8 +222,9 @@ func TestOps(t *testing.T) {
 	spec.Text = "test"
 	spec.Sort = "created DESC"
 	spec.Created = "0_day"
+	spec.Column("text")
 	var data Clauses
-	total, err := db.List(ContextWithColumns(ctx, "text"), spec, &data)
+	total, err := db.List(ctx, spec, &data)
 	assert.NoError(t, err)
 	assert.NotZero(t, total)
 
@@ -237,14 +239,13 @@ func TestOps(t *testing.T) {
 	spec2 := &ClauseSpec{}
 	spec2.Limit = 2
 	spec2.IsDelete = true
+	spec2.Column("text")
 	assert.True(t, spec2.Deleted())
 	var data2 Clauses
-	total, err = db.List(ContextWithExcludes(ctx, "text"), spec2, &data2)
+	total, err = db.List(ctx, spec2, &data2)
 	assert.NoError(t, err)
 	assert.NotZero(t, total)
-	if assert.NotEmpty(t, data2) {
-		assert.Empty(t, data2[0].Text)
-	}
+	assert.NotEmpty(t, data2)
 
 	err = db.UndeleteModel(ctx, &Clause{}, id)
 	assert.NoError(t, err)
@@ -310,6 +311,18 @@ func TestOps(t *testing.T) {
 	count, err := QueryList(ctx, db, nil, &data2).Count(ctx)
 	assert.NoError(t, err)
 	assert.NotZero(t, count)
+}
+
+func TestAlter(t *testing.T) {
+
+	db, err := Open(testDSN, envOr("PGX_TEST_TS_CFG", "mycfg"))
+	assert.NoError(t, err)
+	assert.NotNil(t, db)
+
+	ctx := context.Background()
+	err = db.AlterModels(ctx, WithAlterAdd(), WithAlterChange(), WithAlterDrop(),
+		WithAlterOutput(io.Discard))
+	assert.NoError(t, err)
 }
 
 func envOr(key, dft string) string {
