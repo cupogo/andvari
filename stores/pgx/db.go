@@ -149,7 +149,10 @@ func (w *DB) ListModel(ctx context.Context, spec ListArg, dataptr any) (total in
 	if spec.Deleted() {
 		q.ModelTableExpr(w.scCrap + ".?TableName AS ?TableAlias")
 	}
-	q = ApplyQueryContext(ctx, q)
+	if !spec.HasColumn() && !spec.HasExcludeColumn() {
+		q = ApplyQueryContext(ctx, q)
+	}
+
 	return QueryPager(ctx, spec, q)
 }
 

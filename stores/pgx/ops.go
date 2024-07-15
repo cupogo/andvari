@@ -627,6 +627,8 @@ func QueryList(ctx context.Context, db IDB, spec Sifter, dataptr any) *SelectQue
 }
 
 // ApplyQueryContext Apply column filtering in a query by reading the context
+//
+// Deprecated: use spec.Column and spec.ExcludeColumn
 func ApplyQueryContext(ctx context.Context, q *SelectQuery) *SelectQuery {
 	if excols := ExcludesFromContext(ctx); len(excols) > 0 {
 		q.ExcludeColumn(excols...)

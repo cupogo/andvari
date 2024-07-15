@@ -42,12 +42,19 @@ func (tss *TextSearchSpec) SetBothMatch(yn bool) {
 	tss.bothmatch = yn
 }
 
+func (tss *TextSearchSpec) TsEnabled() bool {
+	return tss.enabled
+}
+
 func HideTsColumn(q *SelectQuery) *SelectQuery {
 	return q.ExcludeColumn(field.TsCfg, field.TsVec)
 }
 
 func (tss *TextSearchSpec) Sift(q *SelectQuery) *SelectQuery {
-	if tss.enabled {
+	return tss.SiftTS(q, true)
+}
+func (tss *TextSearchSpec) SiftTS(q *SelectQuery, hide bool) *SelectQuery {
+	if tss.enabled && hide {
 		q = HideTsColumn(q)
 	}
 	if len(tss.SearchKeyWord) == 0 {
