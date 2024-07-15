@@ -578,7 +578,7 @@ func oneWithOrder(ctx context.Context, db IDB, ord Order, obj Model, args ...any
 	if err != nil {
 		if err == ErrNoRows {
 			// logger().Debugw("get model with key no rows", "name", ModelName(obj), "args", args)
-			return fmt.Errorf("oneWithOrder: %s: %w", ModelName(obj), ErrNotFound)
+			return fmt.Errorf("oneWithOrder: %s with %v: %w", ModelName(obj), args, ErrNotFound)
 		}
 		logger().Infow("get model with key failed", "name", ModelName(obj), "args", args, "err", err)
 
