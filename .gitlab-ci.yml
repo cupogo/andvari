@@ -4,25 +4,26 @@ stages:
   - lint
   - test
 
+services:
+
+  - name: fhyx/postgresql:15e
+    alias: testingdb
+
 variables:
   CGO_ENABLED: '0'
   GO111MODULE: 'on'
   GOPATH: /cache/go
   GOPRIVATE: daxv.cn,fhyx.tech,hyyl.xyz
   GOPROXY: https://goproxy.io,direct
+  PGX_QUERY_DEBUG: 1
+  DB_NAME: testing
+  DB_USER: testing
+  DB_PASS: develop
+  PG_EXTENSIONS: 'btree_gin btree_gist pg_trgm zhparser'
+  TZ: Hongkong
+  TEST_PG_STORE_DSN: postgres://testing:develop@testingdb:5432/testing?sslmode=disable
 
 before_script:
-  # SSH
-  - mkdir -p ~/.ssh
-  - test -f /secret/sa_id_ecdsa && cp /secret/sa_id_ecdsa ~/.ssh/id_ecdsa || (echo "$SSH_PRIVATE_KEY") > ~/.ssh/id_ecdsa
-  - chmod 0600 ~/.ssh/id_ecdsa
-  - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-  # - ls -al ~/.ssh/
-  - eval $(ssh-agent -s)
-
-  - git config --global url."git@git.hyyl.xyz:".insteadOf "https://git.hyyl.xyz/"
-  # - nslookup git.hyyl.xyz
-
   # Go Environments
   - go env
 
@@ -34,7 +35,13 @@ lint:
     - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
     - go vet ./...  && ${GOPATH}/bin/golangci-lint run --disable structcheck ./...
 
-test:
+test-models:
   stage: test
+  services: []
   script:
     - go test -v -cover ./models/idgen ./models/oid
+
+test-stores:
+  stage: test
+  script:
+    - go test -v -cover ./stores/pgx
