@@ -54,8 +54,12 @@ const (
 	testDSN = "postgres://testing:testing1@localhost/testing?sslmode=disable"
 )
 
+func getDSN() string {
+	return envOr("TEST_PG_STORE_DSN", testDSN)
+}
+
 func TestInit(t *testing.T) {
-	db, err := Open(testDSN, "simple")
+	db, err := Open(getDSN(), "simple")
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 
@@ -148,7 +152,7 @@ func (spec *ClauseSpec) Sift(q *SelectQuery) *SelectQuery {
 }
 
 func TestOps(t *testing.T) {
-	db, err := Open(testDSN, envOr("PGX_TEST_TS_CFG", "mycfg"))
+	db, err := Open(getDSN(), envOr("PGX_TEST_TS_CFG", "mycfg"))
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 
@@ -315,7 +319,7 @@ func TestOps(t *testing.T) {
 
 func TestAlter(t *testing.T) {
 
-	db, err := Open(testDSN, envOr("PGX_TEST_TS_CFG", "mycfg"))
+	db, err := Open(getDSN(), envOr("PGX_TEST_TS_CFG", "mycfg"))
 	assert.NoError(t, err)
 	assert.NotNil(t, db)
 
