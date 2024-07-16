@@ -212,13 +212,17 @@ func TestOps(t *testing.T) {
 	assert.NotZero(t, one.ID)
 
 	one = new(Clause)
-	assert.Error(t, Last(ctx, db, one, 0))
+	err = Last(ctx, db, one, 0)
+	t.Logf("show model not found: %s", err)
+	assert.Error(t, err)
 	assert.Zero(t, one.ID)
 	one = new(Clause)
 	assert.Error(t, Last(ctx, db, one, ""))
 	assert.Zero(t, one.ID)
 	one = new(Clause)
-	assert.Error(t, Last(ctx, db, one, 1, 2))
+	err = Last(ctx, db, one, 1, 2)
+	assert.Error(t, err)
+	t.Logf("show model not found: %s", err)
 
 	spec := &ClauseSpec{}
 	spec.Limit = 2
