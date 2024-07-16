@@ -3,6 +3,7 @@ package pgx
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -578,7 +579,10 @@ func oneWithOrder(ctx context.Context, db IDB, ord Order, obj Model, args ...any
 	if err != nil {
 		if err == ErrNoRows {
 			// logger().Debugw("get model with key no rows", "name", ModelName(obj), "args", args)
-			return fmt.Errorf("oneWithOrder: %s with %v: %w", ModelName(obj), args, ErrNotFound)
+			return errors.Join(
+				fmt.Errorf("query %s with %v: %w", ModelName(obj), args, ErrNotFound),
+				err,
+			)
 		}
 		logger().Infow("get model with key failed", "name", ModelName(obj), "args", args, "err", err)
 
