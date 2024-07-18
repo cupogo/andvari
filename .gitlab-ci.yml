@@ -39,9 +39,11 @@ test-models:
   stage: test
   services: []
   script:
-    - go test -v -cover ./models/idgen ./models/oid
+    - go test -v -cover ./models/comm ./models/idgen ./models/oid
+  coverage: '/coverage: \d+.\d+% of statements/'
 
 test-stores:
   stage: test
   script:
     - go test -v -cover ./stores/pgx
+  coverage: '/coverage: \d+.\d+% of statements/'

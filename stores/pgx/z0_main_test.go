@@ -95,6 +95,8 @@ type ClauseBasic struct {
 	Slug  string   `bun:"slug,notnull,type:name,unique" json:"slug" `
 	Text  string   `bun:"text,notnull,type:text" form:"text" json:"text" `
 	Cates []string `bun:"cates,notnull,type:jsonb" form:"cats" json:"cats" `
+
+	Publish comm.Date `bun:"publish,notnull,type:date,default:current_date" form:"publish" json:"publish"`
 } // @name ClauseBasic
 
 type Clauses []Clause
