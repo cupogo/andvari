@@ -3,6 +3,7 @@ package comm
 import (
 	"database/sql/driver"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -92,6 +93,10 @@ func (d *Date) UnmarshalText(text []byte) error {
 }
 
 func ParseDate(s string) (Date, error) {
+	// truncate time
+	if i := strings.IndexByte(s, 'T'); i > 0 {
+		s = s[:i]
+	}
 	t, err := time.Parse(time.DateOnly, s)
 	if err != nil {
 		return zeroDate, err

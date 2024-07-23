@@ -156,6 +156,7 @@ func TestDate_String_Format_Marshal_Unmarshal(t *testing.T) {
 			if string(marshaled) != tt.marshalOut {
 				t.Errorf("Date.MarshalText() = %v, want %v", string(marshaled), tt.marshalOut)
 			}
+			marshaled = append(marshaled, []byte("T16:00:00.000Z")...)
 
 			var unmarshaled Date
 			if err := unmarshaled.UnmarshalText(marshaled); err != nil {
