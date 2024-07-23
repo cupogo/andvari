@@ -93,6 +93,40 @@ func baseNormalizeTime(duration time.Duration, offset int) time.Time {
 	return zeroTime.Add(duration - time.Duration(offset)*time.Second)
 }
 
+func TestDate_Add(t *testing.T) {
+	baseDate := NewDate(2000, 1, 1)
+	addedDate := baseDate.Add(366) // should result in 2001-01-01 due to leap year
+	expectedDate := NewDate(2001, 1, 1)
+	if !addedDate.Equal(expectedDate) {
+		t.Errorf("Date.Add(365) failed; expected %v, got %v", addedDate.Time(), expectedDate.Time())
+	}
+}
+
+func TestDate_Since(t *testing.T) {
+	startDate := NewDate(2000, 1, 1)
+	endDate := NewDate(2001, 1, 1)
+	daysSince := endDate.Since(startDate)
+
+	if daysSince != 366 { // leap year
+		t.Errorf("Date.Since() failed; expected 366, got %d", daysSince)
+	}
+}
+
+func TestDate_Comparisons(t *testing.T) {
+	date1 := NewDate(2000, 1, 1)
+	date2 := NewDate(2001, 1, 1)
+
+	if !date1.Before(date2) {
+		t.Errorf("date1 should be before date2")
+	}
+	if !date2.After(date1) {
+		t.Errorf("date2 should be after date1")
+	}
+	if date1.Equal(date2) {
+		t.Errorf("date1 should not be equal to date2")
+	}
+}
+
 func TestDate_Age(t *testing.T) {
 	currentTime := time.Date(2023, 3, 25, 0, 0, 0, 0, time.UTC)
 	timeNow := func() time.Time { return currentTime }
@@ -132,7 +166,7 @@ func TestDate_String_Format_Marshal_Unmarshal(t *testing.T) {
 		formattedOut string
 		marshalOut   string
 	}{
-		{"Beginning of epoch", Date(0), "2000-01-01", "January 01, 2006", "January 01, 2000", "2000-01-01"},
+		{"Beginning of epoch", Date(0), "2000-01-01", "January 01, 2006", "January 01, 2000", ""},
 		{"One day later", Date(1), "2000-01-02", "Jan 02, 2006", "Jan 02, 2000", "2000-01-02"},
 		{"One month later", Date(31), "2000-02-01", "Jan 02, 2006 Monday", "Feb 01, 2000 Tuesday", "2000-02-01"},
 		{"Leap year test", Date(366), "2001-01-01", "2006", "2001", "2001-01-01"},

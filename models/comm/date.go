@@ -79,6 +79,9 @@ func (d Date) String() string {
 }
 
 func (d Date) MarshalText() ([]byte, error) {
+	if d == zeroDate {
+		return []byte{}, nil
+	}
 	return []byte(d.String()), nil
 }
 
@@ -92,10 +95,14 @@ func (d *Date) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// ParseDate 2006-01-02
 func ParseDate(s string) (Date, error) {
 	// truncate time
-	if i := strings.IndexByte(s, 'T'); i > 0 {
+	if i := strings.IndexByte(s, 'T'); i > -1 {
 		s = s[:i]
+	}
+	if len(s) == 0 {
+		return zeroDate, nil
 	}
 	t, err := time.Parse(time.DateOnly, s)
 	if err != nil {
