@@ -150,7 +150,7 @@ func ModelWithPKID(ctx context.Context, db IDB, obj Model, id any, columns ...st
 	}
 
 	logger().Infow("invalid id", "id", id, "name", ModelName(obj))
-	return fmt.Errorf("invalid id: '%+v'", id)
+	return fmt.Errorf("%w: '%+v'", ErrInvalidID, id)
 }
 
 func ModelWithUnique(ctx context.Context, db IDB, obj Model, key string, val any, cols ...string) error {

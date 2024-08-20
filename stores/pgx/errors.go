@@ -13,6 +13,7 @@ var (
 	ErrInternal  = errors.New("internal error")
 
 	ErrInvalidArgs = errors.New("invalid args")
+	ErrInvalidID   = errors.New("invalid id")
 )
 
 type errID struct {
