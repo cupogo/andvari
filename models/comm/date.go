@@ -75,6 +75,9 @@ func (d Date) Format(layout string) string {
 }
 
 func (d Date) String() string {
+	if d == zeroDate {
+		return ""
+	}
 	return d.Format(time.DateOnly)
 }
 

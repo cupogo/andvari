@@ -166,7 +166,7 @@ func TestDate_String_Format_Marshal_Unmarshal(t *testing.T) {
 		formattedOut string
 		marshalOut   string
 	}{
-		{"Beginning of epoch", Date(0), "2000-01-01", "January 01, 2006", "January 01, 2000", ""},
+		{"Beginning of epoch", Date(0), "", "January 01, 2006", "January 01, 2000", ""},
 		{"One day later", Date(1), "2000-01-02", "Jan 02, 2006", "Jan 02, 2000", "2000-01-02"},
 		{"One month later", Date(31), "2000-02-01", "Jan 02, 2006 Monday", "Feb 01, 2000 Tuesday", "2000-02-01"},
 		{"Leap year test", Date(366), "2001-01-01", "2006", "2001", "2001-01-01"},
