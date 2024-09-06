@@ -23,6 +23,15 @@ func (z OIDs) Has(id OID) bool {
 	return false
 }
 
+func (z OIDs) Remove(id OID) (r OIDs) {
+	for _, v := range z {
+		if v != id {
+			r = append(r, v)
+		}
+	}
+	return
+}
+
 type StringSlice []string
 
 func (ss StringSlice) String() string {
