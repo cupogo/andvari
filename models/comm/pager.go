@@ -37,11 +37,16 @@ func (p *PageSpec) GetPage() int {
 // TODO pagespec validation
 
 func (p *PageSpec) GetSkip() int {
+	if p.Skip == 0 && p.Page > 1 && p.Limit > 0 {
+		return (p.Page - 1) * p.Limit
+	}
 	return p.Skip
 }
 
 func (p *PageSpec) SetSkip(skip int) {
-	p.Skip = skip
+	if skip >= 0 {
+		p.Skip = skip
+	}
 }
 
 // GetSort eg. createtime asc => {"createtime":-1}

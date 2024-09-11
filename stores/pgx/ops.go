@@ -100,11 +100,7 @@ func QueryPager(ctx context.Context, p Pager, q *SelectQuery) (count int, err er
 	}
 
 	if limit > 0 {
-		skip := p.GetSkip()
-		if skip == 0 && p.GetPage() > 0 {
-			skip = (p.GetPage() - 1) * limit
-		}
-		count, err = q.Limit(limit).Offset(skip).ScanAndCount(ctx)
+		count, err = q.Limit(limit).Offset(p.GetSkip()).ScanAndCount(ctx)
 	} else if limit < 0 {
 		count, err = q.Count(ctx)
 	} else {
