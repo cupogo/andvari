@@ -71,6 +71,23 @@ func (m JsonKV) GetBool(key string) bool {
 	return false
 }
 
+func (m JsonKV) GetStringSlice(key string) (s []string, rk bool) {
+	if v, ok := m[key]; ok {
+		if va, ok := v.([]any); ok {
+			for _, val := range va {
+				switch vv := val.(type) {
+				case string:
+					s = append(s, vv)
+					rk = true
+				default:
+					return nil, false
+				}
+			}
+		}
+	}
+	return
+}
+
 // Set ...
 func (m JsonKV) Set(k string, v any) {
 	if m == nil {

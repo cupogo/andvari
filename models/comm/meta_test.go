@@ -90,3 +90,14 @@ func TestMetaModel(t *testing.T) {
 	}
 
 }
+
+func TestMetaSlice(t *testing.T) {
+	sl := JsonKV{
+		"s": []any{"123", "456"},
+	}
+	if ss, ok := sl.GetStringSlice("s"); ok && ss[0] == "123" {
+		t.Log("OK")
+	} else {
+		t.Error("ERR")
+	}
+}
