@@ -321,6 +321,13 @@ func TestOps(t *testing.T) {
 	count, err := QueryList(ctx, db, nil, &data2).Count(ctx)
 	assert.NoError(t, err)
 	assert.NotZero(t, count)
+
+	var ids oid.OIDs
+	err = db.NewSelect().Model((*Clause)(nil)).Column("id").
+		Where("slug IN (?)", In([]string{"eagle", "falcon"})).Scan(ctx, &ids)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, ids)
+	t.Logf("ids: %v", ids)
 }
 
 func TestAlter(t *testing.T) {

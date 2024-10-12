@@ -2,6 +2,8 @@ package comm
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMeta(t *testing.T) {
@@ -99,5 +101,59 @@ func TestMetaSlice(t *testing.T) {
 		t.Log("OK")
 	} else {
 		t.Error("ERR")
+	}
+}
+
+func TestMetaGetStringSlice(t *testing.T) {
+	tests := []struct {
+		name          string
+		kv            JsonKV
+		key           string
+		expectedSlice []string
+		expectedOk    bool
+	}{
+		{
+			name:          "Key does not exist",
+			kv:            JsonKV{},
+			key:           "none",
+			expectedSlice: nil,
+			expectedOk:    false,
+		},
+		{
+			name:          "Key exists with non-slice value",
+			kv:            JsonKV{"key1": "value"},
+			key:           "key1",
+			expectedSlice: nil,
+			expectedOk:    false,
+		},
+		{
+			name:          "Key exists with a slice containing non-strings",
+			kv:            JsonKV{"key2": []any{1, 2, 3}},
+			key:           "key2",
+			expectedSlice: nil,
+			expectedOk:    false,
+		},
+		{
+			name:          "Key exists with empty slice",
+			kv:            JsonKV{"key3": []any{}},
+			key:           "key3",
+			expectedSlice: nil,
+			expectedOk:    false,
+		},
+		{
+			name:          "Key exists with slice all strings",
+			kv:            JsonKV{"key4": []any{"hello", "world"}},
+			key:           "key4",
+			expectedSlice: []string{"hello", "world"},
+			expectedOk:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			slice, ok := tt.kv.GetStringSlice(tt.key)
+			assert.Equal(t, tt.expectedSlice, slice)
+			assert.Equal(t, tt.expectedOk, ok)
+		})
 	}
 }
