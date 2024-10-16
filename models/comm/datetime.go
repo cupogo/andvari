@@ -41,6 +41,14 @@ func AsDateTime(tv any) (DateTime, bool) {
 		return NewDateTimeFromTime(t.Time()), true
 	case int64:
 		return DateTime(t), true
+	case string:
+		if vt, err := time.Parse(time.RFC3339, t); err == nil {
+			return NewDateTimeFromTime(vt), true
+		}
+		if vt, err := time.Parse(time.DateTime, t); err == nil {
+			return NewDateTimeFromTime(vt), true
+		}
+		return 0, false
 	default:
 		return 0, false
 	}
