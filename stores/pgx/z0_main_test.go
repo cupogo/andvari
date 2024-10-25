@@ -328,6 +328,15 @@ func TestOps(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, ids)
 	t.Logf("ids: %v", ids)
+
+	exist = new(Clause)
+	assert.Error(t, EnsureID(ctx, db, exist, 1, 2))
+	assert.NoError(t, EnsureID(ctx, db, exist, "slug = ?", "eagle"))
+	assert.NotZero(t, exist.ID)
+
+	exists, err := Exists(ctx, db, (*Clause)(nil), "slug = ?", "eagle")
+	assert.NoError(t, err)
+	assert.True(t, exists)
 }
 
 func TestAlter(t *testing.T) {

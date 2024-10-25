@@ -652,3 +652,57 @@ func Count(ctx context.Context, db IDB, obj Model, args ...any) (count int) {
 	count, _ = q.Count(ctx)
 	return
 }
+
+// EnsureID queries a single record based on the given model and arguments to ascertain its existence
+// by focusing specifically on the ID column. It verifies that an object with the specified criteria exists in the database.
+//
+// Parameters:
+//   - ctx: Context allows providing a deadline or cancellation signal along with certain scoped values to the request.
+//   - db: IDB represents a database interface that enables querying procedures.
+//   - obj: Model represents the abstraction of a data model used in database operations. It is typically structured
+//     according to the table it correlates to.
+//   - args...: Variadic any-type parameters offering flexibility in query conditions or options.
+//
+// Returns:
+//   - error: If no valid query can be constructed using the provided arguments, it returns ErrInvalidArgs.
+//     If the query runs but fails to find any rows, it converts and returns ErrNotFound. Otherwise,
+//     if the query successfully finds a row or encounters another issue, that specific error is returned.
+func EnsureID(ctx context.Context, db IDB, obj Model, args ...any) error {
+	q, ok := QueryOne(db, obj, args...)
+	if !ok {
+		return ErrInvalidArgs // Return an error if arguments do not form a valid query
+	}
+	q.Column(field.ID) // Focus on the ID column for the existence check
+	err := q.Scan(ctx)
+	if err != nil {
+		if err == ErrNoRows {
+			err = ErrNotFound
+		}
+	}
+	return err
+}
+
+// Exists checks if a record that matches the specified conditions exists in the database.
+// It leverages a query-built mechanism to determine the presence of the record.
+//
+// Parameters:
+// - ctx: Context provides capabilities like cancellation and timeout. It is used to control the request's lifetime.
+// - db: IDB is an interface representing the database connection that allows for executing queries or transactions.
+// - obj: Model represents the database model or structure which is used as the basis for forming SQL queries.
+// - args: A variadic parameter slice that can include any number of arguments which may modify or specify conditions for the SQL query.
+//
+// Returns:
+// - bool: A boolean value representing whether the record exists (true) or not (false).
+// - error: An error, if encountered. Possible errors include ErrInvalidArgs if the input arguments are not suitable for forming a valid query.
+//
+// The function begins by attempting to construct a Query object from the provided database interface,
+// model object, and arguments. If the Query cannot be successfully formed (as indicated by 'ok' being false),
+// it returns 'false' along with an ErrInvalidArgs error indicating faulty or insufficient input parameters.
+// If the Query formation is successful, it proceeds to check whether the record exists in the database context specified.
+func Exists(ctx context.Context, db IDB, obj Model, args ...any) (bool, error) {
+	q, ok := QueryOne(db, obj, args...)
+	if !ok {
+		return false, ErrInvalidArgs // Return an error if arguments do not form a valid query
+	}
+	return q.Exists(ctx)
+}
