@@ -125,7 +125,7 @@ GRANT ALL ON DATABASE testing TO testing;
 
 ```go
 
-RegisterModel((*cms1.Article)(nil))
+pgx.RegisterModel((*cms1.Article)(nil))
 
 dsn := "postgres://testing:develop0@localhost/testing?sslmode=disable"
 tscfg := "zhcfg"
