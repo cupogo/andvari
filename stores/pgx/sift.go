@@ -53,9 +53,9 @@ type ModelSpec struct {
 	// 创建者ID
 	CreatorID string `form:"creatorID" json:"creatorID"  extensions:"x-order=2"`
 	// 创建时间 形式： yyyy-mm-dd, 1_day, 2_weeks, 3_months
-	Created string `form:"created" json:"created"  extensions:"x-order=3" binding:"during_custom_validation"`
+	Created string `form:"created" json:"created"  extensions:"x-order=3"`
 	// 更新时间 形式： yyyy-mm-dd, 1_day, 2_weeks, 3_months
-	Updated string `form:"updated" json:"updated"  extensions:"x-order=4" binding:"during_custom_validation"`
+	Updated string `form:"updated" json:"updated"  extensions:"x-order=4"`
 	// IsDelete 查询删除的记录
 	IsDelete bool `form:"isDelete" json:"isDelete"  extensions:"x-order=5"`
 
