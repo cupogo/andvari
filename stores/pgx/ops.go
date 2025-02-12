@@ -399,10 +399,8 @@ func StoreWithSet[P ModelSetPtr[T, U], T any, U any](ctx context.Context, db IDB
 }
 
 func DoMetaUp(ctx context.Context, db IDB, obj Model) {
-	if mm, ok := obj.(ModelMeta); ok {
-		for _, f := range metaUpFuncs {
-			f(ctx, db, mm)
-		}
+	for _, f := range metaUpFuncs {
+		f(ctx, db, obj)
 	}
 }
 
