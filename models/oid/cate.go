@@ -27,6 +27,10 @@ const (
 	OtGoods              // 10 东西: 设备、配件、软件等
 	OtFile               // 11 文件和文档等
 	OtImage              // 12 图片
+	OtLocale             // 13 位置
+	OtMessage            // 14 消息
+	OtProject            // 15 项目
+	OtTask               // 16 任务
 	otLast
 )
 
@@ -58,6 +62,14 @@ func (ot ObjType) Code() string {
 		return "fi"
 	case OtImage:
 		return "im"
+	case OtLocale:
+		return "lo"
+	case OtMessage:
+		return "ms"
+	case OtProject:
+		return "pj"
+	case OtTask:
+		return "ta"
 	}
 	return valCate(uint16(ot))
 }
@@ -88,6 +100,14 @@ func ParseCate(s string) ObjType {
 		return OtFile
 	case "im", "image":
 		return OtImage
+	case "lo", "locale":
+		return OtLocale
+	case "ms", "message":
+		return OtMessage
+	case "pj", "project":
+		return OtProject
+	case "ta", "task":
+		return OtTask
 	default:
 		return OtDefault
 	}
@@ -100,6 +120,8 @@ var (
 		"team":       "tm",
 		"token":      "tk",
 		"form":       "fm",
+		"message":    "ms",
+		"project":    "pj",
 	}
 	prefixes = map[string]uint16{
 		"ac": 1,
@@ -114,6 +136,10 @@ var (
 		"go": 10,
 		"fi": 11,
 		"im": 12,
+		"lo": 13,
+		"ms": 14,
+		"pj": 15,
+		"ta": 16,
 	}
 	cateLock sync.Mutex
 )

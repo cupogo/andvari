@@ -13,13 +13,14 @@ func init() {
 	RegistCate("orderItem", "oi")
 	RegistCate("quotation", "qt")
 	RegistCate("quotationItem", "qi")
-	RegistCate("shopCart", "sct")
+	RegistCate("shopCart", "sc")
 }
 
 func TestCate(t *testing.T) {
 	for _, s := range []string{
 		"department", "account", "company", "article", "event", "token",
 		"people", "form", "goods", "file", "image", "team",
+		"locale", "message", "project", "task",
 		"shopCart", "quotation", "orderItem",
 	} {
 		id, ok := NewWithCode(s)
