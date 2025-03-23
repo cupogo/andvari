@@ -47,17 +47,17 @@ type StringsDiff struct {
 // ModelSpec 模型默认的查询条件
 type ModelSpec struct {
 	// 主键编号`ids`（以逗号分隔的字串），仅供 Form 或 Query 使用, example:"aaa,bbb,ccc"
-	IDsStr oid.OIDsStr `form:"ids" json:"ids"  extensions:"x-order=0" example:"aaa,bbb,ccc"`
+	IDsStr oid.OIDsStr `form:"ids" json:"ids,omitempty"  extensions:"x-order=0" example:"aaa,bbb,ccc"`
 	// 主键编号`ids`（集），仅供 JSON 使用, example:"['aaa','bbb','ccc']"
-	IDs oid.OIDs `form:"-" json:"idArr"   swaggerignore:"true"`
+	IDs oid.OIDs `form:"-" json:"idArr,omitempty"   swaggerignore:"true"`
 	// 创建者ID
-	CreatorID string `form:"creatorID" json:"creatorID"  extensions:"x-order=2"`
+	CreatorID string `form:"creatorID" json:"creatorID,omitempty"  extensions:"x-order=2"`
 	// 创建时间 形式： yyyy-mm-dd, 1_day, 2_weeks, 3_months
-	Created string `form:"created" json:"created"  extensions:"x-order=3"`
+	Created string `form:"created" json:"created,omitempty"  extensions:"x-order=3"`
 	// 更新时间 形式： yyyy-mm-dd, 1_day, 2_weeks, 3_months
-	Updated string `form:"updated" json:"updated"  extensions:"x-order=4"`
+	Updated string `form:"updated" json:"updated,omitempty"  extensions:"x-order=4"`
 	// IsDelete 查询删除的记录
-	IsDelete bool `form:"isDelete" json:"isDelete"  extensions:"x-order=5"`
+	IsDelete bool `form:"isDelete" json:"isDelete,omitempty"  extensions:"x-order=5"`
 
 	colinc []string
 	colexc []string
