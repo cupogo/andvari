@@ -33,7 +33,7 @@ lint:
   services: []
   script:
     - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-    - go vet ./...  && ${GOPATH}/bin/golangci-lint run --disable structcheck ./...
+    - go vet ./...  && ${GOPATH}/bin/golangci-lint run -v ./...
 
 test-models:
   stage: test
