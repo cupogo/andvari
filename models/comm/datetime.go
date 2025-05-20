@@ -61,6 +61,17 @@ type DateTime int64
 
 var _ json.Marshaler = DateTime(0)
 var _ json.Unmarshaler = (*DateTime)(nil)
+func (d DateTime) String() string {
+	if d == 0 {
+		return ""
+	}
+	return d.Time().String()
+}
+
+func (d DateTime) MarshalText() ([]byte, error) {
+	return []byte(d.String()), nil
+}
+
 
 // MarshalJSON marshal to time type.
 func (d DateTime) MarshalJSON() ([]byte, error) {
