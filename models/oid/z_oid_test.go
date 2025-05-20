@@ -146,9 +146,11 @@ func TestOIDs(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, ids)
 
-	ids, err = OIDsStr("pe-39vg1q8y2mf4").Decode()
+	ids, err = OIDsStr("pe-39vg1q8y2mf4,pe-4putyrgmp91c").Decode()
 	assert.NoError(t, err)
 	assert.NotNil(t, ids)
+
+	assert.Equal(t, `["pe-39vg1q8y2mf4","pe-4putyrgmp91c"]`, ids.ToJSON())
 
 	assert.Nil(t, OIDsStr("").Vals())
 	assert.Nil(t, OIDsStr(",").Vals())

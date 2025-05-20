@@ -2,6 +2,8 @@ package comm
 
 import (
 	"github.com/cupogo/andvari/utils/array"
+
+	"slices"
 )
 
 type ChangeValue struct {
@@ -28,13 +30,8 @@ func (cv ChangeValues) Filter(keys ...string) (vo ChangeValues) {
 		vo = cv
 		return
 	}
-	vo = array.FilterFunc[ChangeValues](cv, func(e ChangeValue) bool {
-		for _, k := range keys {
-			if e.Column == k {
-				return true
-			}
-		}
-		return false
+	vo = array.FilterFunc(cv, func(e ChangeValue) bool {
+		return slices.Contains(keys, e.Column)
 	})
 
 	return
