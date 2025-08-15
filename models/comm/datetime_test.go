@@ -1,9 +1,13 @@
 package comm
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 )
+
+var _ json.Marshaler = DateTime(0)
+var _ json.Unmarshaler = (*DateTime)(nil)
 
 // 实现 ITime 接口的测试结构体
 type testITime struct {

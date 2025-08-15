@@ -1,8 +1,10 @@
 package comm
 
 import (
-	"encoding/json"
+	"bytes"
 	"time"
+
+	"github.com/cupogo/andvari/utils/timeutil"
 )
 
 type ITime interface {
@@ -59,8 +61,6 @@ func AsDateTime(tv any) (DateTime, bool) {
 // DateTime represents the BSON datetime value.
 type DateTime int64
 
-var _ json.Marshaler = DateTime(0)
-var _ json.Unmarshaler = (*DateTime)(nil)
 func (d DateTime) String() string {
 	if d == 0 {
 		return ""
@@ -72,6 +72,18 @@ func (d DateTime) MarshalText() ([]byte, error) {
 	return []byte(d.String()), nil
 }
 
+func (d *DateTime) UnmarshalText(data []byte) error {
+	if len(data) == 0 || string(data) == "null" || data[0] == '0' {
+		return nil
+	}
+	nt, err := timeutil.ParseTime(string(data))
+	if err != nil {
+		return err
+	}
+
+	*d = NewDateTimeFromTime(nt)
+	return nil
+}
 
 // MarshalJSON marshal to time type.
 func (d DateTime) MarshalJSON() ([]byte, error) {
@@ -94,13 +106,7 @@ func (d *DateTime) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var tempTime time.Time
-	if err := tempTime.UnmarshalJSON(data); err != nil {
-		return err
-	}
-
-	*d = NewDateTimeFromTime(tempTime)
-	return nil
+	return d.UnmarshalText(bytes.Trim(data, "\""))
 }
 
 // Time returns the date as a time type.
