@@ -55,7 +55,10 @@ func (d Date) Equal(other Date) bool {
 }
 
 func (d Date) Age() int {
-	now := nowFunc()
+	return d.AgeAt(nowFunc())
+}
+
+func (d Date) AgeAt(now time.Time) int {
 	birth := d.Time()
 	age := now.Year() - birth.Year()
 
