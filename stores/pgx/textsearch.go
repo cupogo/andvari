@@ -3,6 +3,7 @@ package pgx
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/cupogo/andvari/models/field"
 	"github.com/cupogo/andvari/utils/sqlutil"
@@ -67,7 +68,8 @@ func (tss *TextSearchSpec) SiftTS(q *SelectQuery, hide bool) *SelectQuery {
 			}
 		}
 		if tss.enabled {
-			sq.WhereOr("? @@ "+getTsQuery(tss.cfgname, tss.SearchStyle, tss.SearchKeyWord), Ident(textVec))
+			sq.WhereOr("? @@ "+getTsQuery(tss.cfgname, tss.SearchStyle,
+				strings.ToLower(tss.SearchKeyWord)), Ident(textVec))
 		}
 		return sq
 	})
