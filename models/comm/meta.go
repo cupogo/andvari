@@ -1,5 +1,7 @@
 package comm
 
+import "maps"
+
 // JsonKV as meta values
 type JsonKV map[string]any // @name JsonKV
 // Meta alias of map
@@ -23,9 +25,7 @@ func MergeMeta(m, o JsonKV) JsonKV {
 	if o == nil {
 		return m
 	}
-	for k, v := range o {
-		m[k] = v
-	}
+	maps.Copy(m, o)
 	return m
 }
 
@@ -89,11 +89,11 @@ func (m JsonKV) GetStringSlice(key string) (s []string, rk bool) {
 }
 
 // Set ...
-func (m JsonKV) Set(k string, v any) {
-	if m == nil {
-		m = JsonKV{}
+func (m *JsonKV) Set(k string, v any) {
+	if *m == nil {
+		*m = JsonKV{}
 	}
-	m[k] = v
+	(*m)[k] = v
 }
 
 // Unset ...
@@ -115,15 +115,13 @@ func (m JsonKV) Filter(keys ...string) (out JsonKV) {
 // Copy ...
 func (m JsonKV) Copy() (out JsonKV) {
 	out = JsonKV{}
-	for k, v := range m {
-		out[k] = v
-	}
+	maps.Copy(out, m)
 	return
 }
 
 type KV struct {
 	Key   string `json:"key"`
-	Value any    `json:"value"`
+	Value any    `json:"value" skip:"true"`
 }
 
 type KVs []KV
@@ -136,7 +134,7 @@ type MetaUp = MetaDiff // patch of migrate only, will delete soon
 
 type MetaField struct {
 	// Meta 元信息
-	Meta Meta `bson:"meta,omitempty" json:"meta,omitempty" bun:"meta,notnull,nullzero,default:'{}'" pg:"meta,notnull,use_zero,default:'{}'" extensions:"x-order=|"`
+	Meta Meta `bson:"meta,omitempty" json:"meta,omitempty" bun:"meta,notnull,nullzero,default:'{}'" pg:"meta,notnull,use_zero,default:'{}'" extensions:"x-order=|" skip:"true"`
 }
 
 func (mf *MetaField) MetaCopy() Meta {

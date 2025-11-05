@@ -93,6 +93,24 @@ func TestMetaModel(t *testing.T) {
 
 }
 
+func TestModelMetaSet(t *testing.T) {
+	tmm := new(tMetaMod)
+	tmm.Meta.Set("c", 5)
+	if tmm.Meta.GetInt("c") == 5 {
+		t.Log("OK")
+	} else {
+		t.Error("ERR")
+	}
+
+	tmm.Meta.Unset("c")
+	if _, ok := tmm.Meta["c"]; !ok {
+		t.Log("unset() OK")
+	} else {
+		t.Error("ERR")
+	}
+
+}
+
 func TestMetaSlice(t *testing.T) {
 	sl := JsonKV{
 		"s": []any{"123", "456"},
