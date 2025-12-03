@@ -1,1 +1,0 @@
-# OpenTelemetry instrumentation for Bun

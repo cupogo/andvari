@@ -13,12 +13,13 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bunotel"
 	"github.com/uptrace/bun/migrate"
 	"github.com/uptrace/bun/schema"
 	"github.com/yalue/merged_fs"
 
 	"github.com/cupogo/andvari/models/oid"
-	"github.com/cupogo/andvari/stores/pgx/bunotel"
+	"github.com/cupogo/andvari/utils"
 )
 
 type IConn = bun.IConn
@@ -327,9 +328,18 @@ func patchPool(sqldb *sql.DB) {
 func patchHookOTEL(db *bun.DB, dbname string) {
 	if s, ok := os.LookupEnv("PGX_BUN_OTEL"); ok && len(s) > 0 {
 		if s == "1" || s == "2" {
-			db.AddQueryHook(bunotel.NewQueryHook(
+			db.WithQueryHook(bunotel.NewQueryHook(
 				bunotel.WithDBName(dbname),
 				bunotel.WithFormattedQueries(s == "2"),
+				bunotel.WithSpanNameQueryGen(func(qe *bun.QueryEvent) string {
+					if qe.IQuery != nil {
+						if tableName := qe.IQuery.GetTableName(); tableName != "" {
+							return qe.Operation() + " " + utils.CamelCased(tableName, false)
+						}
+					}
+
+					return qe.Operation()
+				}),
 			))
 		}
 	}
@@ -339,7 +349,7 @@ func patchHookDebug(db *bun.DB) {
 	if s, ok := os.LookupEnv("PGX_QUERY_DEBUG"); ok && len(s) > 0 {
 		if x, err := strconv.ParseInt(s, 10, 32); err == nil && x > 0 {
 			debugHook := &DebugHook{Verbose: x > 1}
-			db.AddQueryHook(debugHook)
+			db.WithQueryHook(debugHook)
 		}
 	}
 }
