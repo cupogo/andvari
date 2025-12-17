@@ -47,6 +47,18 @@ func (m JsonKV) GetInt(key string) int {
 	return 0
 }
 
+func (m JsonKV) GetInt64(key string) int64 {
+	if v, ok := m[key]; ok {
+		switch z := v.(type) {
+		case float64:
+			return int64(z)
+		case int64:
+			return z
+		}
+	}
+	return 0
+}
+
 func (m JsonKV) GetStr(key string) string {
 	if v, ok := m[key]; ok {
 		if s, ok := v.(string); ok {
