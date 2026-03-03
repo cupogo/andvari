@@ -17,8 +17,8 @@ type IDField struct {
 // DateFields struct contain `createdAt` and `updatedAt`
 // fields that autofill on insert/update model.
 type DateFields struct {
-	CreatedAt time.Time  `bson:"created" json:"createdAt" form:"created" bun:"created,notnull,type:timestamptz,default:now()" pg:"created,notnull,default:now()" extensions:"x-order=,"` // 创建时间
-	UpdatedAt *time.Time `bson:"updated" json:"updatedAt,omitempty" form:"updated" bun:"updated,type:timestamptz" pg:"updated" extensions:"x-order=."`                                   // 变更时间
+	CreatedAt time.Time  `bson:"created" json:"createdAt,omitzero" form:"created" bun:"created,notnull,type:timestamptz,default:now()" pg:"created,notnull,default:now()" extensions:"x-order=,"` // 创建时间
+	UpdatedAt *time.Time `bson:"updated" json:"updatedAt,omitempty" form:"updated" bun:"updated,type:timestamptz" pg:"updated" extensions:"x-order=."`                                            // 变更时间
 }
 
 // PrepareID method prepare id value to using it as id in filtering,...
