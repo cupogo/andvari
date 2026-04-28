@@ -127,6 +127,22 @@ func TestDate_Comparisons(t *testing.T) {
 	}
 }
 
+func TestDate_Today_Add30_In30DayMonth(t *testing.T) {
+	// mock 30天月份中的某一天 (2024年4月1日)
+	mockTime := time.Date(2026, 4, 28, 11, 0, 0, 0, time.UTC)
+	origNowFunc := nowFunc
+	nowFunc = func() time.Time { return mockTime }
+	defer func() { nowFunc = origNowFunc }()
+
+	today := Today()
+	after30 := today.Add(30)
+
+	expected := NewDate(2026, 5, 28)
+	if !after30.Equal(expected) {
+		t.Errorf("Today()=%v, Add(30)=%v, want %v", today, after30, expected)
+	}
+}
+
 func TestDate_Age(t *testing.T) {
 	currentTime := time.Date(2023, 3, 25, 0, 0, 0, 0, time.UTC)
 	timeNow := func() time.Time { return currentTime }

@@ -18,12 +18,14 @@ var (
 
 func NewDate(year, month, day int) Date {
 	t := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-	return NewDateFromTime(t)
+	const daySeconds = 86400
+	days := int32((t.Unix() - zeroTime.Unix()) / daySeconds)
+	return Date(days)
 }
 
 func NewDateFromTime(t time.Time) Date {
-	days := int32(t.Sub(zeroTime) / time.Hour / 24)
-	return Date(days)
+	y, m, d := t.Date()
+	return NewDate(y, int(m), d)
 }
 
 func Today() Date {
