@@ -7,12 +7,16 @@ import (
 
 type OIDs []OID
 
-func (z OIDs) String() string {
+func (z OIDs) StringSlice() StringSlice {
 	a := make(StringSlice, len(z))
 	for i := range z {
 		a[i] = z[i].String()
 	}
-	return a.String()
+	return a
+}
+
+func (z OIDs) String() string {
+	return z.StringSlice().String()
 }
 
 func (z OIDs) Has(id OID) bool {
