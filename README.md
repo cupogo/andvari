@@ -4,7 +4,17 @@
 
 Base model and data access components
 
-Dependencies
+## 三种 Model 主键类型
+
+| Model 类型 | ID 类型 | 生成方式 | 使用场景 |
+|-----------|--------|----------|----------|
+| **DefaultModel** | OID (字符串) | 自动生成 (`oid.NewID()`) | 大多数业务模型 |
+| **DunceModel** | 字串 (string) | 手动指定 | 需要业务含义的 ID，如 slug、code |
+| **SerialModel** | 自增序列 (int) | 数据库自动递增 | 历史流水、统计类 |
+
+
+
+## Dependencies
 ---
 
 - [Bun](https://bun.uptrace.dev/)

@@ -1,6 +1,8 @@
 package comm
 
 import (
+	"fmt"
+
 	"github.com/cupogo/andvari/utils/array"
 
 	"slices"
@@ -10,9 +12,16 @@ type ChangeValue struct {
 	// 列名称
 	Column string `bson:"key,omitempty" json:"key" extensions:"x-order=a"`
 	// 旧值
-	OldVal any `bson:"ov,omitempty" json:"ov" extensions:"x-order=b"`
+	OldVal any `bson:"ov,omitempty" json:"ov" extensions:"x-order=b" skip:"true"`
 	// 新值
-	NewVal any `bson:"nv,omitempty" json:"nv" extensions:"x-order=c"`
+	NewVal any `bson:"nv,omitempty" json:"nv" extensions:"x-order=c" skip:"true"`
+}
+
+func (cv ChangeValue) OldStr() string {
+	if s, ok := cv.OldVal.(string); ok {
+		return s
+	}
+	return fmt.Sprintf("%v", cv.OldVal)
 }
 
 type ChangeValues []ChangeValue
@@ -35,6 +44,15 @@ func (cv ChangeValues) Filter(keys ...string) (vo ChangeValues) {
 	})
 
 	return
+}
+
+func (cv ChangeValues) Exist(key string) (ChangeValue, bool) {
+	for _, a := range cv {
+		if key == a.Column {
+			return a, true
+		}
+	}
+	return ChangeValue{}, false
 }
 
 type ChangeMod struct {
