@@ -95,6 +95,7 @@ type tableColumn struct {
 	ColumnName    string    `bun:"column_name"`
 	IsNullable    PGYesOrNo `bun:"is_nullable"`
 	DataType      string    `bun:"data_type"`
+	UdtName       string    `bun:"udt_name"`
 	ColumnDefault string    `bun:"column_default"`
 }
 
@@ -243,9 +244,17 @@ func columnDefaultWithName(sqlName string) string {
 		return "DEFAULT '0.0.0.0'::inet"
 	case "macaddr", "macaddr8":
 		return "DEFAULT '00-00-00-00-00-00'::macaddr"
-		// TODO: case array and array_type
+	case "array":
+		return "DEFAULT '{}'"
 	}
 	return ""
+}
+
+func formatDataType(dataType, udtName string) string {
+	if dataType == "ARRAY" && strings.HasPrefix(udtName, "_") {
+		return udtName[1:] + "[]"
+	}
+	return dataType
 }
 
 func getColumnDefault(f *schema.Field) (colDef string, err error) {

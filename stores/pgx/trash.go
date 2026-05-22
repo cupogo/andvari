@@ -238,7 +238,7 @@ func addTrashColumn(ctx context.Context, db IDB,
 			def = columnDefaultWithName(col.DataType)
 		}
 		query := fmt.Sprintf("ALTER TABLE IF EXISTS %q.%q ADD IF NOT EXISTS %q %s %s %s;",
-			schema, tbName, col.ColumnName, col.DataType, notNull, def)
+			schema, tbName, col.ColumnName, formatDataType(col.DataType, col.UdtName), notNull, def)
 
 		if option.output != nil {
 			comment := fmt.Sprintf(syncTrashColumnSegment, tbName, col.ColumnName, schema)

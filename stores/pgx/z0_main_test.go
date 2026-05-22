@@ -358,3 +358,57 @@ func envOr(key, dft string) string {
 	}
 	return v
 }
+
+func TestFormatDataType(t *testing.T) {
+	tests := []struct {
+		dataType, udtName, want string
+	}{
+		{"ARRAY", "_text", "text[]"},
+		{"ARRAY", "_int4", "int4[]"},
+		{"ARRAY", "_varchar", "varchar[]"},
+		{"ARRAY", "_bool", "bool[]"},
+		{"ARRAY", "_float8", "float8[]"},
+		{"ARRAY", "_timestamptz", "timestamptz[]"},
+		{"ARRAY", "_jsonb", "jsonb[]"},
+		{"ARRAY", "_uuid", "uuid[]"},
+		{"ARRAY", "_numeric", "numeric[]"},
+		{"ARRAY", "", "ARRAY"},
+		{"text", "", "text"},
+		{"integer", "", "integer"},
+		{"boolean", "", "boolean"},
+		{"jsonb", "", "jsonb"},
+		{"timestamp with time zone", "", "timestamp with time zone"},
+	}
+	for _, tt := range tests {
+		got := formatDataType(tt.dataType, tt.udtName)
+		assert.Equal(t, tt.want, got, "formatDataType(%q, %q)", tt.dataType, tt.udtName)
+	}
+}
+
+func TestColumnDefaultWithNameArray(t *testing.T) {
+	assert.Equal(t, "DEFAULT '{}'", columnDefaultWithName("ARRAY"))
+	assert.Equal(t, "DEFAULT '{}'", columnDefaultWithName("array"))
+}
+
+func TestDiffTrashColumns(t *testing.T) {
+	defCols := tableColumns{
+		{ColumnName: "id", DataType: "text"},
+		{ColumnName: "name", DataType: "text"},
+		{ColumnName: "tags", DataType: "ARRAY", UdtName: "_text"},
+	}
+	trashCols := tableColumns{
+		{ColumnName: "id", DataType: "text"},
+		{ColumnName: "deleted", DataType: "text"},
+	}
+
+	adds, drops := diffTrashColumns(defCols, trashCols)
+
+	assert.Equal(t, 2, len(adds))
+	assert.Equal(t, "name", adds[0].ColumnName)
+	assert.Equal(t, "tags", adds[1].ColumnName)
+	assert.Equal(t, "ARRAY", adds[1].DataType)
+	assert.Equal(t, "_text", adds[1].UdtName)
+
+	assert.Equal(t, 1, len(drops))
+	assert.Equal(t, "deleted", drops[0].ColumnName)
+}
