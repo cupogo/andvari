@@ -39,7 +39,9 @@ type QueryApplierFn = func(q *SelectQuery) *SelectQuery
 var (
 	ErrBadConn = driver.ErrBadConn
 	ErrNoRows  = sql.ErrNoRows
-	In         = bun.In
+	In         = bun.In // nolint
+	List       = bun.List
+	Tuple      = bun.Tuple
 	Array      = pgdialect.Array
 )
 

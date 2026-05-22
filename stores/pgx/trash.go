@@ -72,6 +72,7 @@ func syncTrashSchema(ctx context.Context, db IDB, defSchema, trashSchema string,
 	// sync new tables from default schema to trash schema
 	err = syncTrashTables(ctx, db, defSchema, trashSchema, option)
 	if err != nil {
+		logger().Infow("syncTrashTables fail", "err", err)
 		return
 	}
 
@@ -170,16 +171,18 @@ func syncTrashColumns(ctx context.Context, db IDB, defSchema, trashSchema, tbNam
 	}
 
 	// diff columns between trash and default
-	as, ds := diffTrashColumns(defCols, trashCols)
+	adds, drops := diffTrashColumns(defCols, trashCols)
 
 	// add columns
-	err = addTrashColumn(ctx, db, trashSchema, tbName, as, option)
+	err = addTrashColumn(ctx, db, trashSchema, tbName, adds, option)
 	if err != nil {
+		logger().Infow("addTrashColumn fail", "err", err, "tbName", tbName, "adds", adds)
 		return
 	}
 	// drop columns
-	err = dropTrashColumn(ctx, db, trashSchema, tbName, ds, option)
+	err = dropTrashColumn(ctx, db, trashSchema, tbName, drops, option)
 	if err != nil {
+		logger().Infow("dropTrashColumn fail", "err", err, "tbName", tbName, "drops", drops)
 		return
 	}
 
@@ -247,6 +250,7 @@ func addTrashColumn(ctx context.Context, db IDB,
 			_, err = db.ExecContext(ctx, query)
 		}
 		if err != nil {
+			logger().Infow("exec fail", "err", err, "query", query)
 			return
 		}
 	}
@@ -270,6 +274,7 @@ func dropTrashColumn(ctx context.Context, db IDB,
 			_, err = db.ExecContext(ctx, query)
 		}
 		if err != nil {
+			logger().Infow("exec fail", "err", err, "query", query)
 			return
 		}
 	}
