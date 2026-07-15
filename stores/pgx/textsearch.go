@@ -3,6 +3,7 @@ package pgx
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/cupogo/andvari/models/field"
@@ -99,11 +100,16 @@ func CheckTsCfg(ctx context.Context, db IDB, ftsConfig string) bool {
 	err := db.NewSelect().Table("pg_ts_config").Column("oid").Where("cfgname = ?", ftsConfig).Scan(ctx, &ret)
 	if err == nil {
 		if ret > 0 {
-			logger().Debugw("fts checked ok", "ts cfg", ftsConfig)
+			logger().LogAttrs(ctx, slog.LevelDebug, "fts checked ok",
+			slog.String("ts cfg", ftsConfig),
+		)
 			return true
 		}
 	} else {
-		logger().Infow("fts checked fail", "tscfg", ftsConfig, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "fts checked fail",
+			slog.String("tscfg", ftsConfig),
+			slog.Any("err", err),
+		)
 	}
 	return false
 }

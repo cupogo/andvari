@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"io/fs"
+	"log/slog"
 	"os"
 	"reflect"
 	"runtime"
@@ -92,10 +93,20 @@ func OpenDB(dsn string) (db *bun.DB, user string, err error) {
 	db = bun.NewDB(sqldb, pgdialect.New(), bun.WithDiscardUnknownColumns())
 
 	if err = db.Ping(); err != nil {
-		logger().Infow("connect fail", "addr", pgcfg.Addr, "db", pgcfg.Database, "user", pgcfg.User, "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "connect fail",
+			slog.String("addr", pgcfg.Addr),
+			slog.String("db", pgcfg.Database),
+			slog.String("user", pgcfg.User),
+			slog.Any("err", err),
+		)
 		return
 	}
-	logger().Debugw("connected OK", "db", db.String(), "addr", pgcfg.Addr, "db", pgcfg.Database, "user", pgcfg.User)
+	logger().LogAttrs(context.Background(), slog.LevelDebug, "connected OK",
+		slog.String("db", db.String()),
+		slog.String("addr", pgcfg.Addr),
+		slog.String("db", pgcfg.Database),
+		slog.String("user", pgcfg.User),
+	)
 
 	patchHookOTEL(db, pgcfg.Database)
 	patchHookDebug(db)
@@ -247,7 +258,10 @@ func (w *DB) InitSchemas(ctx context.Context, dropIt bool) error {
 		return err
 	}
 	count, err := w.bulkExecAllFsSQLs(ctx)
-	logger().Infow("inited schema", "tables", len(allmodels), "sqls", count)
+	logger().LogAttrs(ctx, slog.LevelInfo, "inited schema",
+		slog.Int("tables", len(allmodels)),
+		slog.Int("sqls", count),
+	)
 	return err
 }
 
@@ -281,11 +295,15 @@ func (w *DB) RunMigrations(ctx context.Context, mfs ...fs.FS) error {
 	}
 	group, err := migrator.Migrate(ctx)
 	if err != nil {
-		logger().Infow("migrate fail", "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "migrate fail",
+			slog.Any("err", err),
+		)
 		return nil
 	}
 
-	logger().Infow("migrated", "result", group.String())
+	logger().LogAttrs(ctx, slog.LevelInfo, "migrated",
+		slog.String("result", group.String()),
+	)
 	return nil
 }
 
@@ -322,7 +340,9 @@ func patchPool(sqldb *sql.DB) {
 			maxOpenConns := x * runtime.GOMAXPROCS(0)
 			sqldb.SetMaxOpenConns(maxOpenConns)
 			sqldb.SetMaxIdleConns(maxOpenConns)
-			logger().Debugw("set max open = x * maxProcs", "x", x)
+			logger().LogAttrs(context.Background(), slog.LevelDebug, "set max open = x * maxProcs",
+				slog.Int("x", x),
+			)
 		}
 	}
 }

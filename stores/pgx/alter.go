@@ -6,6 +6,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"io"
+	"log/slog"
 	"reflect"
 	"strings"
 	"time"
@@ -150,7 +151,10 @@ func AlterModel(ctx context.Context, db IDB, schema string, model any, opts ...A
 		Where("table_name=?", tbName).
 		Exists(ctx)
 	if !exists {
-		logger().Infow("table not exists", "schema", schema, "table", tbName)
+		logger().LogAttrs(ctx, slog.LevelInfo, "table not exists",
+			slog.String("schema", schema),
+			slog.String("table", tbName),
+		)
 		return nil
 	}
 
@@ -327,16 +331,22 @@ func execColumnQuery(ctx context.Context, db IDB, output io.Writer, alter string
 	if output != nil {
 		_, err = output.Write(append([]byte(alterQuery), '\n'))
 		if err != nil {
-			logger().Infow("write fail", "err", err)
+			logger().LogAttrs(ctx, slog.LevelInfo, "write fail",
+				slog.Any("err", err),
+			)
 		}
 		return
 	}
 
 	_, err = db.ExecContext(ctx, alterQuery)
 	if err != nil {
-		logger().Infow("alter table fail", "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "alter table fail",
+			slog.Any("err", err),
+		)
 	} else {
-		logger().Infow("alter table done", "query", alterQuery)
+		logger().LogAttrs(ctx, slog.LevelInfo, "alter table done",
+			slog.String("query", alterQuery),
+		)
 	}
 
 	return err

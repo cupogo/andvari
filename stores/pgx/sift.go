@@ -2,6 +2,7 @@ package pgx
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -132,7 +133,10 @@ func SiftOIDs(q *SelectQuery, field string, s string, isOr bool) (*SelectQuery, 
 			}
 			return Sift(q, field, "in", ids, isOr)
 		} else {
-			logger().Infow("invalid oids", "s", s, "model", ModelNameByQ(q))
+			logger().LogAttrs(context.Background(), slog.LevelInfo, "invalid oids",
+				slog.String("s", s),
+				slog.String("model", ModelNameByQ(q)),
+			)
 		}
 	}
 	return q, false
@@ -143,7 +147,10 @@ func SiftOID(q *SelectQuery, field string, s string, isOr bool) (*SelectQuery, b
 		if _, id, err := oid.Parse(s); err == nil {
 			return Sift(q, field, "=", id, isOr)
 		} else {
-			logger().Infow("invalid oid", "s", s, "model", ModelNameByQ(q))
+			logger().LogAttrs(context.Background(), slog.LevelInfo, "invalid oid",
+				slog.String("s", s),
+				slog.String("model", ModelNameByQ(q)),
+			)
 		}
 	}
 	return q, false
@@ -240,7 +247,12 @@ func SiftDate(q *SelectQuery, field string, during string, isInt, isOr bool) (*S
 			}
 			return SiftBetween(q, field, start, end, isOr)
 		} else {
-			logger().Infow("invalid param", "model", ModelNameByQ(q), "field", field, "during", during, "err", err)
+			logger().LogAttrs(context.Background(), slog.LevelInfo, "invalid param",
+				slog.String("model", ModelNameByQ(q)),
+				slog.String("field", field),
+				slog.String("during", during),
+				slog.Any("err", err),
+			)
 		}
 	}
 

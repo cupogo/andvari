@@ -35,7 +35,7 @@ func (h *DebugHook) AfterQuery(ctx context.Context, evt *bun.QueryEvent) {
 	now := time.Now()
 	dur := now.Sub(evt.StartTime)
 
-	args := []interface{}{
+	args := []any{
 		"[DB]",
 		now.Format("15:04:05.000"),
 		fmt.Sprintf(" %12s", evt.Operation()),

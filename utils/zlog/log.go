@@ -16,13 +16,12 @@ var dftLogger Logger
 var dftLoggerX LoggerX
 
 func init() {
-	syslog.SetFlags(syslog.Ltime | syslog.Lshortfile)
+	// syslog.SetFlags(syslog.Ltime | syslog.Lshortfile)
 	lg := &logger{slg: slog.Default()}
 	dftLogger = lg
 	dftLoggerX = lg
 }
 
-// Set ...
 func Set(logger Logger) {
 	if logger != nil {
 		dftLogger = logger

@@ -3,28 +3,27 @@ package pgx
 import (
 	"context"
 	"io"
+	syslog "log"
+	"log/slog"
 	"os"
 	"testing"
 	"testing/fstest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 
 	"github.com/cupogo/andvari/database/embeds"
 	"github.com/cupogo/andvari/models/comm"
 	"github.com/cupogo/andvari/models/oid"
 	"github.com/cupogo/andvari/utils"
-	"github.com/cupogo/andvari/utils/zlog"
 )
 
 func TestMain(m *testing.M) {
-	lgr, _ := zap.NewDevelopment()
-	defer func() {
-		_ = lgr.Sync() // flushes buffer, if any
-	}()
-	sugar := lgr.Sugar()
-	zlog.Set(sugar)
+	// slog's defaultHandler writes through log.Default, so log flags decide the prefix.
+	syslog.SetFlags(syslog.Ltime | syslog.Lshortfile)
+
+	currentLogLevel := slog.SetLogLoggerLevel(slog.LevelDebug)
+	defer slog.SetLogLoggerLevel(currentLogLevel)
 
 	os.Setenv("DB_ALLOW_LEFT_WILDCARD", "1")
 

@@ -3,6 +3,7 @@ package pgx
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/uptrace/bun/schema"
 )
@@ -57,7 +58,9 @@ func syncTrashSchema(ctx context.Context, db IDB, defSchema, trashSchema string,
 		Where("schema_name=?", defSchema).
 		Exists(ctx)
 	if !exists {
-		logger().Infow("schema not exists", "schema", defSchema)
+		logger().LogAttrs(ctx, slog.LevelInfo, "schema not exists",
+			slog.String("schema", defSchema),
+		)
 		return nil
 	}
 
@@ -65,14 +68,18 @@ func syncTrashSchema(ctx context.Context, db IDB, defSchema, trashSchema string,
 		Where("schema_name=?", trashSchema).
 		Exists(ctx)
 	if !exists {
-		logger().Infow("schema not exists", "schema", trashSchema)
+		logger().LogAttrs(ctx, slog.LevelInfo, "schema not exists",
+			slog.String("schema", trashSchema),
+		)
 		return nil
 	}
 
 	// sync new tables from default schema to trash schema
 	err = syncTrashTables(ctx, db, defSchema, trashSchema, option)
 	if err != nil {
-		logger().Infow("syncTrashTables fail", "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "syncTrashTables fail",
+			slog.Any("err", err),
+		)
 		return
 	}
 
@@ -92,7 +99,9 @@ func syncTrashTables(ctx context.Context, db IDB, defSchema, trashSchema string,
 		Where("is_insertable_into=?", insertAble.String()).
 		Scan(ctx)
 	if err != nil && err != ErrNoRows {
-		logger().Infow("get tables", "schema", defSchema)
+		logger().LogAttrs(ctx, slog.LevelInfo, "get tables",
+			slog.String("schema", defSchema),
+		)
 		return nil
 	}
 
@@ -102,7 +111,9 @@ func syncTrashTables(ctx context.Context, db IDB, defSchema, trashSchema string,
 		Where("is_insertable_into=?", insertAble.String()).
 		Scan(ctx)
 	if err != nil && err != ErrNoRows {
-		logger().Infow("get tables", "schema", trashSchema)
+		logger().LogAttrs(ctx, slog.LevelInfo, "get tables",
+			slog.String("schema", trashSchema),
+		)
 		return nil
 	}
 
@@ -176,13 +187,21 @@ func syncTrashColumns(ctx context.Context, db IDB, defSchema, trashSchema, tbNam
 	// add columns
 	err = addTrashColumn(ctx, db, trashSchema, tbName, adds, option)
 	if err != nil {
-		logger().Infow("addTrashColumn fail", "err", err, "tbName", tbName, "adds", adds)
+		logger().LogAttrs(ctx, slog.LevelInfo, "addTrashColumn fail",
+			slog.Any("err", err),
+			slog.String("tbName", tbName),
+			slog.Any("adds", adds),
+		)
 		return
 	}
 	// drop columns
 	err = dropTrashColumn(ctx, db, trashSchema, tbName, drops, option)
 	if err != nil {
-		logger().Infow("dropTrashColumn fail", "err", err, "tbName", tbName, "drops", drops)
+		logger().LogAttrs(ctx, slog.LevelInfo, "dropTrashColumn fail",
+			slog.Any("err", err),
+			slog.String("tbName", tbName),
+			slog.Any("drops", drops),
+		)
 		return
 	}
 
@@ -250,7 +269,10 @@ func addTrashColumn(ctx context.Context, db IDB,
 			_, err = db.ExecContext(ctx, query)
 		}
 		if err != nil {
-			logger().Infow("exec fail", "err", err, "query", query)
+			logger().LogAttrs(ctx, slog.LevelInfo, "exec fail",
+				slog.Any("err", err),
+				slog.String("query", query),
+			)
 			return
 		}
 	}
@@ -274,7 +296,10 @@ func dropTrashColumn(ctx context.Context, db IDB,
 			_, err = db.ExecContext(ctx, query)
 		}
 		if err != nil {
-			logger().Infow("exec fail", "err", err, "query", query)
+			logger().LogAttrs(ctx, slog.LevelInfo, "exec fail",
+				slog.Any("err", err),
+				slog.String("query", query),
+			)
 			return
 		}
 	}

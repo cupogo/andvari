@@ -2,6 +2,7 @@ package pgx
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/cupogo/andvari/models/field"
 )
@@ -33,7 +34,11 @@ func dbLogModelOp(ctx context.Context, db IDB, ot OperateType, obj Model, conds 
 	if ov, ok := obj.(Changeable); ok && !ov.DisableLog() && operateModelLogFn != nil {
 		err := operateModelLogFn(ctx, db, ot, obj)
 		if err != nil {
-			logger().Infow("call operateModelLogFn fail", "name", ModelName(obj), "ot", ot, "err", err)
+			logger().LogAttrs(ctx, slog.LevelInfo, "call operateModelLogFn fail",
+			slog.String("name", ModelName(obj)),
+			slog.Any("ot", ot),
+			slog.Any("err", err),
+		)
 		}
 	}
 }

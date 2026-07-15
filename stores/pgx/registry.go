@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log/slog"
 
 	"github.com/cupogo/andvari/models/comm"
 )
@@ -49,7 +50,9 @@ func ListFS(cate string, w io.Writer) {
 	for i, f := range mfs {
 		fmt.Fprintln(w, "listFS:", i)
 		if entries, err := fs.ReadDir(f, "."); err != nil {
-			logger().Infow("readDir fail", "err", err)
+			logger().LogAttrs(context.Background(), slog.LevelInfo, "readDir fail",
+				slog.Any("err", err),
+			)
 		} else {
 			for j, ent := range entries {
 				fmt.Fprintln(w, j, ent.Name())

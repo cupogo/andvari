@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/cupogo/andvari/models/field"
@@ -14,7 +15,10 @@ import (
 
 func EnsureSchema(ctx context.Context, db IConn, name string) error {
 	if _, err := db.ExecContext(ctx, "CREATE SCHEMA IF NOT EXISTS "+name); err != nil {
-		logger().Infow("create schema fail", "name", name, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "create schema fail",
+		slog.String("name", name),
+		slog.Any("err", err),
+	)
 		return err
 	}
 	return nil
@@ -25,7 +29,10 @@ func EnsureExtension(ctx context.Context, db IConn, name string, sc ...string) e
 		sc = []string{"public"}
 	}
 	if _, err := db.ExecContext(ctx, "CREATE EXTENSION IF NOT EXISTS "+name+" WITH SCHEMA "+sc[0]); err != nil {
-		logger().Infow("create extension fail", "name", name, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "create extension fail",
+		slog.String("name", name),
+		slog.Any("err", err),
+	)
 		return err
 	}
 	return nil
@@ -45,7 +52,10 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 	if dropIt {
 		_, err = db.NewDropTable().Model(model).IfExists().Cascade().Exec(ctx)
 		if err != nil {
-			logger().Errorw("drop model failed", "model", model, "err", err)
+			logger().LogAttrs(ctx, slog.LevelError, "drop model failed",
+			slog.Any("model", model),
+			slog.Any("err", err),
+		)
 			return
 		}
 	}
@@ -57,10 +67,15 @@ func CreateModel(ctx context.Context, db IDB, model any, dropIt bool) (err error
 
 	_, err = query.Exec(ctx)
 	if err != nil {
-		logger().Errorw("create model failed", "name", ModelName(model), "err", err)
+		logger().LogAttrs(ctx, slog.LevelError, "create model failed",
+			slog.String("name", ModelName(model)),
+			slog.Any("err", err),
+		)
 		return
 	}
-	logger().Debugw("create model", "name", ModelName(model))
+	logger().LogAttrs(ctx, slog.LevelDebug, "create model",
+			slog.String("name", ModelName(model)),
+		)
 	return
 }
 
@@ -107,7 +122,10 @@ func QueryPager(ctx context.Context, p Pager, q *SelectQuery) (count int, err er
 		err = q.Scan(ctx)
 	}
 	if err != nil {
-		logger().Infow("select failed", "pager", p, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "select failed",
+		slog.Any("pager", p),
+		slog.Any("err", err),
+	)
 	} else {
 		p.SetTotal(count)
 	}
@@ -128,10 +146,17 @@ func ModelWithPK(ctx context.Context, db IDB, obj Model, columns ...string) (err
 	if err != nil {
 		name := ModelName(obj)
 		if err == ErrNoRows {
-			logger().Debugw("get model where pk no rows", "name", name, "objID", obj.GetID())
+			logger().LogAttrs(ctx, slog.LevelDebug, "get model where pk no rows",
+			slog.String("name", name),
+			slog.Any("objID", obj.GetID()),
+		)
 			return fmt.Errorf("model %s with pk %v: %w", name, obj.GetID(), ErrNotFound)
 		}
-		logger().Warnw("get model where pk failed", "name", ModelName(obj), "objID", obj.GetID(), "err", err)
+		logger().LogAttrs(ctx, slog.LevelWarn, "get model where pk failed",
+			slog.String("name", ModelName(obj)),
+			slog.Any("objID", obj.GetID()),
+			slog.Any("err", err),
+		)
 		if err == ErrBadConn {
 			panic(err)
 		}
@@ -145,7 +170,10 @@ func ModelWithPKID(ctx context.Context, db IDB, obj Model, id any, columns ...st
 		return ModelWithPK(ctx, db, obj, columns...)
 	}
 
-	logger().Infow("invalid id", "id", id, "name", ModelName(obj))
+	logger().LogAttrs(ctx, slog.LevelInfo, "invalid id",
+		slog.Any("id", id),
+		slog.String("name", ModelName(obj)),
+	)
 	return fmt.Errorf("%w: '%+v'", ErrInvalidID, id)
 }
 
@@ -155,17 +183,33 @@ func ModelWithUnique(ctx context.Context, db IDB, obj Model, key string, val any
 func ModelWith(ctx context.Context, db IDB, obj Model, key, op string, val any, cols ...string) error {
 	name := ModelName(obj)
 	if val == nil || val == 0 || val == "" || op == "" {
-		logger().Infow("modelWith: empty param", "name", name, "key", key, "op", op, "val", val)
+		logger().LogAttrs(ctx, slog.LevelInfo, "modelWith: empty param",
+		slog.String("name", name),
+		slog.String("key", key),
+		slog.String("op", op),
+		slog.Any("val", val),
+	)
 		return fmt.Errorf("model %s with: %w", name, ErrEmptyKey)
 	}
 
 	err := db.NewSelect().Model(obj).Column(cols...).Where("? "+op+" ?", Ident(key), val).Limit(1).Scan(ctx)
 	if err != nil {
 		if err == ErrNoRows {
-			logger().Debugw("modelWith: no rows", "name", name, "key", key, "op", op, "val", val)
+			logger().LogAttrs(ctx, slog.LevelDebug, "modelWith: no rows",
+			slog.String("name", name),
+			slog.String("key", key),
+			slog.String("op", op),
+			slog.Any("val", val),
+		)
 			return fmt.Errorf("model %s with %s %s %v: %w", name, key, op, val, ErrNotFound)
 		}
-		logger().Warnw("modelWith: failed", "name", name, "key", key, "op", op, "val", val, "err", err)
+		logger().LogAttrs(ctx, slog.LevelWarn, "modelWith: failed",
+			slog.String("name", name),
+			slog.String("key", key),
+			slog.String("op", op),
+			slog.Any("val", val),
+			slog.Any("err", err),
+		)
 		return fmt.Errorf("model %s with %s %s %v: %w", name, key, op, val, err)
 	}
 	return nil
@@ -182,9 +226,13 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	if dtf, ok := obj.(CreatedSetter); ok {
 		if ts, ok := CreatedFromContext(ctx); ok && ts > 0 {
 			if dtf.SetCreated(ts) {
-				logger().Infow("set created ok", "ts", ts)
+				logger().LogAttrs(ctx, slog.LevelInfo, "set created ok",
+					slog.Any("ts", ts),
+				)
 			} else {
-				logger().Infow("set created fail", "ts", ts)
+				logger().LogAttrs(ctx, slog.LevelInfo, "set created fail",
+					slog.Any("ts", ts),
+				)
 			}
 		}
 	}
@@ -208,7 +256,10 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 					}
 					q.Value("ts_vec", "to_tsvector(?, ?)", cfg, txt)
 				} else {
-					logger().Infow("WARN empty ktg", "cfg", cfg, "name", name)
+					logger().LogAttrs(ctx, slog.LevelInfo, "WARN empty ktg",
+						slog.String("cfg", cfg),
+						slog.String("name", name),
+					)
 				}
 			}
 		}
@@ -237,11 +288,19 @@ func DoInsert(ctx context.Context, db IDB, obj Model, args ...any) error {
 	q.Returning(field.ID)
 
 	if _, err := q.Exec(ctx); err != nil {
-		logger().Infow("insert model fail", "name", name, "obj", obj, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "insert model fail",
+		slog.String("name", name),
+		slog.Any("obj", obj),
+		slog.Any("err", err),
+	)
 		return fmt.Errorf("create %s fail: %w", name, err)
 	}
 
-	logger().Debugw("insert model ok", "name", name, "id", obj.GetID(), "argc", argc)
+	logger().LogAttrs(ctx, slog.LevelDebug, "insert model ok",
+		slog.String("name", name),
+		slog.Any("id", obj.GetID()),
+		slog.Int("argc", argc),
+	)
 
 	dbLogModelOp(ctx, db, OperateTypeCreate, obj, argc == 0)
 
@@ -256,7 +315,10 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 
 	// Call to saving hook
 	if err := TryToBeforeUpdateHooks(ctx, obj); err != nil {
-		logger().Infow("before update model fail", "obj", obj, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "before update model fail",
+		slog.Any("obj", obj),
+		slog.Any("err", err),
+	)
 		return err
 	}
 
@@ -266,14 +328,19 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 			vo.SetChange(columns...)
 		}
 		if vo.CountChange() == 0 {
-			logger().Infow("unchange", "name", name, "id", obj.GetID())
+			logger().LogAttrs(ctx, slog.LevelInfo, "unchange",
+				slog.String("name", name),
+				slog.Any("id", obj.GetID()),
+			)
 			return nil
 		}
 
 		vo.SetChange(field.Updated)
 		columns = vo.GetChanges()
 	} else if len(columns) == 0 {
-		logger().Infow("unchange", "id", obj.GetID())
+		logger().LogAttrs(ctx, slog.LevelInfo, "unchange",
+			slog.Any("id", obj.GetID()),
+		)
 		return nil
 	}
 
@@ -296,7 +363,10 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 					q.Column("ts_vec").Value("ts_vec", "to_tsvector(?, ?)", cfg, txt)
 					// logger().Debugw("ktg", "txt", txt)
 				} else {
-					logger().Infow("WARN empty ktg", "cfg", cfg, "name", name)
+					logger().LogAttrs(ctx, slog.LevelInfo, "WARN empty ktg",
+						slog.String("cfg", cfg),
+						slog.String("name", name),
+					)
 				}
 			} else if cols := tso.GetTsColumns(); len(cols) > 0 {
 				for _, co := range cols {
@@ -305,18 +375,28 @@ func DoUpdate(ctx context.Context, db IDB, obj Model, columns ...string) error {
 				q.Column("ts_vec").Value("ts_vec", "to_tsvector(?, jsonb_build_array("+strings.Join(cols, ",")+"))", cfg)
 			}
 		} else {
-			logger().Infow("WARN empty tso", "cfg", cfg, "name", name)
+			logger().LogAttrs(ctx, slog.LevelInfo, "WARN empty tso",
+				slog.String("cfg", cfg),
+				slog.String("name", name),
+			)
 		}
 	}
 
 	if _, err := q.WherePK().Exec(ctx); err != nil {
-		logger().Infow("update fail", "name", name,
-			"obj", obj, "columns", columns, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "update fail",
+			slog.String("name", name),
+			slog.Any("obj", obj),
+			slog.Any("columns", columns),
+			slog.Any("err", err),
+		)
 		return fmt.Errorf("update %s fail: %w", name, err)
 	}
 
-	logger().Debugw("update ok", "name", name,
-		"id", obj.GetID(), "columns", columns)
+	logger().LogAttrs(ctx, slog.LevelDebug, "update ok",
+		slog.String("name", name),
+		slog.Any("id", obj.GetID()),
+		slog.Any("columns", columns),
+	)
 
 	if err := TryToAfterUpdateHooks(obj); err != nil {
 		return err
@@ -442,9 +522,17 @@ func DoDeleteT(ctx context.Context, db IDB, scDft, scCrap string, table string, 
 	var ret int
 	err := db.NewRaw("SELECT op_affect_delete(?, ?, ?, ?)", scDft, scCrap, table, _id).Scan(ctx, &ret)
 	if err != nil {
-		logger().Infow("delete fail", "table", table, "id", _id, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "delete fail",
+			slog.String("table", table),
+			slog.Any("id", _id),
+			slog.Any("err", err),
+		)
 	} else {
-		logger().Infow("delete ok", "table", table, "id", _id, "ret", ret)
+		logger().LogAttrs(ctx, slog.LevelInfo, "delete ok",
+			slog.String("table", table),
+			slog.Any("id", _id),
+			slog.Int("ret", ret),
+		)
 	}
 	return err
 }
@@ -460,9 +548,17 @@ func DoUndeleteT(ctx context.Context, db IDB, scDft, scCrap string, table string
 	var ret int
 	err := db.NewRaw("SELECT op_affect_undelete(?, ?, ?, ?)", scDft, scCrap, table, _id).Scan(ctx, &ret)
 	if err != nil {
-		logger().Infow("undelete fail", "table", table, "id", _id, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "undelete fail",
+			slog.String("table", table),
+			slog.Any("id", _id),
+			slog.Any("err", err),
+		)
 	} else {
-		logger().Infow("undelete ok", "table", table, "id", _id, "ret", ret)
+		logger().LogAttrs(ctx, slog.LevelInfo, "undelete ok",
+			slog.String("table", table),
+			slog.Any("id", _id),
+			slog.Int("ret", ret),
+		)
 	}
 	return err
 }
@@ -509,15 +605,30 @@ func BatchDeleteWithKey(ctx context.Context, db IDB, name, key string, id oid.OI
 		ids = hold.IDs
 		for _, id := range ids {
 			if err = DoDelete(ctx, db, name, id); err != nil {
-				logger().Infow("delete fail", "name", name, "key", key, "id", id, "err", err)
+				logger().LogAttrs(ctx, slog.LevelInfo, "delete fail",
+					slog.String("name", name),
+					slog.String("key", key),
+					slog.Any("id", id),
+					slog.Any("err", err),
+				)
 				return
 			}
 		}
 		if len(ids) > 0 {
-			logger().Infow("batch delete done", "name", name, "key", key, "id", id, "ids", ids)
+			logger().LogAttrs(ctx, slog.LevelInfo, "batch delete done",
+				slog.String("name", name),
+				slog.String("key", key),
+				slog.Any("id", id),
+				slog.Any("ids", ids),
+			)
 		}
 	} else {
-		logger().Infow("query fail when batch delete", "name", name, "key", key, "id", id, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "query fail when batch delete",
+			slog.String("name", name),
+			slog.String("key", key),
+			slog.Any("id", id),
+			slog.Any("err", err),
+		)
 	}
 	return
 }
@@ -578,7 +689,11 @@ func oneWithOrder(ctx context.Context, db IDB, ord Order, obj Model, args ...any
 				err,
 			)
 		}
-		logger().Infow("get model with key failed", "name", ModelName(obj), "args", args, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "get model with key failed",
+			slog.String("name", ModelName(obj)),
+			slog.Any("args", args),
+			slog.Any("err", err),
+		)
 
 		if err == ErrBadConn {
 			panic(err)
@@ -606,7 +721,10 @@ func QueryOne(db IDB, obj Model, args ...any) (*SelectQuery, bool) {
 		return q.Where(s, args[1:]...), true
 	}
 
-	logger().Infow("queryOne: invalid args", "name", ModelName(obj), "args", args)
+	logger().LogAttrs(context.Background(), slog.LevelInfo, "queryOne: invalid args",
+		slog.String("name", ModelName(obj)),
+		slog.Any("args", args),
+	)
 
 	return q, false
 }

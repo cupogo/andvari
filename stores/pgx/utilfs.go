@@ -2,7 +2,9 @@ package pgx
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
+	"log/slog"
 	"strings"
 )
 
@@ -15,13 +17,15 @@ func BatchDirSQLs(ctx context.Context, dbc IConn, dbfs fs.FS, patterns ...string
 		}
 		for _, name := range matches {
 			if err := ExecSQLfile(ctx, dbc, dbfs, name); err != nil {
-				logger().Warnf("exec sql fail: %+v, %+s", name, err)
+				logger().LogAttrs(ctx, slog.LevelWarn, fmt.Sprintf("exec sql fail: %+v, %+s", name, err))
 				return err
 			}
 			count++
 		}
 	}
-	logger().Infow("bulk sqls done", "files", count)
+	logger().LogAttrs(ctx, slog.LevelInfo, "bulk sqls done",
+		slog.Int("files", count),
+	)
 
 	return nil
 }
@@ -51,7 +55,10 @@ func BulkFsSQLs(ctx context.Context, dbc IConn, dbfs fs.FS) (count int, err erro
 func ExecSQLfile(ctx context.Context, dbc IConn, dbfs fs.FS, name string) error {
 	data, err := fs.ReadFile(dbfs, name)
 	if err != nil {
-		logger().Infow("read fail", "name", name, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "read fail",
+		slog.String("name", name),
+		slog.Any("err", err),
+	)
 		return nil
 	}
 
@@ -61,9 +68,15 @@ func ExecSQLfile(ctx context.Context, dbc IConn, dbfs fs.FS, name string) error 
 		if len(query) > 32 {
 			query = query[:32]
 		}
-		logger().Infow("exec sql fail", "name", name, "query", query, "err", err)
+		logger().LogAttrs(ctx, slog.LevelInfo, "exec sql fail",
+		slog.String("name", name),
+		slog.String("query", query),
+		slog.Any("err", err),
+	)
 		return err
 	}
-	logger().Debugw("exec sql done", "name", name)
+	logger().LogAttrs(ctx, slog.LevelDebug, "exec sql done",
+		slog.String("name", name),
+	)
 	return nil
 }
