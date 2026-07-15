@@ -22,6 +22,10 @@ func init() {
 	dftLoggerX = lg
 }
 
+// Deprecated: the package's default logger is now backed by slog.Default()
+// (see init()), and configuring the process-wide logger should go through
+// slog.SetDefault. Set only existed to inject custom loggers (e.g. zap.Sugar)
+// into the package-level default, and is no longer used by any caller.
 func Set(logger Logger) {
 	if logger != nil {
 		dftLogger = logger
@@ -31,6 +35,7 @@ func Set(logger Logger) {
 	}
 }
 
+// Deprecated: see Set. New code should call slog.SetDefault instead.
 func SetX(logger LoggerX) {
 	if logger != nil {
 		dftLogger = logger
@@ -38,11 +43,15 @@ func SetX(logger LoggerX) {
 	}
 }
 
-// Get ...
+// Deprecated: Get returns the package-level wrapper captured at init() time
+// and does NOT reflect later slog.SetDefault calls. Callers should use
+// slog.Default() directly, which always honors the current process-wide
+// logger.
 func Get() Logger {
 	return dftLogger
 }
 
+// Deprecated: see Get. New code should call slog.Default() directly.
 func GetX() LoggerX {
 	return dftLoggerX
 }
