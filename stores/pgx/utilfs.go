@@ -2,7 +2,6 @@ package pgx
 
 import (
 	"context"
-	"fmt"
 	"io/fs"
 	"log/slog"
 	"strings"
@@ -17,7 +16,10 @@ func BatchDirSQLs(ctx context.Context, dbc IConn, dbfs fs.FS, patterns ...string
 		}
 		for _, name := range matches {
 			if err := ExecSQLfile(ctx, dbc, dbfs, name); err != nil {
-				logger().LogAttrs(ctx, slog.LevelWarn, fmt.Sprintf("exec sql fail: %+v, %+s", name, err))
+				logger().LogAttrs(ctx, slog.LevelWarn, "exec sql fail",
+					slog.String("name", name),
+					slog.Any("err", err),
+				)
 				return err
 			}
 			count++
