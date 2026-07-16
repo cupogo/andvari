@@ -18,10 +18,10 @@ const (
 var ErrEmptyGender = errors.New("empty gender")
 var genderKeys = []string{"unknown", "male", "famale", "other"}
 
-// fmt.Stringer
-func (this Gender) String() string {
-	if this >= GnUnknown && this <= GnOther {
-		return genderKeys[this]
+// String implements fmt.Stringer.
+func (g Gender) String() string {
+	if g >= GnUnknown && g <= GnOther {
+		return genderKeys[g]
 	}
 	return "unknown"
 }

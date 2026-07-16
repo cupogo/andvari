@@ -59,7 +59,7 @@ func (z OID) MarshalBinary() ([]byte, error) {
 	return z.IID().MarshalBinary()
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (z *OID) UnmarshalBinary(data []byte) (err error) {
 	var id IID
 	err = id.UnmarshalBinary(data)

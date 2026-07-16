@@ -75,7 +75,7 @@ func (ms *ModelSpec) SetSifted(v bool) {
 }
 
 // CanSort 检测字段是否可排序
-func (md *ModelSpec) CanSort(key string) bool {
+func (ms *ModelSpec) CanSort(key string) bool {
 	switch key {
 	case "id", "created", "updated":
 		return true
@@ -84,43 +84,43 @@ func (md *ModelSpec) CanSort(key string) bool {
 	}
 }
 
-func (md *ModelSpec) Column(cols ...string) {
-	md.colinc = append(md.colinc, cols...)
+func (ms *ModelSpec) Column(cols ...string) {
+	ms.colinc = append(ms.colinc, cols...)
 }
 
-func (md *ModelSpec) HasColumn() bool {
-	return len(md.colinc) > 0
+func (ms *ModelSpec) HasColumn() bool {
+	return len(ms.colinc) > 0
 }
 
-func (md *ModelSpec) ExcludeColumn(cols ...string) {
-	md.colexc = append(md.colexc, cols...)
+func (ms *ModelSpec) ExcludeColumn(cols ...string) {
+	ms.colexc = append(ms.colexc, cols...)
 }
 
-func (md *ModelSpec) HasExcludeColumn() bool {
-	return len(md.colexc) > 0
+func (ms *ModelSpec) HasExcludeColumn() bool {
+	return len(ms.colexc) > 0
 }
 
-func (md *ModelSpec) Deleted() bool {
-	return md.IsDelete
+func (ms *ModelSpec) Deleted() bool {
+	return ms.IsDelete
 }
 
-func (md *ModelSpec) Sift(q *SelectQuery) *SelectQuery {
-	if len(md.colexc) > 0 {
-		q.ExcludeColumn(md.colexc...)
-	} else if len(md.colinc) > 0 {
-		q.Column(md.colinc...)
+func (ms *ModelSpec) Sift(q *SelectQuery) *SelectQuery {
+	if len(ms.colexc) > 0 {
+		q.ExcludeColumn(ms.colexc...)
+	} else if len(ms.colinc) > 0 {
+		q.Column(ms.colinc...)
 	}
-	if len(md.IDs) > 0 {
-		q.Where("?TableAlias.id in (?)", In(md.IDs))
-	} else if md.IDsStr.Valid() {
-		ids, err := md.IDsStr.Decode()
+	if len(ms.IDs) > 0 {
+		q.Where("?TableAlias.id in (?)", In(ms.IDs))
+	} else if ms.IDsStr.Valid() {
+		ids, err := ms.IDsStr.Decode()
 		if err == nil {
 			q.Where("?TableAlias.id in (?)", In(ids))
 		}
 	}
-	q, _ = SiftOID(q, "creator_id", md.CreatorID, false)
-	q, _ = SiftDate(q, "created", md.Created, false, false)
-	q, _ = SiftDate(q, "updated", md.Updated, false, false)
+	q, _ = SiftOID(q, "creator_id", ms.CreatorID, false)
+	q, _ = SiftDate(q, "created", ms.Created, false, false)
+	q, _ = SiftDate(q, "updated", ms.Updated, false, false)
 
 	return q
 }

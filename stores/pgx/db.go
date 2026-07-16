@@ -193,7 +193,7 @@ func (w *DB) DeleteModel(ctx context.Context, obj ModelIdentity, id any) error {
 	if !obj.SetID(id) || obj.IsZeroID() {
 		return ErrEmptyPK
 	}
-	return w.DB.RunInTx(ctx, nil, func(ctx context.Context, tx Tx) error {
+	return w.RunInTx(ctx, nil, func(ctx context.Context, tx Tx) error {
 		return DoDeleteM(ctx, tx, w.scDft, w.scCrap, obj)
 	})
 }
@@ -206,7 +206,7 @@ func (w *DB) UndeleteModel(ctx context.Context, obj Model, id any) error {
 	return OpUndeletedInTrans(ctx, w.DB, w.Schema(), w.SchemaCrap(), q.GetTableName(), obj.GetID())
 }
 
-// deprecated by DeleteModel
+// OpDeleteOID deprecated by DeleteModel
 func (w *DB) OpDeleteOID(ctx context.Context, table string, id string) error {
 	_, _id, err := oid.Parse(id)
 	if err != nil {
@@ -215,7 +215,7 @@ func (w *DB) OpDeleteOID(ctx context.Context, table string, id string) error {
 	return OpDeleteInTrans(ctx, w.DB, w.scDft, w.scCrap, table, _id)
 }
 
-// deprecated by DeleteModel
+// OpDeleteAny deprecated by DeleteModel
 func (w *DB) OpDeleteAny(ctx context.Context, table string, _id any) error {
 	return OpDeleteInTrans(ctx, w.DB, w.scDft, w.scCrap, table, _id)
 }

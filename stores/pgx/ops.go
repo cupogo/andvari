@@ -447,7 +447,7 @@ type ModelSetPtr[T any, U any] interface {
 	SetWith(in U)
 }
 
-// StoreWithSet[*U] save a Model wish ModelSet and value & key
+// StoreWithSet save a Model with ModelSet and value & key
 // Note: It is not recommended to have only basic field definitions in the object.
 // code examples:
 // StoreWithSet[*U](ctx, db, in) // create if no conflict

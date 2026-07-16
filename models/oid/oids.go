@@ -70,7 +70,7 @@ func (ss StringSlice) Decode() (OIDs, error) {
 	return a, nil
 }
 
-// 以逗号分隔的 ids
+// OIDsStr 以逗号分隔的 ids
 type OIDsStr string
 
 func (s OIDsStr) Slice() StringSlice {

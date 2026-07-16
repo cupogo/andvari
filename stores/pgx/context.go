@@ -65,7 +65,7 @@ func ContextWithCreated(ctx context.Context, dt int64) context.Context {
 	return context.WithValue(ctx, createdK, dt)
 }
 
-// ContextWithCreated 从 Context 取 Created
+// CreatedFromContext 从 Context 取 Created
 func CreatedFromContext(ctx context.Context) (int64, bool) {
 	if v, ok := ctx.Value(createdK).(int64); ok {
 		return v, true

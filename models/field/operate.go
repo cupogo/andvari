@@ -2,7 +2,7 @@ package field
 
 import "fmt"
 
-// 操作类型
+// OperateType 操作类型
 type OperateType int8
 
 type ModelOperateType = OperateType // deprecated

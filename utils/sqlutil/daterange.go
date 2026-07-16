@@ -89,7 +89,7 @@ func NewDateRange(ts time.Time) *DateRange {
 
 func (dr *DateRange) Parse(during string, days ...int) (err error) {
 
-	if 0 == len(during) || "all" == during {
+	if len(during) == 0 || during == "all" {
 		var maxDays int
 		if len(days) > 0 {
 			maxDays = days[0]
@@ -222,27 +222,27 @@ func (dr *DateRange) parseSpec(during string) (err error) {
 	dr.End = dr.ts
 	switch unit {
 	case "day", "days":
-		if 0 == num {
+		if num == 0 {
 			dr.Start = dr.ts.Truncate(24 * time.Hour)
 		} else {
 			dr.Start = dr.ts.AddDate(0, 0, -num)
 		}
 	case "week", "weeks":
-		if 0 == num {
+		if num == 0 {
 			dr.Start = WeekStart(dr.ts)
 		} else {
 			dr.Start = dr.ts.AddDate(0, 0, -num*7)
 		}
 
 	case "month", "months":
-		if 0 == num {
+		if num == 0 {
 			dr.Start = dr.newDate(year, month, 1)
 		} else {
 			dr.Start = dr.ts.AddDate(0, -num, 0)
 		}
 
 	case "year", "years":
-		if 0 == num {
+		if num == 0 {
 			dr.Start = dr.newDate(year, time.January, 1)
 		} else {
 			dr.Start = dr.ts.AddDate(-num, 0, 0)

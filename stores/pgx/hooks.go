@@ -33,7 +33,7 @@ type SavedHook interface {
 	Saved() error
 }
 
-// CreatingHookWithCtx is called before saving a new model to the database
+// CreatingHookX is called before saving a new model to the database
 type CreatingHookX interface {
 	CreatingX(context.Context) error
 }

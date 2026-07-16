@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	currentLogLevel := slog.SetLogLoggerLevel(slog.LevelDebug)
 	defer slog.SetLogLoggerLevel(currentLogLevel)
 
-	os.Setenv("DB_ALLOW_LEFT_WILDCARD", "1")
+	_ = os.Setenv("DB_ALLOW_LEFT_WILDCARD", "1")
 
 	ret := m.Run()
 
@@ -101,30 +101,30 @@ type ClauseBasic struct {
 type Clauses []Clause
 
 // Creating function call to it's inner fields defined hooks
-func (z *Clause) Creating() error {
-	if z.IsZeroID() {
-		z.SetID(oid.NewID(oid.OtArticle))
+func (c *Clause) Creating() error {
+	if c.IsZeroID() {
+		c.SetID(oid.NewID(oid.OtArticle))
 	}
 
-	return z.DefaultModel.Creating()
+	return c.DefaultModel.Creating()
 }
-func (_ *Clause) IdentityLabel() string { return "clause" }
-func (_ *Clause) IdentityModel() string { return "clause" }
-func (_ *Clause) IdentityTable() string { return "cms_clause" }
+func (*Clause) IdentityLabel() string { return "clause" }
+func (*Clause) IdentityModel() string { return "clause" }
+func (*Clause) IdentityTable() string { return "cms_clause" }
 
 type ClauseSet struct {
 	Slug *string `extensions:"x-order=A" json:"slug"`
 	Text *string `extensions:"x-order=B" json:"text"`
 } // @name cms1ClauseSet
 
-func (z *Clause) SetWith(o ClauseSet) {
-	if o.Slug != nil && z.Slug != *o.Slug {
-		z.LogChangeValue("slug", z.Slug, o.Slug)
-		z.Slug = *o.Slug
+func (c *Clause) SetWith(o ClauseSet) {
+	if o.Slug != nil && c.Slug != *o.Slug {
+		c.LogChangeValue("slug", c.Slug, o.Slug)
+		c.Slug = *o.Slug
 	}
-	if o.Text != nil && z.Text != *o.Text {
-		z.LogChangeValue("text", z.Text, o.Text)
-		z.Text = *o.Text
+	if o.Text != nil && c.Text != *o.Text {
+		c.LogChangeValue("text", c.Text, o.Text)
+		c.Text = *o.Text
 	}
 }
 

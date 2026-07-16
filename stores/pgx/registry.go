@@ -23,7 +23,7 @@ func RegisterModel(m ...any) {
 	allmodels = append(allmodels, m...)
 }
 
-// Deprecated by RegisterInitFs()
+// RegisterDbFs Deprecated by RegisterInitFs()
 func RegisterDbFs(dbfs ...fs.FS) { RegisterInitFs(dbfs...) }
 
 // RegisterInitFs special sql files will be executed by InitSchemas()
@@ -31,7 +31,7 @@ func RegisterInitFs(dbfs ...fs.FS) {
 	alldbfs = append(alldbfs, dbfs...)
 }
 
-// RegisterMigrateFs special sql files in FS will be executed by RunMigrations()
+// RegisterMigrationFs special sql files in FS will be executed by RunMigrations()
 func RegisterMigrationFs(dbfs ...fs.FS) {
 	alterfs = append(alterfs, dbfs...)
 }
@@ -48,14 +48,14 @@ func ListFS(cate string, w io.Writer) {
 		return
 	}
 	for i, f := range mfs {
-		fmt.Fprintln(w, "listFS:", i)
+		_, _ = fmt.Fprintln(w, "listFS:", i)
 		if entries, err := fs.ReadDir(f, "."); err != nil {
 			logger().LogAttrs(context.Background(), slog.LevelInfo, "readDir fail",
 				slog.Any("err", err),
 			)
 		} else {
 			for j, ent := range entries {
-				fmt.Fprintln(w, j, ent.Name())
+				_, _ = fmt.Fprintln(w, j, ent.Name())
 			}
 		}
 	}

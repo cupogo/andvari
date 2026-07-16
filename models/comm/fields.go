@@ -136,7 +136,7 @@ func (f *OwnerField) SetOwnerID(id any) bool {
 	return false
 }
 
-// ownerID 可否为空
+// OwnerEmpty 指示 ownerID 可否为空
 func (f *OwnerField) OwnerEmpty() bool {
 	return false
 }

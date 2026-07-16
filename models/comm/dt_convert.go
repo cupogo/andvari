@@ -16,8 +16,8 @@ func NewDateTimeFromDate(d Date) DateTime {
 	return NewDateTimeFromTime(t)
 }
 
-func (dt DateTime) ToDate() Date {
-	return NewDateFromDateTime(dt)
+func (d DateTime) ToDate() Date {
+	return NewDateFromDateTime(d)
 }
 
 func (d Date) ToDateTime() DateTime {
